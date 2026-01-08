@@ -3,8 +3,12 @@ import { CacheService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
-import { CalculateRewardsArgs } from '../../models/farm.args';
-import { BoostedRewardsModel, RewardsModel } from '../../models/farm.model';
+import { CalculateRewardsArgs, FarmsFilter } from '../../models/farm.args';
+import {
+    BoostedRewardsModel,
+    FarmVersion,
+    RewardsModel,
+} from '../../models/farm.model';
 import { FarmTokenAttributesModelV2 } from '../../models/farmTokenAttributes.model';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
 import { FarmTokenAttributesV2 } from '@multiversx/sdk-exchange';
@@ -17,6 +21,10 @@ import { constantsConfig } from '../../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { CollectionType } from 'src/modules/common/collection.type';
+import { FarmModel } from '../../models/farm.v2.model';
+import { FarmsStateService } from 'src/modules/dex-state/services/farms.state.service';
+import { farmsAddresses } from 'src/utils/farm.utils';
 
 @Injectable()
 export class FarmServiceV2 extends FarmServiceBase {
@@ -26,9 +34,11 @@ export class FarmServiceV2 extends FarmServiceBase {
         protected readonly farmCompute: FarmComputeServiceV2,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CacheService,
+        @Inject(forwardRef(() => TokenService))
         protected readonly tokenService: TokenService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly farmsState: FarmsStateService,
     ) {
         super(
             farmAbi,
@@ -37,6 +47,22 @@ export class FarmServiceV2 extends FarmServiceBase {
             cachingService,
             tokenService,
         );
+    }
+
+    async getFilteredFarms(
+        offset: number,
+        limit: number,
+        filters: FarmsFilter,
+    ): Promise<CollectionType<FarmModel>> {
+        const result =
+            !filters.addresses || filters.addresses.length === 0
+                ? await this.farmsState.getAllFarms()
+                : await this.farmsState.getFarms(filters.addresses);
+
+        return new CollectionType({
+            count: farmsAddresses([FarmVersion.V2]).length,
+            items: result,
+        });
     }
 
     async getBatchRewardsForPosition(

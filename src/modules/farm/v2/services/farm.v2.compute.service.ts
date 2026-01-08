@@ -36,6 +36,7 @@ export class FarmComputeServiceV2
         @Inject(forwardRef(() => PairComputeService))
         protected readonly pairCompute: PairComputeService,
         protected readonly contextGetter: ContextGetterService,
+        @Inject(forwardRef(() => TokenComputeService))
         protected readonly tokenCompute: TokenComputeService,
         protected readonly cachingService: CacheService,
         private readonly weekTimeKeepingAbi: WeekTimekeepingAbiService,
@@ -566,34 +567,6 @@ export class FarmComputeServiceV2
         const remainingRewards = await Promise.all(promises);
         return remainingRewards.reduce((acc, curr) => {
             return new BigNumber(acc).plus(curr);
-        });
-    }
-
-    async computeBlocksInWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<number> {
-        const [startEpochForCurrentWeek, currentEpoch, shardID] =
-            await Promise.all([
-                this.weekTimekeepingCompute.startEpochForWeek(scAddress, week),
-                this.contextGetter.getCurrentEpoch(),
-                this.farmAbi.farmShard(scAddress),
-            ]);
-
-        const promises = [];
-        for (
-            let epoch = startEpochForCurrentWeek;
-            epoch <= currentEpoch;
-            epoch++
-        ) {
-            promises.push(
-                this.contextGetter.getBlocksCountInEpoch(epoch, shardID),
-            );
-        }
-
-        const blocksInEpoch = await Promise.all(promises);
-        return blocksInEpoch.reduce((total, current) => {
-            return total + current;
         });
     }
 

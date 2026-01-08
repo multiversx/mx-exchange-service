@@ -3,7 +3,11 @@ import { TokenModule } from 'src/modules/tokens/token.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { FarmAbiServiceV2 } from './services/farm.v2.abi.service';
-import { FarmBoostedRewardsResolver, FarmResolverV2 } from './farm.v2.resolver';
+import {
+    FarmBoostedRewardsResolver,
+    FarmResolver,
+    FarmResolverV2,
+} from './farm.v2.resolver';
 import { FarmServiceV2 } from './services/farm.v2.service';
 import { FarmComputeServiceV2 } from './services/farm.v2.compute.service';
 import { PairModule } from 'src/modules/pair/pair.module';
@@ -15,6 +19,8 @@ import { EnergyModule } from '../../energy/energy.module';
 import { FarmTransactionResolverV2 } from './farm.v2.transaction.resolver';
 import { FarmAbiLoaderV2 } from './services/farm.v2.abi.loader';
 import { FarmComputeLoaderV2 } from './services/farm.v2.compute.loader';
+import { StateModule } from 'src/modules/dex-state/state.module';
+import { StateDataLoaderModule } from 'src/modules/dex-state/state.dataloader.module';
 
 @Module({
     imports: [
@@ -25,6 +31,8 @@ import { FarmComputeLoaderV2 } from './services/farm.v2.compute.loader';
         EnergyModule,
         forwardRef(() => WeekTimekeepingModule),
         forwardRef(() => WeeklyRewardsSplittingModule),
+        StateModule,
+        StateDataLoaderModule,
     ],
     providers: [
         FarmAbiLoaderV2,
@@ -35,6 +43,7 @@ import { FarmComputeLoaderV2 } from './services/farm.v2.compute.loader';
         FarmComputeServiceV2,
         FarmTransactionServiceV2,
         FarmResolverV2,
+        FarmResolver,
         FarmTransactionResolverV2,
         FarmBoostedRewardsResolver,
     ],

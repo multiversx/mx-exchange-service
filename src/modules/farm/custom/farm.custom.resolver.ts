@@ -1,5 +1,5 @@
 import { ResolveField, Resolver } from '@nestjs/graphql';
-import { FarmResolver } from '../base-module/farm.resolver';
+import { BaseFarmResolver } from '../base-module/farm.resolver';
 import { FarmCustomModel } from '../models/farm.custom.model';
 import { FarmCustomAbiService } from './services/farm.custom.abi.service';
 import { FarmCustomComputeService } from './services/farm.custom.compute.service';
@@ -11,7 +11,7 @@ import { FarmCustomAbiLoader } from './services/farm.custom.abi.loader';
 import { FarmCustomComputeLoader } from './services/farm.custom.compute.loader';
 
 @Resolver(() => FarmCustomModel)
-export class FarmCustomResolver extends FarmResolver {
+export class FarmCustomResolver extends BaseFarmResolver {
     constructor(
         protected readonly farmAbi: FarmCustomAbiService,
         protected readonly farmService: FarmCustomService,
