@@ -29,6 +29,7 @@ import { PaginationArgs } from 'src/modules/dex.model';
 import { StakingProxiesFilter } from '../models/staking.proxy.args.model';
 import { StakingProxyFilteringService } from './staking.proxy.filtering.service';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
+import { StakingFarmsStateService } from 'src/modules/dex-state/services/staking.farms.state.service';
 
 @Injectable()
 export class StakingProxyService {
@@ -45,6 +46,7 @@ export class StakingProxyService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @Inject(forwardRef(() => StakingProxyFilteringService))
         private readonly stakingProxyFilteringService: StakingProxyFilteringService,
+        private readonly stakingFarmsState: StakingFarmsStateService,
     ) {}
 
     async getStakingProxies(): Promise<StakingProxyModel[]> {
@@ -148,8 +150,19 @@ export class StakingProxyService {
     async getBatchRewardsForPosition(
         positions: CalculateRewardsArgs[],
     ): Promise<DualYieldRewardsModel[]> {
-        const promises = positions.map((position) => {
-            return this.getRewardsForPosition(position);
+        const stakingProxies = await this.stakingFarmsState.getStakingProxies(
+            positions.map((position) => position.farmAddress),
+            [
+                'address',
+                'lpFarmAddress',
+                'stakingFarmAddress',
+                'lpFarmTokenCollection',
+                'farmTokenCollection',
+            ],
+        );
+
+        const promises = positions.map((position, index) => {
+            return this.getRewardsForPosition(stakingProxies[index], position);
         });
         return Promise.all(promises);
     }
@@ -181,7 +194,9 @@ export class StakingProxyService {
             lpFarmTokenAmount.toFixed(),
         );
 
-        const dualYieldRewards = await this.getRewardsForPosition(position);
+        const [dualYieldRewards] = await this.getBatchRewardsForPosition([
+            position,
+        ]);
 
         return new UnstakeFarmTokensReceiveModel({
             liquidityPosition,
@@ -191,6 +206,7 @@ export class StakingProxyService {
     }
 
     async getRewardsForPosition(
+        stakingProxy: StakingProxyModel,
         position: CalculateRewardsArgs,
     ): Promise<DualYieldRewardsModel> {
         const decodedAttributes = this.decodeDualYieldTokenAttributes({
@@ -202,26 +218,18 @@ export class StakingProxyService {
             ],
         });
 
-        const [farmAddress, stakingFarmAddress, farmTokenID, stakingTokenID] =
-            await Promise.all([
-                this.stakingProxyAbi.lpFarmAddress(position.farmAddress),
-                this.stakingProxyAbi.stakingFarmAddress(position.farmAddress),
-                this.stakingProxyAbi.lpFarmTokenID(position.farmAddress),
-                this.stakingProxyAbi.farmTokenID(position.farmAddress),
-            ]);
-
         const [farmToken, stakingToken] = await Promise.all([
             this.apiService.getNftByTokenIdentifier(
                 position.farmAddress,
                 tokenIdentifier(
-                    farmTokenID,
+                    stakingProxy.lpFarmTokenCollection,
                     decodedAttributes[0].lpFarmTokenNonce,
                 ),
             ),
             this.apiService.getNftByTokenIdentifier(
                 position.farmAddress,
                 tokenIdentifier(
-                    stakingTokenID,
+                    stakingProxy.farmTokenCollection,
                     decodedAttributes[0].stakingFarmTokenNonce,
                 ),
             ),
@@ -235,32 +243,34 @@ export class StakingProxyService {
 
         const [farmRewards, stakingRewards] = await Promise.all([
             this.farmFactory
-                .useService(farmAddress)
+                .useService(stakingProxy.lpFarmAddress)
                 .getBatchRewardsForPosition([
                     {
                         attributes: farmToken.attributes,
                         identifier: farmToken.identifier,
-                        farmAddress,
+                        farmAddress: stakingProxy.lpFarmAddress,
                         user: position.user,
                         liquidity: lpFarmTokenAmount.toFixed(),
                         vmQuery: position.vmQuery,
                     },
                 ]),
-            this.stakingService.getRewardsForPosition({
-                attributes: stakingToken.attributes,
-                identifier: stakingToken.identifier,
-                farmAddress: stakingFarmAddress,
-                user: position.user,
-                liquidity: position.liquidity,
-                vmQuery: position.vmQuery,
-            }),
+            this.stakingService.getBatchRewardsForPosition([
+                {
+                    attributes: stakingToken.attributes,
+                    identifier: stakingToken.identifier,
+                    farmAddress: stakingProxy.stakingFarmAddress,
+                    user: position.user,
+                    liquidity: position.liquidity,
+                    vmQuery: position.vmQuery,
+                },
+            ]),
         ]);
 
         return new DualYieldRewardsModel({
             attributes: position.attributes,
             identifier: position.identifier,
             farmRewards: farmRewards[0],
-            stakingRewards,
+            stakingRewards: stakingRewards[0],
         });
     }
 
