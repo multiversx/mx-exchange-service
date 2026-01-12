@@ -36,6 +36,7 @@ export class StateTasksService {
         private readonly syncService: StateSyncService,
         private readonly cacheService: CacheService,
         private readonly stateService: StateService,
+        @Inject(forwardRef(() => PairsStateService))
         private readonly pairsState: PairsStateService,
         @Inject(forwardRef(() => TokensStateService))
         private readonly tokensState: TokensStateService,

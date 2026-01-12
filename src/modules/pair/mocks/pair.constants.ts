@@ -2,7 +2,6 @@ import { Address } from '@multiversx/sdk-core/out';
 import { scAddress } from 'src/config';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { RolesModel } from 'src/modules/tokens/models/roles.model';
 
 export const Tokens = (tokenID: string): EsdtToken => {
     switch (tokenID) {
