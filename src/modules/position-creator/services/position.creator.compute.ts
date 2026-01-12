@@ -8,9 +8,6 @@ import {
     SwapRouteModel,
 } from 'src/modules/auto-router/models/auto-route.model';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
-import { PairModel } from 'src/modules/pair/models/pair.model';
-import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { StakingPositionSingleTokenModel } from '../models/position.creator.model';
@@ -29,9 +26,7 @@ export type PositionCreatorSingleTokenInput = {
 @Injectable()
 export class PositionCreatorComputeService {
     constructor(
-        private readonly pairAbi: PairAbiService,
         private readonly pairService: PairService,
-        private readonly pairCompute: PairComputeService,
         private readonly routerAbi: RouterAbiService,
         private readonly stakingAbi: StakingAbiService,
         private readonly autoRouterService: AutoRouterService,
@@ -66,30 +61,13 @@ export class PositionCreatorComputeService {
         const acceptedPairedTokensIDs =
             await this.routerAbi.commonTokensForUserPairs();
 
-        const [
-            wrappedTokenID,
-            [pair],
-            // firstToken,
-            // secondToken,
-            // lpTokenID,
-            // firstTokenPriceUSD,
-            // secondTokenPriceUSD,
-            // reserves,
-            // totalFeePercent,
-        ] = await Promise.all([
+        const [wrappedTokenID, [pair]] = await Promise.all([
             this.wrapAbi.wrappedEgldTokenID(),
             this.pairState.getPairsWithTokens(
                 [pairAddress],
                 [],
                 ['identifier', 'decimals', 'price'],
             ),
-            // this.pairService.getFirstToken(pairAddress),
-            // this.pairService.getSecondToken(pairAddress),
-            // this.pairAbi.lpTokenID(pairAddress),
-            // this.pairCompute.firstTokenPriceUSD(pairAddress),
-            // this.pairCompute.secondTokenPriceUSD(pairAddress),
-            // this.pairAbi.pairInfoMetadata(pairAddress),
-            // this.pairAbi.totalFeePercent(pairAddress),
         ]);
 
         const {
@@ -99,13 +77,6 @@ export class PositionCreatorComputeService {
             firstTokenPriceUSD,
             secondTokenPriceUSD,
         } = pair;
-
-        // const [pair] = await this.pairState.getPairsWithTokens(
-        //     [pairAddress],
-        //     [],
-        //     ['identifier', 'decimals', 'price'],
-        // );
-
         if (payment.tokenIdentifier === lpTokenID) {
             return [];
         }
@@ -194,12 +165,6 @@ export class PositionCreatorComputeService {
                 [tokenIn.identifier, tokenOut.identifier],
                 [amount0.toFixed(), amount1.toFixed()],
             );
-
-        // const [pair] = await this.pairState.getPairsWithTokens(
-        //     [pairAddress],
-        //     [],
-        //     ['identifier', 'decimals', 'price'],
-        // );
 
         swapRoutes.push(
             new SwapRouteModel({
