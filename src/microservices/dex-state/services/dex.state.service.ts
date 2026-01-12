@@ -52,8 +52,6 @@ import {
     BoostedYieldsFactors,
     FarmModel,
 } from 'src/modules/farm/models/farm.v2.model';
-import { DexStateRewardsComputeService } from './dex.state.rewards.compute.service';
-import { DexStateFarmsComputeService } from './dex.state.farms.compute.service';
 import { constantsConfig, scAddress } from 'src/config';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
@@ -109,11 +107,7 @@ export class DexStateService implements OnModuleInit {
 
     private initialized = false;
 
-    constructor(
-        private readonly cacheService: CacheService,
-        private readonly rewardsCompute: DexStateRewardsComputeService,
-        private readonly farmsCompute: DexStateFarmsComputeService,
-    ) {
+    constructor(private readonly cacheService: CacheService) {
         this.bulkUpdatesService = new BulkUpdatesService();
     }
 
@@ -160,8 +154,6 @@ export class DexStateService implements OnModuleInit {
         this.usdcPrice = usdcPrice;
         this.commonTokenIDs = commonTokenIDs;
 
-        // todo : validate token type
-
         for (const token of tokens) {
             this.tokens.set(token.identifier, { ...token });
             this.tokensByType
@@ -179,13 +171,6 @@ export class DexStateService implements OnModuleInit {
             });
 
             this.pairs.set(pair.address, { ...pair });
-
-            // if (
-            //     pair.address ===
-            //     'erd1qqqqqqqqqqqqqpgqzw0d0tj25qme9e4ukverjjjqle6xamay0n4s5r0v9g'
-            // ) {
-            //     console.log(this.pairs.get(pair.address));
-            // }
 
             if (!this.tokenPairs.has(pair.firstTokenId)) {
                 this.tokenPairs.set(pair.firstTokenId, []);
