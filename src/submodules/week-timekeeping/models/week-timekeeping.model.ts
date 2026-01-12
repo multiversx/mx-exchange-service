@@ -6,10 +6,10 @@ export class WeekTimekeepingModel {
     scAddress: string;
 
     @Field()
-    firstWeekStartEpoch: number
+    firstWeekStartEpoch: number;
 
     @Field()
-    currentWeek: number
+    currentWeek: number;
 
     @Field()
     startEpochForWeek: number;
@@ -18,22 +18,6 @@ export class WeekTimekeepingModel {
     endEpochForWeek: number;
 
     constructor(init?: Partial<WeekTimekeepingModel>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
-export class WeekForEpochModel {
-    @Field()
-    scAddress: string;
-
-    @Field()
-    epoch: number
-
-    @Field()
-    week: number
-
-    constructor(init?: Partial<WeekForEpochModel>) {
         Object.assign(this, init);
     }
 }

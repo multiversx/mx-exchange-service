@@ -26,7 +26,7 @@ export class FeesCollectorModel {
     lastGlobalUpdateWeek: number;
 
     @Field(() => [GlobalInfoByWeekModel])
-    undistributedRewards: [GlobalInfoByWeekModel];
+    undistributedRewards: GlobalInfoByWeekModel[];
 
     @Field(() => [String])
     allTokens: string[];
@@ -35,10 +35,10 @@ export class FeesCollectorModel {
     knownContracts: string[];
 
     @Field(() => [EsdtTokenPayment])
-    accumulatedFees: [EsdtTokenPayment];
+    accumulatedFees: EsdtTokenPayment[];
 
     @Field(() => [EsdtTokenPayment])
-    rewardsClaimed: [EsdtTokenPayment];
+    rewardsClaimed: EsdtTokenPayment[];
 
     @Field()
     lockedTokenId: string;

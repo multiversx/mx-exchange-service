@@ -273,6 +273,18 @@ export class PairSetterService extends GenericSetterService {
         );
     }
 
+    async setPrevious24hVolumeUSD(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('previous24hVolumeUSD', pairAddress),
+            value,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
+        );
+    }
+
     async setFeesUSD(
         pairAddress: string,
         value: string,
@@ -280,6 +292,30 @@ export class PairSetterService extends GenericSetterService {
     ): Promise<string> {
         return await this.setData(
             this.getCacheKey('feesUSD', pairAddress, time),
+            value,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
+        );
+    }
+
+    async setPrevious24hFeesUSD(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('previous24hFeesUSD', pairAddress),
+            value,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
+        );
+    }
+
+    async setPrevious24hLockedValueUSD(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('previous24hLockedValueUSD', pairAddress),
             value,
             CacheTtlInfo.Analytics.remoteTtl,
             CacheTtlInfo.Analytics.localTtl,

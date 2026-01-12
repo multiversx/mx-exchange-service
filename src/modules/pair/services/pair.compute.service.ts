@@ -438,8 +438,8 @@ export class PairComputeService implements IPairComputeService {
     })
     @GetOrSetCache({
         baseKey: 'pair',
-        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
-        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+        remoteTtl: CacheTtlInfo.Analytics.remoteTtl,
+        localTtl: CacheTtlInfo.Analytics.localTtl,
     })
     async previous24hLockedValueUSD(pairAddress: string): Promise<string> {
         return this.computePrevious24hLockedValueUSD(pairAddress);

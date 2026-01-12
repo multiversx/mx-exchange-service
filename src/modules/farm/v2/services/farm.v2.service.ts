@@ -3,11 +3,15 @@ import { CacheService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { FarmServiceBase } from '../../base-module/services/farm.base.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
-import { CalculateRewardsArgs } from '../../models/farm.args';
-import { BoostedRewardsModel, RewardsModel } from '../../models/farm.model';
+import { CalculateRewardsArgs, FarmsFilter } from '../../models/farm.args';
+import {
+    BoostedRewardsModel,
+    FarmVersion,
+    RewardsModel,
+} from '../../models/farm.model';
 import { FarmTokenAttributesModelV2 } from '../../models/farmTokenAttributes.model';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
-import { FarmTokenAttributesV2 } from '@multiversx/sdk-exchange';
+import { EnergyType, FarmTokenAttributesV2 } from '@multiversx/sdk-exchange';
 import BigNumber from 'bignumber.js';
 import {
     ClaimProgress,
@@ -17,6 +21,10 @@ import { constantsConfig } from '../../../../config';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { CollectionType } from 'src/modules/common/collection.type';
+import { FarmModel } from '../../models/farm.v2.model';
+import { FarmsStateService } from 'src/modules/dex-state/services/farms.state.service';
+import { farmsAddresses } from 'src/utils/farm.utils';
 
 @Injectable()
 export class FarmServiceV2 extends FarmServiceBase {
@@ -26,9 +34,11 @@ export class FarmServiceV2 extends FarmServiceBase {
         protected readonly farmCompute: FarmComputeServiceV2,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CacheService,
+        @Inject(forwardRef(() => TokenService))
         protected readonly tokenService: TokenService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly farmsState: FarmsStateService,
     ) {
         super(
             farmAbi,
@@ -37,6 +47,22 @@ export class FarmServiceV2 extends FarmServiceBase {
             cachingService,
             tokenService,
         );
+    }
+
+    async getFilteredFarms(
+        offset: number,
+        limit: number,
+        filters: FarmsFilter,
+    ): Promise<CollectionType<FarmModel>> {
+        const result =
+            !filters.addresses || filters.addresses.length === 0
+                ? await this.farmsState.getAllFarms()
+                : await this.farmsState.getFarms(filters.addresses);
+
+        return new CollectionType({
+            count: farmsAddresses([FarmVersion.V2]).length,
+            items: result,
+        });
     }
 
     async getBatchRewardsForPosition(
@@ -56,13 +82,144 @@ export class FarmServiceV2 extends FarmServiceBase {
             boostedPositions.set(position.farmAddress, boostedPosition);
         });
 
-        const promises = positions.map((position) =>
-            this.getRewardsForPosition(
-                position,
-                boostedPositions.get(position.farmAddress) === position,
+        const [farms, currentEpoch, currentNonce] = await Promise.all([
+            this.farmsState.getFarms(
+                positions.map((position) => position.farmAddress),
+                [
+                    'address',
+                    'minimumFarmingEpochs',
+                    'time',
+                    'accumulatedRewards',
+                    'divisionSafetyConstant',
+                    'boosterRewards',
+                    'boostedYieldsFactors',
+                    'boostedYieldsRewardsPercenatage',
+                    'lastRewardBlockNonce',
+                    'perBlockRewards',
+                    'rewardPerShare',
+                    'produceRewardsEnabled',
+                    'farmTokenSupply',
+                    'farmTokenSupplyCurrentWeek',
+                ],
+            ),
+            this.contextGetter.getCurrentEpoch(),
+            this.contextGetter.getShardCurrentBlockNonce(1),
+        ]);
+
+        return Promise.all(
+            positions.map((position, index) =>
+                this.computeRewardsForPosition(
+                    farms[index],
+                    currentEpoch,
+                    currentNonce,
+                    position,
+                    boostedPositions.get(position.farmAddress) === position,
+                ),
             ),
         );
-        return Promise.all(promises);
+    }
+
+    async computeRewardsForPosition(
+        farm: FarmModel,
+        currentEpoch: number,
+        currentNonce: number,
+        position: CalculateRewardsArgs,
+        computeBoosted = false,
+    ): Promise<RewardsModel> {
+        const farmTokenAttributes = FarmTokenAttributesV2.fromAttributes(
+            position.attributes,
+        );
+        let rewards: BigNumber;
+        if (position.vmQuery) {
+            rewards = await this.farmAbi.calculateRewardsForGivenPosition(
+                position,
+            );
+        } else {
+            rewards = this.farmCompute.computeRewardsForPosition(
+                farm,
+                position,
+                farmTokenAttributes.rewardPerShare,
+                currentNonce,
+            );
+        }
+
+        let modelsList: UserInfoByWeekModel[] = undefined;
+        let currentClaimProgress: ClaimProgress = undefined;
+        let userAccumulatedRewards: string = undefined;
+        if (computeBoosted) {
+            const currentWeek = farm.time.currentWeek;
+            modelsList = [];
+
+            let lastActiveWeekUser = 0;
+            let userEnergyForWeek: EnergyType;
+            let userTotalFarmPosition: string;
+
+            [
+                lastActiveWeekUser,
+                currentClaimProgress,
+                userEnergyForWeek,
+                userTotalFarmPosition,
+            ] = await Promise.all([
+                this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
+                    position.farmAddress,
+                    position.user,
+                ),
+                this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    position.farmAddress,
+                    position.user,
+                ),
+                this.weeklyRewardsSplittingAbi.userEnergyForWeek(
+                    position.farmAddress,
+                    position.user,
+                    currentWeek,
+                ),
+                this.farmAbi.userTotalFarmPosition(
+                    position.farmAddress,
+                    position.user,
+                ),
+            ]);
+
+            userAccumulatedRewards =
+                this.farmCompute.computeUserRewardsForWeekFromState(
+                    farm,
+                    userEnergyForWeek,
+                    userTotalFarmPosition,
+                    currentWeek,
+                );
+
+            const startWeek = Math.max(
+                currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
+                lastActiveWeekUser === 0 ? currentWeek : lastActiveWeekUser,
+            );
+
+            for (let week = startWeek; week <= currentWeek - 1; week++) {
+                if (week < 1) {
+                    continue;
+                }
+                const model = new UserInfoByWeekModel({
+                    scAddress: position.farmAddress,
+                    userAddress: position.user,
+                    week: week,
+                });
+                model.positionAmount = position.liquidity;
+                modelsList.push(model);
+            }
+        }
+
+        const remainingFarmingEpochs = Math.max(
+            0,
+            farm.minimumFarmingEpochs -
+                (currentEpoch - farmTokenAttributes.enteringEpoch),
+        );
+
+        return new RewardsModel({
+            identifier: position.identifier,
+            remainingFarmingEpochs: remainingFarmingEpochs,
+            rewards: rewards.integerValue().toFixed(),
+            boostedRewardsWeeklyInfo: modelsList,
+            claimProgress: currentClaimProgress,
+            accumulatedRewards: userAccumulatedRewards,
+        });
     }
 
     async getRewardsForPosition(

@@ -39,6 +39,7 @@ import {
 } from '../models/staking.args';
 import { SortingOrder } from 'src/modules/common/page.data';
 import { StakingFilteringService } from './staking.filtering.service';
+import { StakingFarmsStateService } from 'src/modules/dex-state/services/staking.farms.state.service';
 
 @Injectable()
 export class StakingService {
@@ -47,6 +48,7 @@ export class StakingService {
         @Inject(forwardRef(() => StakingComputeService))
         private readonly stakingCompute: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
+        @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
         private readonly apiService: MXApiService,
         private readonly remoteConfigGetter: RemoteConfigGetterService,
@@ -54,22 +56,11 @@ export class StakingService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         @Inject(forwardRef(() => StakingFilteringService))
         private readonly stakingFilteringService: StakingFilteringService,
+        private readonly stakingFarmsState: StakingFarmsStateService,
     ) {}
 
     async getFarmsStaking(): Promise<StakingModel[]> {
-        const farmsStakingAddresses =
-            await this.remoteConfigGetter.getStakingAddresses();
-
-        const farmsStaking: StakingModel[] = [];
-        for (const address of farmsStakingAddresses) {
-            farmsStaking.push(
-                new StakingModel({
-                    address,
-                }),
-            );
-        }
-
-        return farmsStaking;
+        return this.stakingFarmsState.getAllStakingFarms();
     }
 
     async getFilteredFarmsStaking(
@@ -124,7 +115,7 @@ export class StakingService {
         const farmingTokenID = await this.stakingAbi.farmingTokenID(
             stakeAddress,
         );
-        return this.tokenService.tokenMetadata(farmingTokenID);
+        return this.tokenService.tokenMetadataFromState(farmingTokenID);
     }
 
     async getAllFarmingTokens(stakeAddresses: string[]): Promise<EsdtToken[]> {
@@ -137,7 +128,7 @@ export class StakingService {
 
     async getRewardToken(stakeAddress: string): Promise<EsdtToken> {
         const rewardTokenID = await this.stakingAbi.rewardTokenID(stakeAddress);
-        return this.tokenService.tokenMetadata(rewardTokenID);
+        return this.tokenService.tokenMetadataFromState(rewardTokenID);
     }
 
     decodeStakingTokenAttributes(
@@ -179,36 +170,65 @@ export class StakingService {
         positions: CalculateRewardsArgs[],
         computeBoosted = false,
     ): Promise<StakingRewardsModel[]> {
-        const promises = positions.map((position) =>
-            this.getRewardsForPosition(position, computeBoosted),
+        const [stakingFarms, currentNonce] = await Promise.all([
+            this.stakingFarmsState.getStakingFarms(
+                positions.map((position) => position.farmAddress),
+                [
+                    'address',
+                    'time',
+                    'rewardPerShare',
+                    'farmTokenSupply',
+                    'divisionSafetyConstant',
+                    'accumulatedRewards',
+                    'rewardCapacity',
+                    'lastRewardBlockNonce',
+                    'perBlockRewards',
+                    'produceRewardsEnabled',
+                    'rewardsPerBlockAPRBound',
+                ],
+            ),
+            this.contextGetter.getShardCurrentBlockNonce(1),
+        ]);
+
+        return Promise.all(
+            positions.map((position, index) =>
+                this.getRewardsForPosition(
+                    stakingFarms[index],
+                    position,
+                    currentNonce,
+                    computeBoosted,
+                ),
+            ),
         );
-        return Promise.all(promises);
     }
 
     async getRewardsForPosition(
-        positon: CalculateRewardsArgs,
+        stakingFarm: StakingModel,
+        position: CalculateRewardsArgs,
+        currentNonce: number,
         computeBoosted = false,
     ): Promise<StakingRewardsModel> {
         const stakeTokenAttributes = this.decodeStakingTokenAttributes({
             batchAttributes: [
                 {
-                    attributes: positon.attributes,
-                    identifier: positon.identifier,
+                    attributes: position.attributes,
+                    identifier: position.identifier,
                 },
             ],
         });
         let rewards: BigNumber;
-        if (positon.vmQuery) {
+        if (position.vmQuery) {
             rewards = await this.stakingAbi.calculateRewardsForGivenPosition(
-                positon.farmAddress,
-                positon.liquidity,
-                positon.attributes,
+                position.farmAddress,
+                position.liquidity,
+                position.attributes,
             );
         } else {
-            rewards = await this.stakingCompute.computeStakeRewardsForPosition(
-                positon.farmAddress,
-                positon.liquidity,
+            rewards = this.stakingCompute.computeStakeRewardsForPosition(
+                stakingFarm,
+                position.liquidity,
                 stakeTokenAttributes[0],
+                currentNonce,
             );
         }
 
@@ -216,15 +236,22 @@ export class StakingService {
         let currentClaimProgress: ClaimProgress = undefined;
         let userAccumulatedRewards: string = undefined;
         if (computeBoosted) {
-            const currentWeek = await this.weekTimekeepingAbi.currentWeek(
-                positon.farmAddress,
-            );
+            const currentWeek = stakingFarm.time.currentWeek;
+
+            let lastActiveWeekUser = 0;
             modelsList = [];
-            let lastActiveWeekUser =
-                await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
-                    positon.farmAddress,
-                    positon.user,
-                );
+
+            [lastActiveWeekUser, currentClaimProgress] = await Promise.all([
+                this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
+                    position.farmAddress,
+                    position.user,
+                ),
+                this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                    position.farmAddress,
+                    position.user,
+                ),
+            ]);
+
             if (lastActiveWeekUser === 0) {
                 lastActiveWeekUser = currentWeek;
             }
@@ -238,24 +265,18 @@ export class StakingService {
                     continue;
                 }
                 const model = new UserInfoByWeekModel({
-                    scAddress: positon.farmAddress,
-                    userAddress: positon.user,
+                    scAddress: position.farmAddress,
+                    userAddress: position.user,
                     week: week,
                 });
-                model.positionAmount = positon.liquidity;
+                model.positionAmount = position.liquidity;
                 modelsList.push(model);
             }
 
-            currentClaimProgress =
-                await this.weeklyRewardsSplittingAbi.currentClaimProgress(
-                    positon.farmAddress,
-                    positon.user,
-                );
-
             userAccumulatedRewards =
                 await this.stakingCompute.userAccumulatedRewards(
-                    positon.farmAddress,
-                    positon.user,
+                    position.farmAddress,
+                    position.user,
                     currentWeek,
                 );
         }

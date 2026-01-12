@@ -1,10 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { PairService } from './services/pair.service';
-import {
-    PairCompoundedAPRResolver,
-    PairResolver,
-    PairRewardTokensResolver,
-} from './pair.resolver';
+import { PairResolver } from './pair.resolver';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairTransactionService } from './services/pair.transactions.service';
 import { ContextModule } from '../../services/context/context.module';
@@ -27,6 +23,8 @@ import { EnergyModule } from '../energy/energy.module';
 import { PairAbiLoader } from './services/pair.abi.loader';
 import { PairComputeLoader } from './services/pair.compute.loader';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { StateModule } from '../dex-state/state.module';
+import { StateDataLoaderModule } from '../dex-state/state.dataloader.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -44,6 +42,8 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
         StakingModule,
         EnergyModule,
         ElasticSearchModule,
+        StateModule,
+        StateDataLoaderModule,
     ],
     providers: [
         PairService,
@@ -55,9 +55,6 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
         PairAbiLoader,
         PairComputeLoader,
         PairResolver,
-        PairFilteringService,
-        PairCompoundedAPRResolver,
-        PairRewardTokensResolver,
     ],
     exports: [
         PairService,

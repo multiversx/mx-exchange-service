@@ -22,7 +22,8 @@ export class EnergyService {
 
     async getBaseAssetToken(): Promise<EsdtToken> {
         const tokenID = await this.energyAbi.baseAssetTokenID();
-        return this.tokenService.tokenMetadata(tokenID);
+        // return this.tokenService.tokenMetadata(tokenID);
+        return this.tokenService.tokenMetadataFromState(tokenID);
     }
 
     async getLockedToken(): Promise<NftCollection> {

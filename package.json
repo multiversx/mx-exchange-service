@@ -23,7 +23,8 @@
         "typeorm:run-migrations": "npm run typeorm migration:run -- -d ./src/services/analytics/timescaledb/migration/typeOrm.config.ts",
         "typeorm:generate-migration": "npm run typeorm -- -d ./src/services/analytics/timescaledb/migration/typeOrm.config.ts migration:generate ./src/services/analytics/timescaledb/migration/xExchange",
         "typeorm:create-migration": "npm run typeorm -- migration:create ./src/services/analytics/timescaledb/migration/xExchange",
-        "typeorm:revert-migration": "npm run typeorm -- -d ./src/services/analytics/timescaledb/migration/typeOrm.config.ts migration:revert"
+        "typeorm:revert-migration": "npm run typeorm -- -d ./src/services/analytics/timescaledb/migration/typeOrm.config.ts migration:revert",
+        "proto:gen": "protoc -I=proto --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.interfaces proto/*.proto"
     },
     "dependencies": {
         "@apollo/gateway": "^2.5.4",
@@ -31,9 +32,12 @@
         "@datastructures-js/priority-queue": "^6.1.0",
         "@elastic/elasticsearch": "7.12.0",
         "@golevelup/nestjs-rabbitmq": "^4.0.0",
+        "@grpc/grpc-js": "^1.14.1",
+        "@grpc/proto-loader": "^0.8.0",
+        "@grpc/reflection": "^1.0.4",
         "@isaacs/ttlcache": "^1.4.1",
         "@multiversx/sdk-core": "^13.15.3",
-        "@multiversx/sdk-exchange": "^0.2.23",
+        "@multiversx/sdk-exchange": "^0.2.24",
         "@multiversx/sdk-native-auth-server": "1.0.19",
         "@multiversx/sdk-nestjs-cache": "^4.2.0",
         "@multiversx/sdk-nestjs-common": "^4.2.0",
@@ -90,6 +94,7 @@
         "rxjs": "^7.5.5",
         "ts-mixer": "^6.0.1",
         "ts-morph": "^19.0.0",
+        "ts-proto": "^2.8.3",
         "typeorm": "^0.3.12",
         "winston": "^3.7.2",
         "winston-transport": "^4.5.0"

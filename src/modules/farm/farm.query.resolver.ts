@@ -1,6 +1,12 @@
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, UsePipes } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
+import { relayQueryEstimator } from 'src/helpers/complexity/query.estimators';
+import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
 import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
+import ConnectionArgs, {
+    getPagingParameters,
+} from '../common/filters/connection.args';
+import PageResponse from '../common/page.response';
 import { FarmFactoryService } from './farm.factory';
 import {
     BatchFarmRewardsComputeArgs,
@@ -9,6 +15,8 @@ import {
 } from './models/farm.args';
 import { ExitFarmTokensModel, RewardsModel } from './models/farm.model';
 import { FarmsUnion } from './models/farm.union';
+import { FarmModel } from './models/farm.v2.model';
+import { FarmsResponse } from './models/farms.response';
 import { FarmTokenAttributesUnion } from './models/farmTokenAttributes.model';
 
 @Resolver()
@@ -25,6 +33,37 @@ export class FarmQueryResolver {
         filters: FarmsFilter,
     ): Promise<Array<typeof FarmsUnion>> {
         return this.farmFactory.getFarms(filters);
+    }
+
+    @Query(() => FarmsResponse, {
+        complexity: relayQueryEstimator,
+    })
+    @UsePipes(new QueryArgsValidationPipe())
+    async filteredFarms(
+        @Args({ name: 'filters', type: () => FarmsFilter, nullable: true })
+        filters: FarmsFilter,
+        @Args({
+            name: 'pagination',
+            type: () => ConnectionArgs,
+            nullable: true,
+        })
+        pagination: ConnectionArgs,
+    ): Promise<FarmsResponse> {
+        const { limit, offset } = getPagingParameters(pagination);
+
+        const response = await this.farmFactory.getFilteredFarms(
+            offset,
+            limit,
+            filters,
+        );
+
+        return PageResponse.mapResponse<FarmModel>(
+            response?.items || [],
+            pagination ?? new ConnectionArgs(),
+            response?.count || 0,
+            offset,
+            limit,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

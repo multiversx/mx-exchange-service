@@ -9,8 +9,9 @@ import { FarmServiceV1_2 } from './v1.2/services/farm.v1.2.service';
 import { FarmServiceV1_3 } from './v1.3/services/farm.v1.3.service';
 import { FarmServiceV2 } from './v2/services/farm.v2.service';
 import { FarmServiceBase } from './base-module/services/farm.base.service';
-import { FarmModelV2 } from './models/farm.v2.model';
+import { FarmModel, FarmModelV2 } from './models/farm.v2.model';
 import { FarmsFilter } from './models/farm.args';
+import { CollectionType } from '../common/collection.type';
 
 @Injectable()
 export class FarmFactoryService {
@@ -19,6 +20,14 @@ export class FarmFactoryService {
         private readonly farmServiceV1_3: FarmServiceV1_3,
         private readonly farmServiceV2: FarmServiceV2,
     ) {}
+
+    async getFilteredFarms(
+        offset: number,
+        limit: number,
+        filters: FarmsFilter,
+    ): Promise<CollectionType<FarmModel>> {
+        return this.farmServiceV2.getFilteredFarms(offset, limit, filters);
+    }
 
     getFarms(filters?: FarmsFilter): Array<typeof FarmsUnion> {
         const farms: Array<typeof FarmsUnion> = [];

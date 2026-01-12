@@ -1,6 +1,10 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { BoostedYieldsFactors, FarmModelV2 } from '../models/farm.v2.model';
-import { FarmResolver } from '../base-module/farm.resolver';
+import {
+    BoostedYieldsFactors,
+    FarmModel,
+    FarmModelV2,
+} from '../models/farm.v2.model';
+import { BaseFarmResolver } from '../base-module/farm.resolver';
 import { FarmServiceV2 } from './services/farm.v2.service';
 import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
@@ -25,6 +29,10 @@ import { Logger } from 'winston';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { FarmAbiLoaderV2 } from './services/farm.v2.abi.loader';
 import { FarmComputeLoaderV2 } from './services/farm.v2.compute.loader';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { StateDataLoader } from 'src/modules/dex-state/services/state.dataloader';
 
 @Resolver(() => BoostedRewardsModel)
 export class FarmBoostedRewardsResolver {
@@ -97,7 +105,7 @@ export class FarmBoostedRewardsResolver {
 }
 
 @Resolver(() => FarmModelV2)
-export class FarmResolverV2 extends FarmResolver {
+export class FarmResolverV2 extends BaseFarmResolver {
     constructor(
         protected readonly farmAbi: FarmAbiServiceV2,
         protected readonly farmService: FarmServiceV2,
@@ -291,5 +299,32 @@ export class FarmResolverV2 extends FarmResolver {
             farmsAddresses,
             user.address,
         );
+    }
+}
+
+@Resolver(() => FarmModel)
+export class FarmResolver {
+    constructor(protected readonly stateDataLoader: StateDataLoader) {}
+
+    @ResolveField()
+    async farmedToken(parent: FarmModel): Promise<EsdtToken> {
+        return this.stateDataLoader.loadToken(parent.farmedTokenId);
+    }
+
+    @ResolveField()
+    async farmToken(parent: FarmModel): Promise<NftCollection> {
+        return this.stateDataLoader.loadNft(parent.farmTokenCollection);
+    }
+
+    @ResolveField()
+    async farmingToken(parent: FarmModel): Promise<EsdtToken> {
+        return this.stateDataLoader.loadToken(parent.farmingTokenId);
+    }
+
+    @ResolveField()
+    async pair(parent: FarmModel): Promise<PairModel> {
+        if (parent.pairAddress) {
+            return this.stateDataLoader.loadPair(parent.pairAddress);
+        }
     }
 }

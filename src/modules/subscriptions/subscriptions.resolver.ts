@@ -25,6 +25,10 @@ import { RewardsProxyEventModel } from './models/proxy/rewardsProxy.event.model'
 import { SWAP_IDENTIFIER } from '../rabbitmq/handlers/pair.swap.handler.service';
 import { TradingActivityModel } from '../analytics/models/trading.activity.model';
 import { TradingActivityAction } from '../analytics/models/trading.activity.model';
+import {
+    PriceUpdatesModel,
+    TOKENS_PRICE_UPDATE_EVENT,
+} from '../dex-state/entities';
 
 @Resolver()
 export class SubscriptionsResolver {
@@ -196,5 +200,13 @@ export class SubscriptionsResolver {
         return this.pubSub.asyncIterator(
             SIMPLE_LOCK_ENERGY_EVENTS.ENERGY_UPDATED,
         );
+    }
+
+    @Subscription(() => PriceUpdatesModel, {
+        resolve: (event) =>
+            new PriceUpdatesModel({ updates: event.priceUpdates }),
+    })
+    tokensPriceUpdated() {
+        return this.pubSub.asyncIterator(TOKENS_PRICE_UPDATE_EVENT);
     }
 }

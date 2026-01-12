@@ -9,6 +9,7 @@ import { FeesCollectorModule } from 'src/modules/fees-collector/fees-collector.m
 import { ContextModule } from 'src/services/context/context.module';
 import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
 import { WeekTimekeepingSetterService } from './services/week-timekeeping.setter.service';
+import { StateModule } from 'src/modules/dex-state/state.module';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { WeekTimekeepingSetterService } from './services/week-timekeeping.setter
         forwardRef(() => FarmModuleV2),
         forwardRef(() => FeesCollectorModule),
         RemoteConfigModule,
+        StateModule,
     ],
     providers: [
         ApiConfigService,

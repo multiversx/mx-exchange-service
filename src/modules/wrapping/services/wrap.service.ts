@@ -31,6 +31,6 @@ export class WrapService {
 
     async wrappedEgldToken(): Promise<EsdtToken> {
         const wrappedEgldTokenID = await this.wrapAbi.wrappedEgldTokenID();
-        return this.tokenService.tokenMetadata(wrappedEgldTokenID);
+        return this.tokenService.tokenMetadataFromState(wrappedEgldTokenID);
     }
 }

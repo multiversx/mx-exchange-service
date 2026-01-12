@@ -27,6 +27,11 @@ export class StakingProxyModel {
     @Field({ complexity: nestedFieldComplexity })
     lpFarmToken: NftCollection;
 
+    stakingTokenId: string;
+    farmTokenCollection: string;
+    dualYieldTokenCollection: string;
+    lpFarmTokenCollection: string;
+
     constructor(init?: Partial<StakingProxyModel>) {
         Object.assign(this, init);
     }

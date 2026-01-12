@@ -14,6 +14,7 @@ import { ContextModule } from '../../services/context/context.module';
 import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
 import { EnergyModule } from '../energy/energy.module';
 import { TokenModule } from '../tokens/token.module';
+import { StateModule } from '../dex-state/state.module';
 
 @Module({
     imports: [
@@ -23,6 +24,7 @@ import { TokenModule } from '../tokens/token.module';
         ContextModule,
         EnergyModule,
         TokenModule,
+        StateModule,
     ],
     providers: [
         FeesCollectorService,

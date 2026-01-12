@@ -14,6 +14,7 @@ import { StakingProxyTransactionService } from './services/staking.proxy.transac
 import { StakingProxyResolver } from './staking.proxy.resolver';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { StakingProxyFilteringService } from './services/staking.proxy.filtering.service';
+import { StateModule } from '../dex-state/state.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { StakingProxyFilteringService } from './services/staking.proxy.filtering
         StakingModule,
         TokenModule,
         RemoteConfigModule,
+        StateModule,
     ],
     providers: [
         StakingProxyAbiService,

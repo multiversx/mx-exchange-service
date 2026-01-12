@@ -8,9 +8,6 @@ import {
     SwapRouteModel,
 } from 'src/modules/auto-router/models/auto-route.model';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
-import { PairModel } from 'src/modules/pair/models/pair.model';
-import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { StakingPositionSingleTokenModel } from '../models/position.creator.model';
@@ -19,6 +16,7 @@ import { denominateAmount } from 'src/utils/token.converters';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { constantsConfig, mxConfig } from 'src/config';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
+import { PairsStateService } from 'src/modules/dex-state/services/pairs.state.service';
 
 export type PositionCreatorSingleTokenInput = {
     swapRouteArgs: TypedValue[];
@@ -28,13 +26,12 @@ export type PositionCreatorSingleTokenInput = {
 @Injectable()
 export class PositionCreatorComputeService {
     constructor(
-        private readonly pairAbi: PairAbiService,
         private readonly pairService: PairService,
-        private readonly pairCompute: PairComputeService,
         private readonly routerAbi: RouterAbiService,
         private readonly stakingAbi: StakingAbiService,
         private readonly autoRouterService: AutoRouterService,
         private readonly wrapAbi: WrapAbiService,
+        private readonly pairState: PairsStateService,
     ) {}
 
     async computeSwap(
@@ -64,26 +61,22 @@ export class PositionCreatorComputeService {
         const acceptedPairedTokensIDs =
             await this.routerAbi.commonTokensForUserPairs();
 
-        const [
-            wrappedTokenID,
-            firstToken,
-            secondToken,
-            lpTokenID,
-            firstTokenPriceUSD,
-            secondTokenPriceUSD,
-            reserves,
-            totalFeePercent,
-        ] = await Promise.all([
+        const [wrappedTokenID, [pair]] = await Promise.all([
             this.wrapAbi.wrappedEgldTokenID(),
-            this.pairService.getFirstToken(pairAddress),
-            this.pairService.getSecondToken(pairAddress),
-            this.pairAbi.lpTokenID(pairAddress),
-            this.pairCompute.firstTokenPriceUSD(pairAddress),
-            this.pairCompute.secondTokenPriceUSD(pairAddress),
-            this.pairAbi.pairInfoMetadata(pairAddress),
-            this.pairAbi.totalFeePercent(pairAddress),
+            this.pairState.getPairsWithTokens(
+                [pairAddress],
+                [],
+                ['identifier', 'decimals', 'price'],
+            ),
         ]);
 
+        const {
+            firstToken,
+            secondToken,
+            liquidityPoolTokenId: lpTokenID,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+        } = pair;
         if (payment.tokenIdentifier === lpTokenID) {
             return [];
         }
@@ -182,13 +175,14 @@ export class PositionCreatorComputeService {
                 amountOut: amount1.toFixed(),
                 tokenRoute: [tokenIn.identifier, tokenOut.identifier],
                 pairs: [
-                    new PairModel({
-                        address: pairAddress,
-                        firstToken,
-                        secondToken,
-                        info: reserves,
-                        totalFeePercent,
-                    }),
+                    pair,
+                    // new PairModel({
+                    //     address: pairAddress,
+                    //     firstToken,
+                    //     secondToken,
+                    //     info: reserves,
+                    //     totalFeePercent,
+                    // }),
                 ],
                 intermediaryAmounts: [amount0.toFixed(), amount1.toFixed()],
                 tolerance: tolerance,

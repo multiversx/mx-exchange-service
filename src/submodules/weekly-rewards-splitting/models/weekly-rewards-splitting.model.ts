@@ -27,7 +27,7 @@ export class GlobalInfoByWeekModel {
     apr: string;
 
     @Field(() => [EsdtTokenPayment], { complexity: nestedFieldComplexity })
-    totalRewardsForWeek: [EsdtTokenPayment];
+    totalRewardsForWeek: EsdtTokenPayment[];
 
     @Field(() => [
         TokenDistributionModel,

@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package dex_state;
+
+message PairInfo {
+  string reserves0 = 1;
+  string reserves1 = 2;
+  string totalSupply= 3;
+}
+
+message FeeDestination {
+  string address = 1;
+  string tokenID = 2;
+}
+
+message PairCompoundedAPR {
+  string feesAPR = 1;
+  string farmBaseAPR = 2;
+  string farmBoostedAPR = 3;
+  string dualFarmBaseAPR = 4;
+  string dualFarmBoostedAPR = 5;
+}
+
+message LockedTokensInfo {
+  string lockingScAddress = 1;
+  uint32 unlockEpoch = 2;
+  uint32 lockingDeadlineEpoch = 3;
+}
+
+message Pair {
+  string address = 1;
+
+  string firstTokenId = 2;
+  string firstTokenPrice = 3;
+  string firstTokenPriceUSD = 4;
+  string firstTokenLockedValueUSD = 5;
+
+  string secondTokenId = 6;
+  string secondTokenPrice = 7;
+  string secondTokenPriceUSD = 8;
+  string secondTokenLockedValueUSD = 9;
+
+  string liquidityPoolTokenId = 10;
+  string liquidityPoolTokenPriceUSD = 11;
+  string lockedValueUSD = 12;
+
+  string previous24hLockedValueUSD = 13;
+  string firstTokenVolume24h = 14;
+  string secondTokenVolume24h = 15;
+  string volumeUSD24h = 16;
+  string previous24hVolumeUSD = 17;
+
+  string feesUSD24h = 18;
+  string previous24hFeesUSD = 19;
+  string feesAPR = 20;
+
+  PairInfo info = 21;
+
+  double totalFeePercent = 22;
+  double specialFeePercent = 23;
+  double feesCollectorCutPercentage = 24;
+
+  repeated string trustedSwapPairs = 25;
+
+  string type = 26;
+  string state = 27;
+  bool feeState = 28;
+
+  repeated string whitelistedManagedAddresses = 29;
+
+  string initialLiquidityAdder = 30;
+  repeated FeeDestination feeDestinations = 31;
+
+  bool hasFarms = 32;
+  bool hasDualFarms = 33;
+
+  uint32 tradesCount = 34;
+  uint32 tradesCount24h = 35;
+
+  uint32 deployedAt = 36;
+
+  PairCompoundedAPR compoundedAPR = 37;
+  string compoundedAprValue = 38;
+
+  string farmAddress = 39;
+  string farmRewardCollection = 40;
+  string stakingProxyAddress = 41;
+  string dualFarmRewardTokenId = 42;
+  string stakingFarmAddress = 43;
+  string feesCollectorAddress = 44;
+  LockedTokensInfo lockedTokensInfo = 45;
+}
+
+

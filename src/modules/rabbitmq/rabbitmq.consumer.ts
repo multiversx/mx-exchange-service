@@ -102,6 +102,7 @@ export class RabbitMqConsumer {
     @CompetingRabbitConsumer({
         queueName: process.env.RABBITMQ_QUEUE,
         exchange: process.env.RABBITMQ_EXCHANGE,
+        channel: 'channel-events',
     })
     async consumeEvents(rawEvents: any) {
         if (!rawEvents.events) {

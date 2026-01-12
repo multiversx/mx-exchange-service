@@ -466,4 +466,34 @@ export class ApiConfigService {
         }
         return walletPassword;
     }
+
+    isStateMicroserviceActive(): boolean {
+        const stateMicroserviceActive = this.configService.get<string>(
+            'ENABLE_STATE_MICROSERVICE',
+        );
+        if (!stateMicroserviceActive) {
+            return false;
+        }
+        return stateMicroserviceActive === 'true';
+    }
+
+    getStateMicroserviceServerUrl(): string {
+        const url = this.configService.get<string>(
+            'STATE_MICROSERVICE_SERVER_URL',
+        );
+        if (!url) {
+            throw new Error('No STATE_MICROSERVICE_SERVER_URL present');
+        }
+        return url;
+    }
+
+    getStateMicroserviceClientUrl(): string {
+        const url = this.configService.get<string>(
+            'STATE_MICROSERVICE_CLIENT_URL',
+        );
+        if (!url) {
+            throw new Error('No STATE_MICROSERVICE_CLIENT_URL present');
+        }
+        return url;
+    }
 }

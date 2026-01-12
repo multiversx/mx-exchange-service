@@ -14,7 +14,7 @@ import { FarmAbiLoader } from './services/farm.abi.loader';
 import { FarmComputeLoader } from './services/farm.compute.loader';
 
 @Resolver(() => BaseFarmModel)
-export class FarmResolver {
+export class BaseFarmResolver {
     constructor(
         protected readonly farmAbi: FarmAbiService,
         protected readonly farmService: FarmServiceBase,

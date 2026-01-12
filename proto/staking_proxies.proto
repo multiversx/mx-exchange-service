@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package dex_state;
+
+message StakingProxy {
+  string address = 1;
+  string lpFarmAddress = 2;
+  string stakingFarmAddress = 3;
+  string pairAddress = 4;
+  uint32 stakingMinUnboundEpochs = 5;
+  string stakingTokenId = 6;
+  string farmTokenCollection = 7;
+  string dualYieldTokenCollection = 8;
+  string lpFarmTokenCollection = 9;
+}

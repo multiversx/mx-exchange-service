@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package dex_state;
+
+import "weekly_rewards.proto";
+
+message FeesCollector {
+  string address                            = 1;
+  WeekTimekeeping time                      = 2;
+  uint32 startWeek                          = 3;
+  uint32 endWeek                            = 4;
+  uint32 lastGlobalUpdateWeek               = 5;
+  repeated GlobalInfo undistributedRewards  = 6;
+  repeated string allTokens                 = 7;
+  repeated string knownContracts            = 8;
+  repeated EsdtTokenPayment accumulatedFees = 9;
+  repeated EsdtTokenPayment rewardsClaimed  = 10;
+  string lockedTokenId                      = 11;
+  string lockedTokensPerBlock               = 12;
+  string lockedTokensPerEpoch               = 13;
+  uint32 lastLockedTokensAddWeek            = 14;
+}

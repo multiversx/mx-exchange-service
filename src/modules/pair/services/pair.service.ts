@@ -285,7 +285,7 @@ export class PairService {
         return this.computeLiquidityPosition(pairInfo, amount);
     }
 
-    private computeLiquidityPosition(
+    computeLiquidityPosition(
         pairInfo: PairInfoModel,
         amount: string,
     ): LiquidityPosition {

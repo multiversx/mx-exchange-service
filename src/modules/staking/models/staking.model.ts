@@ -74,7 +74,7 @@ export class StakingModel {
         description: 'Global info for boosted rewards',
         complexity: nestedFieldComplexity,
     })
-    boosterRewards: [GlobalInfoByWeekModel];
+    boosterRewards: GlobalInfoByWeekModel[];
     @Field()
     lastGlobalUpdateWeek: number;
     @Field()
@@ -94,6 +94,17 @@ export class StakingModel {
     stakingPositionMigrationNonce: number;
     @Field(() => Int)
     deployedAt: number;
+
+    farmTokenCollection: string;
+    farmTokenDecimals: number;
+    farmingTokenId: string;
+    rewardTokenId: string;
+    baseApr: string;
+    maxBoostedApr: string;
+    rewardsPerBlockAPRBound: string;
+    isProducingRewards: boolean;
+    farmingTokenPriceUSD: string;
+    stakedValueUSD: string;
 
     constructor(init?: Partial<StakingModel>) {
         Object.assign(this, init);
