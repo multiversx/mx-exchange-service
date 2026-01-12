@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RouterService } from '../services/router.service';
 import { PairFilterArgs } from '../models/filter.args';
 import { PairModel } from 'src/modules/pair/models/pair.model';
-import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
 import { Address } from '@multiversx/sdk-core/out';
 import { ConfigModule } from '@nestjs/config';
@@ -10,13 +9,7 @@ import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
-import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
-import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
-import { PairServiceProvider } from 'src/modules/pair/mocks/pair.service.mock';
-import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
-import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
-import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
-import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/dex-state/mocks/pairs.state.service.mock';
 
 describe('RouterService', () => {
     let module: TestingModule;
@@ -31,17 +24,10 @@ describe('RouterService', () => {
                 DynamicModuleUtils.getCacheModule(),
             ],
             providers: [
-                PairAbiServiceProvider,
                 RouterAbiServiceProvider,
-                PairComputeServiceProvider,
                 RouterService,
                 ApiConfigService,
-                PairFilteringService,
-                PairServiceProvider,
-                WrapAbiServiceProvider,
-                TokenServiceProvider,
-                ContextGetterServiceProvider,
-                MXApiServiceProvider,
+                PairsStateServiceProvider,
             ],
         }).compile();
     });

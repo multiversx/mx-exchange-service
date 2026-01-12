@@ -31,13 +31,14 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
-import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { gasConfig, scAddress } from 'src/config';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { SmartRouterServiceProvider } from '../mocks/smart.router.service.mock';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/dex-state/mocks/pairs.state.service.mock';
+import { TokensStateServiceProvider } from 'src/modules/dex-state/mocks/tokens.state.service.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -91,10 +92,11 @@ describe('AutoRouterService', () => {
                 ComposableTasksTransactionService,
                 ApiConfigService,
                 MXApiServiceProvider,
-                PairFilteringService,
                 SmartRouterServiceProvider,
                 SmartRouterEvaluationServiceProvider,
                 ComposableTasksAbiServiceProvider,
+                PairsStateServiceProvider,
+                TokensStateServiceProvider,
             ],
             exports: [],
         }).compile();

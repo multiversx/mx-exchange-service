@@ -12,12 +12,11 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { CacheService } from 'src/services/caching/cache.service';
-import { TokenComputeServiceProvider } from '../mocks/token.compute.service.mock';
-import { TokenFilteringService } from '../services/token.filtering.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { TokensStateServiceProvider } from 'src/modules/dex-state/mocks/tokens.state.service.mock';
 
 describe('TokenService', () => {
     let module: TestingModule;
@@ -41,9 +40,8 @@ describe('TokenService', () => {
                 MXApiServiceProvider,
                 TokenService,
                 ApiConfigService,
-                TokenComputeServiceProvider,
-                TokenFilteringService,
                 ContextGetterServiceProvider,
+                TokensStateServiceProvider,
             ],
         }).compile();
     });
