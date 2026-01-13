@@ -18,7 +18,6 @@ import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/rem
 import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
-import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
