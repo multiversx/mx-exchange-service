@@ -18,10 +18,15 @@ export class StakingModel {
     address: string;
     @Field({ complexity: nestedFieldComplexity })
     farmToken: NftCollection;
+    farmTokenCollection: string;
+    farmTokenDecimals: number;
     @Field({ complexity: nestedFieldComplexity })
     farmingToken: EsdtToken;
+    farmingTokenId: string;
+    farmingTokenPriceUSD: string;
     @Field({ complexity: nestedFieldComplexity })
     rewardToken: EsdtToken;
+    rewardTokenId: string;
     @Field()
     farmTokenSupply: string;
     @Field()
@@ -38,6 +43,9 @@ export class StakingModel {
     aprUncapped: string;
     @Field()
     boostedApr: string;
+    baseApr: string;
+    maxBoostedApr: string;
+    rewardsPerBlockAPRBound: string;
     @Field(() => Int)
     minUnboundEpochs: number;
     @Field()
@@ -74,7 +82,7 @@ export class StakingModel {
         description: 'Global info for boosted rewards',
         complexity: nestedFieldComplexity,
     })
-    boosterRewards: [GlobalInfoByWeekModel];
+    boosterRewards: GlobalInfoByWeekModel[];
     @Field()
     lastGlobalUpdateWeek: number;
     @Field()
@@ -94,6 +102,8 @@ export class StakingModel {
     stakingPositionMigrationNonce: number;
     @Field(() => Int)
     deployedAt: number;
+    isProducingRewards: boolean;
+    stakedValueUSD: string;
 
     constructor(init?: Partial<StakingModel>) {
         Object.assign(this, init);

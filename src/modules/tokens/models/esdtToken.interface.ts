@@ -27,8 +27,8 @@ export abstract class IEsdtToken {
     @Field({ complexity: 0 }) canPause: boolean;
     @Field({ complexity: 0 }) canFreeze: boolean;
     @Field({ complexity: 0 }) canWipe: boolean;
-    @Field(() => IRoles, { nullable: true })
-    roles?: IRoles;
+    @Field(() => [IRoles], { nullable: true })
+    roles?: IRoles[];
     @Field({ nullable: true }) type?: string;
     @Field({ nullable: true, complexity: 0 }) balance?: string;
 }
