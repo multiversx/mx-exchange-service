@@ -1,9 +1,9 @@
+import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
+import { StakingModel } from 'src/modules/staking/models/staking.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { FarmModel } from '../farm/models/farm.v2.model';
-import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
-import { PairModel } from '../pair/models/pair.model';
-import { StakingModel } from '../staking/models/staking.model';
-import { EsdtToken } from '../tokens/models/esdtToken.model';
 
 export function formatToken(
     token: EsdtToken,

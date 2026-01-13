@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
-import { formatStakingFarm } from '../state.format.utils';
+import { formatStakingFarm } from '../utils/state.format.utils';
 import { StateGrpcClientService } from './state.grpc.client.service';
 
 @Injectable()
