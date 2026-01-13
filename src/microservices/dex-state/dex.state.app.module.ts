@@ -12,9 +12,10 @@ import { StakingStateHandler } from './services/handlers/staking.state.handler';
 import { FeesCollectorStateHandler } from './services/handlers/fees-collector.state.handler';
 import { TimekeepingStateHandler } from './services/handlers/timekeeping.state.handler';
 import { StateInitializationService } from './services/state.initialization.service';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
-    imports: [],
+    imports: [DynamicModuleUtils.getCacheModule()],
     providers: [
         StateStore,
         FarmComputeService,

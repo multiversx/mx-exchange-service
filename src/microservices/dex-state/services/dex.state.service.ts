@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
     AddPairLpTokenRequest,
     AddPairRequest,
@@ -40,9 +40,15 @@ import { StakingStateHandler } from './handlers/staking.state.handler';
 import { FeesCollectorStateHandler } from './handlers/fees-collector.state.handler';
 import { TimekeepingStateHandler } from './handlers/timekeeping.state.handler';
 import { BulkUpdatesService } from './bulk.updates.service';
+import { queueStateTasks } from 'src/modules/state/utils/state.task.utils';
+import { CacheService } from 'src/services/caching/cache.service';
+import {
+    StateTasks,
+    TaskDto,
+} from 'src/modules/state/entities/state.tasks.entities';
 
 @Injectable()
-export class DexStateService {
+export class DexStateService implements OnModuleInit {
     private bulkUpdatesService: BulkUpdatesService;
 
     constructor(
@@ -54,8 +60,17 @@ export class DexStateService {
         private readonly stakingHandler: StakingStateHandler,
         private readonly feesCollectorHandler: FeesCollectorStateHandler,
         private readonly timekeepingHandler: TimekeepingStateHandler,
+        private readonly cacheService: CacheService,
     ) {
         this.bulkUpdatesService = new BulkUpdatesService();
+    }
+
+    async onModuleInit() {
+        await queueStateTasks(this.cacheService, [
+            new TaskDto({
+                name: StateTasks.INIT_STATE,
+            }),
+        ]);
     }
 
     isReady(): boolean {
