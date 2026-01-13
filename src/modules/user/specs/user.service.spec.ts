@@ -202,7 +202,7 @@ describe('UserService', () => {
                 circulatingSupply: '1',
                 transactions: 1,
                 price: '0.01',
-                roles: new RolesModel(),
+                roles: [],
                 assets: new AssetsModel(),
             }),
         ]);
