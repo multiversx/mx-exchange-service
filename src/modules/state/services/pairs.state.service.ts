@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
+import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import {
     PairSortField,
     SortOrder,
@@ -31,6 +32,7 @@ const sortFieldMap = {
 export class PairsStateService {
     constructor(private readonly stateGrpc: StateGrpcClientService) {}
 
+    @StateRpcMetrics()
     async addPair(
         pair: PairModel,
         firstToken: EsdtToken,
@@ -41,12 +43,14 @@ export class PairsStateService {
         );
     }
 
+    @StateRpcMetrics()
     async addPairLpToken(address: string, token: EsdtToken): Promise<void> {
         await firstValueFrom(
             this.stateGrpc.client.addPairLpToken({ address, token }),
         );
     }
 
+    @StateRpcMetrics()
     async getPairs(
         addresses: string[],
         fields: (keyof PairModel)[] = [],
@@ -65,6 +69,7 @@ export class PairsStateService {
         return result.pairs?.map((pair) => formatPair(pair, fields)) ?? [];
     }
 
+    @StateRpcMetrics()
     async getAllPairs(fields: (keyof PairModel)[] = []): Promise<PairModel[]> {
         const result = await firstValueFrom(
             this.stateGrpc.client.getAllPairs({
@@ -75,6 +80,7 @@ export class PairsStateService {
         return result.pairs?.map((pair) => formatPair(pair, fields)) ?? [];
     }
 
+    @StateRpcMetrics()
     async getFilteredPairs(
         offset: number,
         limit: number,
@@ -110,6 +116,7 @@ export class PairsStateService {
         };
     }
 
+    @StateRpcMetrics()
     async getPairsWithTokens(
         addresses: string[],
         pairFields: (keyof PairModel)[] = [],
@@ -146,6 +153,7 @@ export class PairsStateService {
             : [];
     }
 
+    @StateRpcMetrics()
     async updatePairs(
         pairUpdates: Map<string, Partial<PairModel>>,
     ): Promise<UpdatePairsResponse> {

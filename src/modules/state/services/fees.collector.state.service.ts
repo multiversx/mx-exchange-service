@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
+import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 import { formatFeesCollector } from '../state.format.utils';
 import { StateGrpcClientService } from './state.grpc.client.service';
@@ -8,6 +9,7 @@ import { StateGrpcClientService } from './state.grpc.client.service';
 export class FeesCollectorStateService {
     constructor(private readonly stateGrpc: StateGrpcClientService) {}
 
+    @StateRpcMetrics()
     async getFeesCollector(
         fields: (keyof FeesCollectorModel)[] = [],
     ): Promise<FeesCollectorModel> {

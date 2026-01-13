@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
+import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import {
     SortOrder,
     TokenSortField,
@@ -47,6 +48,7 @@ const sortFieldMap = {
 export class TokensStateService {
     constructor(private readonly stateGrpc: StateGrpcClientService) {}
 
+    @StateRpcMetrics()
     async getTokens(
         tokenIDs: string[],
         fields: (keyof EsdtToken)[] = [],
@@ -65,6 +67,7 @@ export class TokensStateService {
         return result.tokens.map((token) => formatToken(token, fields));
     }
 
+    @StateRpcMetrics()
     async getAllTokens(fields: (keyof EsdtToken)[] = []): Promise<EsdtToken[]> {
         const result = await firstValueFrom(
             this.stateGrpc.client.getAllTokens({
@@ -75,6 +78,7 @@ export class TokensStateService {
         return result.tokens.map((token) => formatToken(token, fields));
     }
 
+    @StateRpcMetrics()
     async getFilteredTokens(
         offset: number,
         limit: number,
@@ -115,6 +119,7 @@ export class TokensStateService {
         };
     }
 
+    @StateRpcMetrics()
     async updateTokens(
         tokenUpdates: Map<string, Partial<EsdtToken>>,
     ): Promise<UpdateTokensResponse> {

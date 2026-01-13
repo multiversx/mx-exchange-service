@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
+import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { formatStakingFarm } from '../state.format.utils';
@@ -9,6 +10,7 @@ import { StateGrpcClientService } from './state.grpc.client.service';
 export class StakingStateService {
     constructor(private readonly stateGrpc: StateGrpcClientService) {}
 
+    @StateRpcMetrics()
     async getStakingFarms(
         addresses: string[] = [],
         fields: (keyof StakingModel)[] = [],
@@ -27,6 +29,7 @@ export class StakingStateService {
         );
     }
 
+    @StateRpcMetrics()
     async getAllStakingFarms(
         fields: (keyof StakingModel)[] = [],
     ): Promise<StakingModel[]> {
@@ -43,6 +46,7 @@ export class StakingStateService {
         );
     }
 
+    @StateRpcMetrics()
     async getStakingProxies(
         addresses: string[] = [],
         fields: (keyof StakingProxyModel)[] = [],
@@ -57,6 +61,7 @@ export class StakingStateService {
         return result.stakingProxies ?? [];
     }
 
+    @StateRpcMetrics()
     async getAllStakingProxies(
         fields: (keyof StakingProxyModel)[] = [],
     ): Promise<StakingProxyModel[]> {
