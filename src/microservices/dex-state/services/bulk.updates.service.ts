@@ -7,7 +7,6 @@ import {
     tokenProviderUSD,
 } from 'src/config';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { PairStateChanges } from 'src/modules/rabbitmq/state-changes/types';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import {
     EsdtToken,
@@ -31,13 +30,7 @@ export class BulkUpdatesService {
     ): string[] {
         this.initMaps(pairs, tokens, usdcPrice, commonTokenIDs);
 
-        for (const [address, pair] of this.pairs.entries()) {
-            this.updatePairReservesAndPrices(address, {
-                reserves0: pair.info.reserves0,
-                reserves1: pair.info.reserves1,
-                totalSupply: pair.info.totalSupply,
-            });
-        }
+        this.updatePairsTokensPrice();
 
         this.updateTokensDerivedEgldAndUsdPrices();
 
@@ -73,28 +66,18 @@ export class BulkUpdatesService {
         });
     }
 
-    private updatePairReservesAndPrices(
-        address: string,
-        stateChanges: PairStateChanges,
-    ): void {
-        const pair = this.pairs.get(address);
+    private updatePairsTokensPrice(): void {
+        for (const pair of this.pairs.values()) {
+            const { firstTokenPrice, secondTokenPrice } =
+                this.computeTokensPriceByReserves(
+                    pair.info,
+                    this.tokens.get(pair.firstTokenId),
+                    this.tokens.get(pair.secondTokenId),
+                );
 
-        const info = {
-            reserves0: stateChanges.reserves0 ?? pair.info.reserves0,
-            reserves1: stateChanges.reserves1 ?? pair.info.reserves1,
-            totalSupply: stateChanges.totalSupply ?? pair.info.totalSupply,
-        };
-
-        const { firstTokenPrice, secondTokenPrice } =
-            this.computeTokensPriceByReserves(
-                info,
-                this.tokens.get(pair.firstTokenId),
-                this.tokens.get(pair.secondTokenId),
-            );
-
-        pair.info = info;
-        pair.firstTokenPrice = firstTokenPrice;
-        pair.secondTokenPrice = secondTokenPrice;
+            pair.firstTokenPrice = firstTokenPrice;
+            pair.secondTokenPrice = secondTokenPrice;
+        }
     }
 
     private updateTokensDerivedEgldAndUsdPrices(): void {
