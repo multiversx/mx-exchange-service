@@ -24,7 +24,6 @@ import {
     StateTasks,
     StateTasksWithArguments,
     TaskDto,
-    TOKENS_PRICE_UPDATE_EVENT,
 } from '../entities/state.tasks.entities';
 
 export const STATE_TASKS_CACHE_KEY = 'dexService.stateTasks';
@@ -108,11 +107,6 @@ export class StateTasksService {
                     break;
                 case StateTasks.UPDATE_SNAPSHOT:
                     await this.updateSnapshot();
-                    break;
-                case StateTasks.BROADCAST_PRICE_UPDATES:
-                    await this.broadcastTokensPriceUpdates(
-                        JSON.parse(task.args[0]),
-                    );
                     break;
                 case StateTasks.REFRESH_PAIR_RESERVES:
                     await this.refreshPairReserves();
@@ -299,19 +293,6 @@ export class StateTasksService {
         });
     }
 
-    async broadcastTokensPriceUpdates(tokenIDs: string[]): Promise<void> {
-        const priceUpdates: string[][] = [];
-        const tokens = await this.tokensState.getTokens(tokenIDs, ['price']);
-
-        tokenIDs.forEach((tokenID, index) =>
-            priceUpdates.push([tokenID, tokens[index].price]),
-        );
-
-        await this.pubSub.publish(TOKENS_PRICE_UPDATE_EVENT, {
-            priceUpdates,
-        });
-    }
-
     async refreshPairReserves(): Promise<void> {
         const pairs = await this.pairsState.getAllPairs(['address']);
 
@@ -338,12 +319,6 @@ export class StateTasksService {
         const usdcPrice = await this.syncService.getUsdcPrice();
 
         const updateResult = await this.stateService.updateUsdcPrice(usdcPrice);
-
-        if (updateResult.tokensWithPriceUpdates?.length > 0) {
-            await this.broadcastTokensPriceUpdates(
-                updateResult.tokensWithPriceUpdates,
-            );
-        }
 
         this.logger.debug(`Refresh USDC price task completed`, {
             context: StateTasksService.name,

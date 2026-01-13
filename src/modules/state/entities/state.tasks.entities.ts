@@ -16,7 +16,6 @@ export enum StateTasks {
     ADD_PAIR = 'addPair',
     REFRESH_ANALYTICS = 'refreshAnalytics',
     UPDATE_SNAPSHOT = 'updateSnapshot',
-    BROADCAST_PRICE_UPDATES = 'broadcastPriceUpdates',
     REFRESH_PAIR_RESERVES = 'refreshReserves',
     REFRESH_USDC_PRICE = 'refreshUsdcPrice',
     INDEX_LP_TOKEN = 'indexLpToken',
@@ -42,7 +41,6 @@ export const StateTaskPriority: Record<StateTasks, number> = {
     refreshStakingFarm: 15,
     refreshFarmInfo: 20,
     refreshStakingFarmInfo: 20,
-    broadcastPriceUpdates: 30,
     indexLpToken: 100,
     updateSnapshot: 200,
     refreshWeekTimekeeping: 300,
@@ -52,7 +50,6 @@ export const StateTaskPriority: Record<StateTasks, number> = {
 export const StateTasksWithArguments = [
     StateTasks.INDEX_LP_TOKEN,
     StateTasks.ADD_PAIR,
-    StateTasks.BROADCAST_PRICE_UPDATES,
     StateTasks.REFRESH_FARM,
     StateTasks.REFRESH_FARM_INFO,
     StateTasks.REFRESH_STAKING_FARM,
