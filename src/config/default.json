@@ -101,7 +101,7 @@
             "createPair": 35000000,
             "issueToken": 75000000,
             "setLocalRoles": 75000000,
-            "multiPairSwapMultiplier": 16500000,
+            "multiPairSwapMultiplier": 20000000,
             "swapEnableByUser": 35000000,
             "admin": {
                 "setState": 22000000,
@@ -540,7 +540,7 @@
             "energyPosition": 15000000
         },
         "composableTasks": {
-            "default": 6500000
+            "default":10000000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 3000000,
