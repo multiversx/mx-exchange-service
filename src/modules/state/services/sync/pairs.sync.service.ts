@@ -190,6 +190,8 @@ export class PairsSyncService {
             feesCollectorAddress,
             lockedTokensInfo,
             deployedAt: deployedAt ?? timestamp ?? 0,
+            hasFarms: false,
+            hasDualFarms: false,
         };
 
         profiler.stop();

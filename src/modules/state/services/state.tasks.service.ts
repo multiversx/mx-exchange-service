@@ -144,7 +144,12 @@ export class StateTasksService {
     async populateState(): Promise<void> {
         const request = await this.syncService.populateState();
 
-        await this.stateService.initState(request);
+        const response = await this.stateService.initState(request);
+
+        this.logger.debug(`Populate state task completed`, {
+            context: StateTasksService.name,
+            response,
+        });
 
         await this.queueTasks([
             new TaskDto({

@@ -25,6 +25,7 @@ import { FarmsSyncService } from './sync/farms.sync.service';
 import { StakingSyncService } from './sync/staking.sync.service';
 import { FeesCollectorSyncService } from './sync/fees-collector.sync.service';
 import { AnalyticsSyncService } from './sync/analytics.sync.service';
+import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 
 @Injectable()
 export class StateSyncService {
@@ -39,6 +40,7 @@ export class StateSyncService {
         private readonly feesCollectorSync: FeesCollectorSyncService,
         private readonly analyticsSync: AnalyticsSyncService,
         private readonly routerAbi: RouterAbiService,
+        private readonly energyAbi: EnergyAbiService,
         private readonly remoteConfigGetter: RemoteConfigGetterService,
         private readonly contextGetter: ContextGetterService,
         private readonly dataApi: MXDataApiService,
@@ -61,6 +63,7 @@ export class StateSyncService {
             commonTokenIDs,
             usdcPrice,
             currentEpoch,
+            lockedTokenCollection,
             {
                 pairs: snapshotPairs,
                 tokens: snapshotTokens,
@@ -74,6 +77,7 @@ export class StateSyncService {
             this.routerAbi.commonTokensForUserPairs(),
             this.getUsdcPrice(),
             this.contextGetter.getCurrentEpoch(),
+            this.energyAbi.lockedTokenID(),
             this.stateSnapshot.getLatestSnapshot(),
         ]);
 
@@ -260,6 +264,7 @@ export class StateSyncService {
             feesCollector,
             commonTokenIDs,
             usdcPrice,
+            lockedTokenCollection,
         };
     }
 
