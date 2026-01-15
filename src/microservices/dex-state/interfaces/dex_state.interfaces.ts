@@ -173,6 +173,7 @@ export interface InitStateRequest {
     feesCollector: FeesCollectorModel;
     commonTokenIDs: string[];
     usdcPrice: number;
+    lockedTokenCollection: string;
 }
 
 export interface InitStateResponse {

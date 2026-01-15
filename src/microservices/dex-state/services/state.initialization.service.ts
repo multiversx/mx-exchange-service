@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
+import {
+    EsdtToken,
+    EsdtTokenType,
+} from 'src/modules/tokens/models/esdtToken.model';
 import {
     PairCompoundedAPRModel,
     PairModel,
@@ -12,15 +15,19 @@ import {
 import { StateStore } from './state.store';
 import { FarmComputeService } from './compute/farm.compute.service';
 import { StakingComputeService } from './compute/staking.compute.service';
+import { FeesCollectorComputeService } from './compute/fees-collector.compute.service';
+import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { StakingModel } from 'src/modules/staking/models/staking.model';
+import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
+import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 
 @Injectable()
 export class StateInitializationService {
-    private readonly lockedTokenCollection = 'XMEX-82f2f4';
-
     constructor(
         private readonly stateStore: StateStore,
         private readonly farmComputeService: FarmComputeService,
         private readonly stakingComputeService: StakingComputeService,
+        private readonly feesCollectorComputeService: FeesCollectorComputeService,
     ) {}
 
     initState(request: InitStateRequest): InitStateResponse {
@@ -33,12 +40,14 @@ export class StateInitializationService {
             feesCollector,
             commonTokenIDs,
             usdcPrice,
+            lockedTokenCollection,
         } = request;
 
         // Clear all existing state
         this.stateStore.clearAll();
         this.stateStore.setUsdcPrice(usdcPrice);
         this.stateStore.setCommonTokenIDs(commonTokenIDs);
+        this.stateStore.setLockedTokenCollection(lockedTokenCollection);
 
         // Initialize tokens
         this.initializeTokens(tokens);
@@ -69,7 +78,7 @@ export class StateInitializationService {
         };
     }
 
-    private initializeTokens(tokens: InitStateRequest['tokens']): void {
+    private initializeTokens(tokens: EsdtToken[]): void {
         for (const token of tokens) {
             this.stateStore.setToken(token.identifier, { ...token });
             this.stateStore.addTokenByType(
@@ -79,7 +88,7 @@ export class StateInitializationService {
         }
     }
 
-    private initializePairs(pairs: InitStateRequest['pairs']): void {
+    private initializePairs(pairs: PairModel[]): void {
         for (const pair of pairs.values()) {
             const pairWithAPR: PairModel = {
                 ...pair,
@@ -107,7 +116,7 @@ export class StateInitializationService {
         }
     }
 
-    private initializeFarms(farms: InitStateRequest['farms']): void {
+    private initializeFarms(farms: FarmModel[]): void {
         for (const farm of farms.values()) {
             const completeFarm =
                 this.farmComputeService.computeMissingFarmFields(
@@ -122,7 +131,8 @@ export class StateInitializationService {
                 const updatedPair = { ...pair };
                 updatedPair.hasFarms = true;
                 updatedPair.farmAddress = completeFarm.address;
-                updatedPair.farmRewardCollection = this.lockedTokenCollection;
+                updatedPair.farmRewardCollection =
+                    this.stateStore.lockedTokenCollection;
 
                 updatedPair.compoundedAPR.farmBaseAPR = completeFarm.baseApr;
                 updatedPair.compoundedAPR.farmBoostedAPR =
@@ -135,9 +145,7 @@ export class StateInitializationService {
         }
     }
 
-    private initializeStakingFarms(
-        stakingFarms: InitStateRequest['stakingFarms'],
-    ): void {
+    private initializeStakingFarms(stakingFarms: StakingModel[]): void {
         for (const stakingFarm of stakingFarms.values()) {
             const completeStakingFarm =
                 this.stakingComputeService.computeMissingStakingFarmFields(
@@ -152,7 +160,7 @@ export class StateInitializationService {
     }
 
     private initializeStakingProxies(
-        stakingProxies: InitStateRequest['stakingProxies'],
+        stakingProxies: StakingProxyModel[],
     ): void {
         for (const stakingProxy of stakingProxies.values()) {
             const completeStakingProxy =
@@ -188,11 +196,9 @@ export class StateInitializationService {
         }
     }
 
-    private initializeFeesCollector(
-        feesCollector: InitStateRequest['feesCollector'],
-    ): void {
+    private initializeFeesCollector(feesCollector: FeesCollectorModel): void {
         const completeFeesCollector =
-            this.stakingComputeService.computeMissingFeesCollectorFields(
+            this.feesCollectorComputeService.computeMissingFeesCollectorFields(
                 feesCollector,
                 this.stateStore.tokens,
             );

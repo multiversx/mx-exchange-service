@@ -28,6 +28,7 @@ export class StateStore {
     // Global state
     private _commonTokenIDs: string[] = [];
     private _usdcPrice = 0;
+    private _lockedTokenCollection: string;
     private _initialized = false;
 
     // Getters for read access
@@ -79,6 +80,10 @@ export class StateStore {
         return this._usdcPrice;
     }
 
+    get lockedTokenCollection(): string {
+        return this._lockedTokenCollection;
+    }
+
     isInitialized(): boolean {
         return this._initialized;
     }
@@ -114,6 +119,10 @@ export class StateStore {
 
     setUsdcPrice(price: number): void {
         this._usdcPrice = price;
+    }
+
+    setLockedTokenCollection(collection: string): void {
+        this._lockedTokenCollection = collection;
     }
 
     setInitialized(initialized: boolean): void {
