@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { computeValueUSD } from 'src/utils/token.converters';
@@ -14,10 +14,10 @@ import {
 @Injectable()
 export class FarmComputeService {
     computeMissingFarmFields(
-        farm: FarmModel,
+        farm: FarmModelV2,
         pairs: Map<string, PairModel>,
         tokens: Map<string, EsdtToken>,
-    ): FarmModel {
+    ): FarmModelV2 {
         refreshWeekStartAndEndEpochs(farm.time);
 
         farm.boosterRewards.forEach((globalInfo) => {
@@ -75,7 +75,7 @@ export class FarmComputeService {
         return farm;
     }
 
-    calculateBoostedRewardsPerWeek(farm: FarmModel): string {
+    calculateBoostedRewardsPerWeek(farm: FarmModelV2): string {
         const blocksInWeek = 14440 * 7;
         const totalRewardsPerWeek = new BigNumber(
             farm.perBlockRewards,
@@ -88,7 +88,7 @@ export class FarmComputeService {
             .toFixed();
     }
 
-    calculateOptimalEnergyPerLP(farm: FarmModel): string {
+    calculateOptimalEnergyPerLP(farm: FarmModelV2): string {
         const u = farm.boostedYieldsFactors.maxRewardsFactor;
         const A = farm.boostedYieldsFactors.userRewardsFarm;
         const B = farm.boostedYieldsFactors.userRewardsEnergy;

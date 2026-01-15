@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
-import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
@@ -14,26 +13,6 @@ import {
 
 @Injectable()
 export class StakingComputeService {
-    computeMissingFeesCollectorFields(
-        feesCollector: FeesCollectorModel,
-        tokens: Map<string, EsdtToken>,
-    ): FeesCollectorModel {
-        refreshWeekStartAndEndEpochs(feesCollector.time);
-
-        feesCollector.undistributedRewards.forEach((globalInfo) => {
-            if (!globalInfo.totalRewardsForWeek) {
-                globalInfo.totalRewardsForWeek = [];
-            }
-            globalInfo.rewardsDistributionForWeek = computeDistribution(
-                globalInfo.totalRewardsForWeek,
-                tokens,
-            );
-            globalInfo.apr = '0';
-        });
-
-        return feesCollector;
-    }
-
     computeMissingStakingProxyFields(
         stakingProxy: StakingProxyModel,
         stakingFarms: Map<string, StakingModel>,

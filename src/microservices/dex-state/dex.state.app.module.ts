@@ -12,6 +12,7 @@ import { StakingStateHandler } from './services/handlers/staking.state.handler';
 import { FeesCollectorStateHandler } from './services/handlers/fees-collector.state.handler';
 import { TimekeepingStateHandler } from './services/handlers/timekeeping.state.handler';
 import { StateInitializationService } from './services/state.initialization.service';
+import { FeesCollectorComputeService } from './services/compute/fees-collector.compute.service';
 
 @Module({
     imports: [],
@@ -19,6 +20,7 @@ import { StateInitializationService } from './services/state.initialization.serv
         StateStore,
         FarmComputeService,
         StakingComputeService,
+        FeesCollectorComputeService,
         BulkUpdatesService,
         // Handlers
         TokensStateHandler,

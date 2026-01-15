@@ -176,6 +176,7 @@ message InitStateRequest {
   FeesCollector feesCollector = 6;
   repeated string commonTokenIDs = 7;
   double usdcPrice = 8;
+  string lockedTokenCollection = 9;
 }
 
 message InitStateResponse {

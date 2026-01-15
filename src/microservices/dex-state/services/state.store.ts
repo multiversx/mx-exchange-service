@@ -4,17 +4,17 @@ import {
     EsdtTokenType,
 } from 'src/modules/tokens/models/esdtToken.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 
 @Injectable()
 export class StateStore {
     // Primary data stores
     private readonly _tokens = new Map<string, EsdtToken>();
     private readonly _pairs = new Map<string, PairModel>();
-    private readonly _farms = new Map<string, FarmModel>();
+    private readonly _farms = new Map<string, FarmModelV2>();
     private readonly _stakingFarms = new Map<string, StakingModel>();
     private readonly _stakingProxies = new Map<string, StakingProxyModel>();
     private _feesCollector: FeesCollectorModel;
@@ -28,6 +28,7 @@ export class StateStore {
     // Global state
     private _commonTokenIDs: string[] = [];
     private _usdcPrice = 0;
+    private _lockedTokenCollection: string;
     private _initialized = false;
 
     // Getters for read access
@@ -39,7 +40,7 @@ export class StateStore {
         return this._pairs;
     }
 
-    get farms(): Map<string, FarmModel> {
+    get farms(): Map<string, FarmModelV2> {
         return this._farms;
     }
 
@@ -79,6 +80,10 @@ export class StateStore {
         return this._usdcPrice;
     }
 
+    get lockedTokenCollection(): string {
+        return this._lockedTokenCollection;
+    }
+
     isInitialized(): boolean {
         return this._initialized;
     }
@@ -92,7 +97,7 @@ export class StateStore {
         this._pairs.set(address, pair);
     }
 
-    setFarm(address: string, farm: FarmModel): void {
+    setFarm(address: string, farm: FarmModelV2): void {
         this._farms.set(address, farm);
     }
 
@@ -114,6 +119,10 @@ export class StateStore {
 
     setUsdcPrice(price: number): void {
         this._usdcPrice = price;
+    }
+
+    setLockedTokenCollection(collection: string): void {
+        this._lockedTokenCollection = collection;
     }
 
     setInitialized(initialized: boolean): void {
