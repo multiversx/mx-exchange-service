@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
@@ -25,7 +25,7 @@ export class FarmsSyncService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async populateFarm(address: string): Promise<FarmModel> {
+    async populateFarm(address: string): Promise<FarmModelV2> {
         const profiler = new PerformanceProfiler();
 
         const [
@@ -101,7 +101,7 @@ export class FarmsSyncService {
             ),
         ]);
 
-        const farm = new FarmModel({
+        const farm = new FarmModelV2({
             address,
             farmingTokenId,
             farmedTokenId,

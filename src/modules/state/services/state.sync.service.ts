@@ -4,7 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
@@ -170,7 +170,7 @@ export class StateSyncService {
             commonTokenIDs,
         );
 
-        const farms = new Map<string, FarmModel>();
+        const farms = new Map<string, FarmModelV2>();
         const farmAddresses = farmsAddresses([FarmVersion.V2]);
 
         for (const farmAddress of farmAddresses) {
@@ -305,7 +305,7 @@ export class StateSyncService {
     async updateSnapshot(
         pairs: PairModel[],
         tokens: EsdtToken[],
-        farms: FarmModel[],
+        farms: FarmModelV2[],
         stakingFarms: StakingModel[],
         stakingProxies: StakingProxyModel[],
         feesCollector: FeesCollectorModel,

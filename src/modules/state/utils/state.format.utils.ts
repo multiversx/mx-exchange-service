@@ -1,4 +1,4 @@
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';

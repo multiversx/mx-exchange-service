@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { PairModel } from 'src/modules/pair/models/pair.model';
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
@@ -23,7 +23,7 @@ export class StateSnapshot {
     pairs: PairModel[];
 
     @Prop({ type: [mongoose.Schema.Types.Mixed] })
-    farms: FarmModel[];
+    farms: FarmModelV2[];
 
     @Prop({ type: [mongoose.Schema.Types.Mixed] })
     stakingFarms: StakingModel[];

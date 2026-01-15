@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
-import { formatFarm } from '../state.format.utils';
+import { formatFarm } from '../utils/state.format.utils';
 import { StateGrpcClientService } from './state.grpc.client.service';
 
 @Injectable()
