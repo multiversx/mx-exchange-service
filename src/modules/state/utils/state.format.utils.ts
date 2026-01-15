@@ -68,11 +68,11 @@ export function formatPair(
 }
 
 export function formatFarm(
-    farm: FarmModel,
-    fields: (keyof FarmModel)[],
-): FarmModel {
+    farm: FarmModelV2,
+    fields: (keyof FarmModelV2)[],
+): FarmModelV2 {
     if (fields.length === 0) {
-        return new FarmModel({
+        return new FarmModelV2({
             ...farm,
             boosterRewards:
                 farm.boosterRewards?.map((globalInfo) =>
@@ -81,7 +81,7 @@ export function formatFarm(
         });
     }
 
-    return new FarmModel({
+    return new FarmModelV2({
         ...farm,
         ...(fields.includes('boosterRewards') && {
             boosterRewards:

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { Farms } from '../../interfaces/dex_state.interfaces';
 import { StateStore } from '../state.store';
 
@@ -24,12 +24,12 @@ export class FarmsStateHandler {
                 continue;
             }
 
-            const farm: Partial<FarmModel> = {};
+            const farm: Partial<FarmModelV2> = {};
             for (const field of fields) {
                 farm[field] = stateFarm[field];
             }
 
-            result.farms.push(farm as FarmModel);
+            result.farms.push(farm as FarmModelV2);
         }
 
         return result;

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
-import { formatFarm } from '../utils/state.format.utils';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
+import { formatFarm } from '../state.format.utils';
 import { StateGrpcClientService } from './state.grpc.client.service';
 
 @Injectable()
@@ -12,8 +12,8 @@ export class FarmsStateService {
     @StateRpcMetrics()
     async getFarms(
         addresses: string[] = [],
-        fields: (keyof FarmModel)[] = [],
-    ): Promise<FarmModel[]> {
+        fields: (keyof FarmModelV2)[] = [],
+    ): Promise<FarmModelV2[]> {
         const result = await firstValueFrom(
             this.stateGrpc.client.getFarms({
                 addresses,
@@ -25,7 +25,9 @@ export class FarmsStateService {
     }
 
     @StateRpcMetrics()
-    async getAllFarms(fields: (keyof FarmModel)[] = []): Promise<FarmModel[]> {
+    async getAllFarms(
+        fields: (keyof FarmModelV2)[] = [],
+    ): Promise<FarmModelV2[]> {
         const result = await firstValueFrom(
             this.stateGrpc.client.getAllFarms({
                 fields: { paths: fields },

@@ -12,6 +12,7 @@ import { StakingStateHandler } from './services/handlers/staking.state.handler';
 import { FeesCollectorStateHandler } from './services/handlers/fees-collector.state.handler';
 import { TimekeepingStateHandler } from './services/handlers/timekeeping.state.handler';
 import { StateInitializationService } from './services/state.initialization.service';
+import { FeesCollectorComputeService } from './services/compute/fees-collector.compute.service';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
@@ -20,6 +21,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
         StateStore,
         FarmComputeService,
         StakingComputeService,
+        FeesCollectorComputeService,
         BulkUpdatesService,
         // Handlers
         TokensStateHandler,
