@@ -1,5 +1,5 @@
 import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { FarmModel } from '../farm/models/farm.v2.model';
+import { FarmModelV2 } from '../farm/models/farm.v2.model';
 import { FeesCollectorModel } from '../fees-collector/models/fees-collector.model';
 import { PairModel } from '../pair/models/pair.model';
 import { StakingModel } from '../staking/models/staking.model';
@@ -68,11 +68,11 @@ export function formatPair(
 }
 
 export function formatFarm(
-    farm: FarmModel,
-    fields: (keyof FarmModel)[],
-): FarmModel {
+    farm: FarmModelV2,
+    fields: (keyof FarmModelV2)[],
+): FarmModelV2 {
     if (fields.length === 0) {
-        return new FarmModel({
+        return new FarmModelV2({
             ...farm,
             boosterRewards:
                 farm.boosterRewards?.map((globalInfo) =>
@@ -81,7 +81,7 @@ export function formatFarm(
         });
     }
 
-    return new FarmModel({
+    return new FarmModelV2({
         ...farm,
         ...(fields.includes('boosterRewards') && {
             boosterRewards:
