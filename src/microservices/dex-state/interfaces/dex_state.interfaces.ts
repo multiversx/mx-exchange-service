@@ -3,11 +3,11 @@ import { FieldMask } from './google/protobuf/field_mask.interfaces';
 import { Empty } from './google/protobuf/empty.interfaces';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 
 export const protobufPackage = 'dex_state';
 
@@ -167,7 +167,7 @@ export interface UpdateTokensResponse {
 export interface InitStateRequest {
     tokens: EsdtToken[];
     pairs: PairModel[];
-    farms: FarmModel[];
+    farms: FarmModelV2[];
     stakingFarms: StakingModel[];
     stakingProxies: StakingProxyModel[];
     feesCollector: FeesCollectorModel;
@@ -200,7 +200,7 @@ export interface AddPairLpTokenRequest {
 }
 
 export interface Farms {
-    farms: FarmModel[];
+    farms: FarmModelV2[];
 }
 
 export interface StakingFarms {

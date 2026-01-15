@@ -16,10 +16,10 @@ import { StateStore } from './state.store';
 import { FarmComputeService } from './compute/farm.compute.service';
 import { StakingComputeService } from './compute/staking.compute.service';
 import { FeesCollectorComputeService } from './compute/fees-collector.compute.service';
-import { FarmModel } from 'src/modules/farm/models/farm.v2.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 
 @Injectable()
 export class StateInitializationService {
@@ -116,7 +116,7 @@ export class StateInitializationService {
         }
     }
 
-    private initializeFarms(farms: FarmModel[]): void {
+    private initializeFarms(farms: FarmModelV2[]): void {
         for (const farm of farms.values()) {
             const completeFarm =
                 this.farmComputeService.computeMissingFarmFields(
