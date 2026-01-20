@@ -31,8 +31,13 @@ import {
     StakingFarms,
     StakingProxies,
     Tokens,
+    UpdateFarmsRequest,
+    UpdateFarmsResponse,
+    UpdateFeesCollectorRequest,
     UpdatePairsRequest,
     UpdatePairsResponse,
+    UpdateStakingFarmsRequest,
+    UpdateStakingFarmsResponse,
     UpdateTokensRequest,
     UpdateTokensResponse,
     UpdateUsdcPriceRequest,
@@ -142,6 +147,12 @@ export class DexStateController implements IDexStateService {
         return this.dexStateService.getAllFarms(request);
     }
 
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'UpdateFarms')
+    updateFarms(request: UpdateFarmsRequest): UpdateFarmsResponse {
+        this.ensureReady();
+        return this.dexStateService.updateFarms(request);
+    }
+
     @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetStakingFarms')
     getStakingFarms(request: GetStakingFarmsRequest): StakingFarms {
         this.ensureReady();
@@ -155,6 +166,14 @@ export class DexStateController implements IDexStateService {
     getAllStakingFarms(request: GetAllStakingFarmsRequest): StakingFarms {
         this.ensureReady();
         return this.dexStateService.getAllStakingFarms(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'UpdateStakingFarms')
+    updateStakingFarms(
+        request: UpdateStakingFarmsRequest,
+    ): UpdateStakingFarmsResponse {
+        this.ensureReady();
+        return this.dexStateService.updateStakingFarms(request);
     }
 
     @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetStakingProxies')
@@ -176,6 +195,12 @@ export class DexStateController implements IDexStateService {
     getFeesCollector(request: GetFeesCollectorRequest): FeesCollectorModel {
         this.ensureReady();
         return this.dexStateService.getFeesCollector(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'UpdateFeesCollector')
+    updateFeesCollector(request: UpdateFeesCollectorRequest): void {
+        this.ensureReady();
+        this.dexStateService.updateFeesCollector(request);
     }
 
     @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetWeeklyTimekeeping')

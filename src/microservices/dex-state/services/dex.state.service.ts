@@ -22,8 +22,13 @@ import {
     StakingFarms,
     StakingProxies,
     Tokens,
+    UpdateFarmsRequest,
+    UpdateFarmsResponse,
+    UpdateFeesCollectorRequest,
     UpdatePairsRequest,
     UpdatePairsResponse,
+    UpdateStakingFarmsRequest,
+    UpdateStakingFarmsResponse,
     UpdateTokensRequest,
     UpdateTokensResponse,
     UpdateUsdcPriceRequest,
@@ -147,6 +152,10 @@ export class DexStateService implements OnModuleInit {
         return this.farmsHandler.getAllFarms(fields);
     }
 
+    updateFarms(request: UpdateFarmsRequest): UpdateFarmsResponse {
+        return this.farmsHandler.updateFarms(request);
+    }
+
     getStakingFarms(addresses: string[], fields: string[] = []): StakingFarms {
         return this.stakingHandler.getStakingFarms(addresses, fields);
     }
@@ -154,6 +163,12 @@ export class DexStateService implements OnModuleInit {
     getAllStakingFarms(request: GetAllStakingFarmsRequest): StakingFarms {
         const fields = request.fields?.paths ?? [];
         return this.stakingHandler.getAllStakingFarms(fields);
+    }
+
+    updateStakingFarms(
+        request: UpdateStakingFarmsRequest,
+    ): UpdateStakingFarmsResponse {
+        return this.stakingHandler.updateStakingFarms(request);
     }
 
     getStakingProxies(
@@ -171,6 +186,10 @@ export class DexStateService implements OnModuleInit {
     getFeesCollector(request: GetFeesCollectorRequest): FeesCollectorModel {
         const fields = request.fields?.paths ?? [];
         return this.feesCollectorHandler.getFeesCollector(fields);
+    }
+
+    updateFeesCollector(request: UpdateFeesCollectorRequest): void {
+        this.feesCollectorHandler.updateFeesCollector(request);
     }
 
     getWeeklyTimekeeping(
