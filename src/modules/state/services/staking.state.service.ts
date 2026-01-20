@@ -1,28 +1,15 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { ClientGrpc } from '@nestjs/microservices';
+import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
-import {
-    DEX_STATE_SERVICE_NAME,
-    IDexStateServiceClient,
-    UpdateStakingFarmsResponse,
-} from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
+import { UpdateStakingFarmsResponse } from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
-import { DEX_STATE_CLIENT } from '../../state.module';
-import { formatStakingFarm } from '../../utils/state.format.utils';
+import { formatStakingFarm } from '../utils/state.format.utils';
+import { StateGrpcClientService } from './state.grpc.client.service';
 
 @Injectable()
-export class StakingStateClient implements OnModuleInit {
-    client: IDexStateServiceClient;
-
-    constructor(@Inject(DEX_STATE_CLIENT) private clientGrpc: ClientGrpc) {}
-
-    onModuleInit() {
-        this.client = this.clientGrpc.getService<IDexStateServiceClient>(
-            DEX_STATE_SERVICE_NAME,
-        );
-    }
+export class StakingStateService {
+    constructor(private readonly stateGrpc: StateGrpcClientService) {}
 
     @StateRpcMetrics()
     async getStakingFarms(
@@ -30,7 +17,7 @@ export class StakingStateClient implements OnModuleInit {
         fields: (keyof StakingModel)[] = [],
     ): Promise<StakingModel[]> {
         const result = await firstValueFrom(
-            this.client.getStakingFarms({
+            this.stateGrpc.client.getStakingFarms({
                 addresses,
                 fields: { paths: fields },
             }),
@@ -48,7 +35,7 @@ export class StakingStateClient implements OnModuleInit {
         fields: (keyof StakingModel)[] = [],
     ): Promise<StakingModel[]> {
         const result = await firstValueFrom(
-            this.client.getAllStakingFarms({
+            this.stateGrpc.client.getAllStakingFarms({
                 fields: { paths: fields },
             }),
         );
@@ -84,7 +71,7 @@ export class StakingStateClient implements OnModuleInit {
         });
 
         return firstValueFrom(
-            this.client.updateStakingFarms({
+            this.stateGrpc.client.updateStakingFarms({
                 stakingFarms,
                 updateMask: { paths: [...new Set(paths)] },
             }),
@@ -97,7 +84,7 @@ export class StakingStateClient implements OnModuleInit {
         fields: (keyof StakingProxyModel)[] = [],
     ): Promise<StakingProxyModel[]> {
         const result = await firstValueFrom(
-            this.client.getStakingProxies({
+            this.stateGrpc.client.getStakingProxies({
                 addresses,
                 fields: { paths: fields },
             }),
@@ -111,7 +98,7 @@ export class StakingStateClient implements OnModuleInit {
         fields: (keyof StakingProxyModel)[] = [],
     ): Promise<StakingProxyModel[]> {
         const result = await firstValueFrom(
-            this.client.getAllStakingProxies({
+            this.stateGrpc.client.getAllStakingProxies({
                 fields: { paths: fields },
             }),
         );

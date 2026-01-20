@@ -1,32 +1,21 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { ClientGrpc } from '@nestjs/microservices';
+import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import {
-    DEX_STATE_SERVICE_NAME,
-    IDexStateServiceClient,
     InitStateRequest,
     InitStateResponse,
     UpdateUsdcPriceResponse,
 } from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
-import { DEX_STATE_CLIENT } from '../state.module';
+import { StateGrpcClientService } from './state.grpc.client.service';
 
 @Injectable()
-export class StateClient implements OnModuleInit {
-    client: IDexStateServiceClient;
-
-    constructor(@Inject(DEX_STATE_CLIENT) private clientGrpc: ClientGrpc) {}
-
-    onModuleInit() {
-        this.client = this.clientGrpc.getService<IDexStateServiceClient>(
-            DEX_STATE_SERVICE_NAME,
-        );
-    }
+export class StateService {
+    constructor(private readonly stateGrpc: StateGrpcClientService) {}
 
     @StateRpcMetrics()
     async initState(request: InitStateRequest): Promise<InitStateResponse> {
-        return firstValueFrom(this.client.initState(request));
+        return firstValueFrom(this.stateGrpc.client.initState(request));
     }
 
     @StateRpcMetrics()
@@ -39,7 +28,7 @@ export class StateClient implements OnModuleInit {
         }
 
         const result = await firstValueFrom(
-            this.client.getWeeklyTimekeeping({
+            this.stateGrpc.client.getWeeklyTimekeeping({
                 address,
                 fields: { paths: fields },
             }),
@@ -51,7 +40,7 @@ export class StateClient implements OnModuleInit {
     @StateRpcMetrics()
     async updateUsdcPrice(usdcPrice: number): Promise<UpdateUsdcPriceResponse> {
         return firstValueFrom(
-            this.client.updateUsdcPrice({
+            this.stateGrpc.client.updateUsdcPrice({
                 usdcPrice,
             }),
         );

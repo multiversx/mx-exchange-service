@@ -1,27 +1,14 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { ClientGrpc } from '@nestjs/microservices';
+import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
-import {
-    DEX_STATE_SERVICE_NAME,
-    IDexStateServiceClient,
-    UpdateFarmsResponse,
-} from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
+import { UpdateFarmsResponse } from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
-import { DEX_STATE_CLIENT } from '../../state.module';
-import { formatFarm } from '../../utils/state.format.utils';
+import { formatFarm } from '../utils/state.format.utils';
+import { StateGrpcClientService } from './state.grpc.client.service';
 
 @Injectable()
-export class FarmsStateClient implements OnModuleInit {
-    client: IDexStateServiceClient;
-
-    constructor(@Inject(DEX_STATE_CLIENT) private clientGrpc: ClientGrpc) {}
-
-    onModuleInit() {
-        this.client = this.clientGrpc.getService<IDexStateServiceClient>(
-            DEX_STATE_SERVICE_NAME,
-        );
-    }
+export class FarmsStateService {
+    constructor(private readonly stateGrpc: StateGrpcClientService) {}
 
     @StateRpcMetrics()
     async getFarms(
@@ -29,7 +16,7 @@ export class FarmsStateClient implements OnModuleInit {
         fields: (keyof FarmModelV2)[] = [],
     ): Promise<FarmModelV2[]> {
         const result = await firstValueFrom(
-            this.client.getFarms({
+            this.stateGrpc.client.getFarms({
                 addresses,
                 fields: { paths: fields },
             }),
@@ -43,7 +30,7 @@ export class FarmsStateClient implements OnModuleInit {
         fields: (keyof FarmModelV2)[] = [],
     ): Promise<FarmModelV2[]> {
         const result = await firstValueFrom(
-            this.client.getAllFarms({
+            this.stateGrpc.client.getAllFarms({
                 fields: { paths: fields },
             }),
         );
@@ -75,7 +62,7 @@ export class FarmsStateClient implements OnModuleInit {
         });
 
         return firstValueFrom(
-            this.client.updateFarms({
+            this.stateGrpc.client.updateFarms({
                 farms,
                 updateMask: { paths: [...new Set(paths)] },
             }),
