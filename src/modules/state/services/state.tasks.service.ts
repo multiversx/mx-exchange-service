@@ -24,6 +24,7 @@ import {
     StateTasks,
     StateTasksWithArguments,
     TaskDto,
+    TOKENS_PRICE_UPDATE_EVENT,
 } from '../entities/state.tasks.entities';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
@@ -109,6 +110,11 @@ export class StateTasksService {
                     break;
                 case StateTasks.UPDATE_SNAPSHOT:
                     await this.updateSnapshot();
+                    break;
+                case StateTasks.BROADCAST_PRICE_UPDATES:
+                    await this.broadcastTokensPriceUpdates(
+                        JSON.parse(task.args[0]),
+                    );
                     break;
                 case StateTasks.REFRESH_PAIR_RESERVES:
                     await this.refreshPairReserves();
@@ -315,6 +321,19 @@ export class StateTasksService {
         this.logger.debug(`Update snapshot task completed`, {
             context: StateTasksService.name,
             updateResult,
+        });
+    }
+
+    async broadcastTokensPriceUpdates(tokenIDs: string[]): Promise<void> {
+        const priceUpdates: string[][] = [];
+        const tokens = await this.tokensState.getTokens(tokenIDs, ['price']);
+
+        tokenIDs.forEach((tokenID, index) =>
+            priceUpdates.push([tokenID, tokens[index].price]),
+        );
+
+        await this.pubSub.publish(TOKENS_PRICE_UPDATE_EVENT, {
+            priceUpdates,
         });
     }
 
