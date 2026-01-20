@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import {
+    DEX_STATE_SERVICE_NAME,
+    IDexStateServiceClient,
     SortOrder,
     TokenSortField,
     UpdateTokensResponse,
@@ -16,8 +19,8 @@ import {
     TokenSortingArgs,
     TokensSortableFields,
 } from 'src/modules/tokens/models/tokens.filter.args';
-import { formatToken } from '../utils/state.format.utils';
-import { StateGrpcClientService } from './state.grpc.client.service';
+import { DEX_STATE_CLIENT } from '../../state.module';
+import { formatToken } from '../../utils/state.format.utils';
 
 const sortFieldMap = {
     [TokensSortableFields.PRICE]: TokenSortField.TOKENS_SORT_PRICE,
@@ -45,8 +48,16 @@ const sortFieldMap = {
 };
 
 @Injectable()
-export class TokensStateService {
-    constructor(private readonly stateGrpc: StateGrpcClientService) {}
+export class TokensStateClient implements OnModuleInit {
+    client: IDexStateServiceClient;
+
+    constructor(@Inject(DEX_STATE_CLIENT) private clientGrpc: ClientGrpc) {}
+
+    onModuleInit() {
+        this.client = this.clientGrpc.getService<IDexStateServiceClient>(
+            DEX_STATE_SERVICE_NAME,
+        );
+    }
 
     @StateRpcMetrics()
     async getTokens(
@@ -54,7 +65,7 @@ export class TokensStateService {
         fields: (keyof EsdtToken)[] = [],
     ): Promise<EsdtToken[]> {
         const result = await firstValueFrom(
-            this.stateGrpc.client.getTokens({
+            this.client.getTokens({
                 identifiers: tokenIDs,
                 fields: { paths: fields },
             }),
@@ -70,7 +81,7 @@ export class TokensStateService {
     @StateRpcMetrics()
     async getAllTokens(fields: (keyof EsdtToken)[] = []): Promise<EsdtToken[]> {
         const result = await firstValueFrom(
-            this.stateGrpc.client.getAllTokens({
+            this.client.getAllTokens({
                 fields: { paths: fields },
             }),
         );
@@ -98,7 +109,7 @@ export class TokensStateService {
                 : TokenSortField.TOKENS_SORT_UNSPECIFIED;
 
         const result = await firstValueFrom(
-            this.stateGrpc.client.getFilteredTokens({
+            this.client.getFilteredTokens({
                 enabledSwaps: filters.enabledSwaps,
                 identifiers: filters.identifiers,
                 minLiquidity: filters.minLiquidity,
@@ -143,7 +154,7 @@ export class TokensStateService {
         });
 
         return firstValueFrom(
-            this.stateGrpc.client.updateTokens({
+            this.client.updateTokens({
                 tokens,
                 updateMask: { paths: [...new Set(paths)] },
             }),

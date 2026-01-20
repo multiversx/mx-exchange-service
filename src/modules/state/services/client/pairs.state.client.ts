@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
 import {
+    DEX_STATE_SERVICE_NAME,
+    IDexStateServiceClient,
     PairSortField,
     SortOrder,
     UpdatePairsResponse,
@@ -14,8 +17,8 @@ import {
     PairSortingArgs,
 } from 'src/modules/router/models/filter.args';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { formatPair, formatToken } from '../utils/state.format.utils';
-import { StateGrpcClientService } from './state.grpc.client.service';
+import { DEX_STATE_CLIENT } from '../../state.module';
+import { formatPair, formatToken } from '../../utils/state.format.utils';
 
 const sortFieldMap = {
     [PairSortableFields.DEPLOYED_AT]: PairSortField.PAIRS_SORT_DEPLOYED_AT,
@@ -29,8 +32,16 @@ const sortFieldMap = {
 };
 
 @Injectable()
-export class PairsStateService {
-    constructor(private readonly stateGrpc: StateGrpcClientService) {}
+export class PairsStateClient implements OnModuleInit {
+    client: IDexStateServiceClient;
+
+    constructor(@Inject(DEX_STATE_CLIENT) private clientGrpc: ClientGrpc) {}
+
+    onModuleInit() {
+        this.client = this.clientGrpc.getService<IDexStateServiceClient>(
+            DEX_STATE_SERVICE_NAME,
+        );
+    }
 
     @StateRpcMetrics()
     async addPair(
@@ -39,15 +50,13 @@ export class PairsStateService {
         secondToken: EsdtToken,
     ): Promise<void> {
         await firstValueFrom(
-            this.stateGrpc.client.addPair({ pair, firstToken, secondToken }),
+            this.client.addPair({ pair, firstToken, secondToken }),
         );
     }
 
     @StateRpcMetrics()
     async addPairLpToken(address: string, token: EsdtToken): Promise<void> {
-        await firstValueFrom(
-            this.stateGrpc.client.addPairLpToken({ address, token }),
-        );
+        await firstValueFrom(this.client.addPairLpToken({ address, token }));
     }
 
     @StateRpcMetrics()
@@ -60,7 +69,7 @@ export class PairsStateService {
         }
 
         const result = await firstValueFrom(
-            this.stateGrpc.client.getPairs({
+            this.client.getPairs({
                 addresses,
                 fields: { paths: fields },
             }),
@@ -72,7 +81,7 @@ export class PairsStateService {
     @StateRpcMetrics()
     async getAllPairs(fields: (keyof PairModel)[] = []): Promise<PairModel[]> {
         const result = await firstValueFrom(
-            this.stateGrpc.client.getAllPairs({
+            this.client.getAllPairs({
                 fields: { paths: fields },
             }),
         );
@@ -100,7 +109,7 @@ export class PairsStateService {
                 : PairSortField.PAIRS_SORT_UNSPECIFIED;
 
         const result = await firstValueFrom(
-            this.stateGrpc.client.getFilteredPairs({
+            this.client.getFilteredPairs({
                 ...filters,
                 offset,
                 limit,
@@ -127,7 +136,7 @@ export class PairsStateService {
         }
 
         const { pairsWithTokens } = await firstValueFrom(
-            this.stateGrpc.client.getPairsTokens({
+            this.client.getPairsTokens({
                 addresses,
                 pairFields: { paths: pairFields },
                 tokenFields: { paths: tokenFields },
@@ -178,7 +187,7 @@ export class PairsStateService {
         });
 
         return firstValueFrom(
-            this.stateGrpc.client.updatePairs({
+            this.client.updatePairs({
                 pairs,
                 updateMask: { paths: [...new Set(paths)] },
             }),

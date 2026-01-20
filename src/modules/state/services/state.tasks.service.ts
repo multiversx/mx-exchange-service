@@ -9,16 +9,15 @@ import { TokensFilter } from 'src/modules/tokens/models/tokens.filter.args';
 import { CacheService } from 'src/services/caching/cache.service';
 import { Logger } from 'winston';
 import { StateSyncService } from './state.sync.service';
-import { PairsStateService } from './pairs.state.service';
-import { TokensStateService } from './tokens.state.service';
+import { PairsStateClient } from './client/pairs.state.client';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { FarmsStateService } from './farms.state.service';
-import { FeesCollectorStateService } from './fees.collector.state.service';
-import { StateService } from './state.service';
-import { StakingStateService } from './staking.state.service';
+import { FarmsStateClient } from './client/farms.state.client';
+import { FeesCollectorStateClient } from './client/fees.collector.state.client';
+import { StateClient } from './state.client';
+import { StakingStateClient } from './client/staking.state.client';
 import {
     StateTaskPriority,
     StateTasks,
@@ -27,6 +26,7 @@ import {
 } from '../entities/state.tasks.entities';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
+import { TokensStateClient } from './client/tokens.state.client';
 
 export const STATE_TASKS_CACHE_KEY = 'dexService.stateTasks';
 const INDEX_LP_MAX_ATTEMPTS = 60;
@@ -36,14 +36,14 @@ export class StateTasksService {
     constructor(
         private readonly syncService: StateSyncService,
         private readonly cacheService: CacheService,
-        private readonly stateService: StateService,
-        @Inject(forwardRef(() => PairsStateService))
-        private readonly pairsState: PairsStateService,
-        @Inject(forwardRef(() => TokensStateService))
-        private readonly tokensState: TokensStateService,
-        private readonly farmsState: FarmsStateService,
-        private readonly stakingState: StakingStateService,
-        private readonly feesCollectorState: FeesCollectorStateService,
+        private readonly stateService: StateClient,
+        @Inject(forwardRef(() => PairsStateClient))
+        private readonly pairsState: PairsStateClient,
+        @Inject(forwardRef(() => TokensStateClient))
+        private readonly tokensState: TokensStateClient,
+        private readonly farmsState: FarmsStateClient,
+        private readonly stakingState: StakingStateClient,
+        private readonly feesCollectorState: FeesCollectorStateClient,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}

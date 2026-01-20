@@ -1,20 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
+import {
+    DEX_STATE_SERVICE_NAME,
+    IDexStateServiceClient,
+} from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
-import { formatFeesCollector } from '../utils/state.format.utils';
-import { StateGrpcClientService } from './state.grpc.client.service';
+import { DEX_STATE_CLIENT } from '../../state.module';
+import { formatFeesCollector } from '../../utils/state.format.utils';
 
 @Injectable()
-export class FeesCollectorStateService {
-    constructor(private readonly stateGrpc: StateGrpcClientService) {}
+export class FeesCollectorStateClient implements OnModuleInit {
+    client: IDexStateServiceClient;
+
+    constructor(@Inject(DEX_STATE_CLIENT) private clientGrpc: ClientGrpc) {}
+
+    onModuleInit() {
+        this.client = this.clientGrpc.getService<IDexStateServiceClient>(
+            DEX_STATE_SERVICE_NAME,
+        );
+    }
 
     @StateRpcMetrics()
     async getFeesCollector(
         fields: (keyof FeesCollectorModel)[] = [],
     ): Promise<FeesCollectorModel> {
         const result = await firstValueFrom(
-            this.stateGrpc.client.getFeesCollector({
+            this.client.getFeesCollector({
                 fields: { paths: fields },
             }),
         );
@@ -32,7 +45,7 @@ export class FeesCollectorStateService {
         }
 
         await firstValueFrom(
-            this.stateGrpc.client.updateFeesCollector({
+            this.client.updateFeesCollector({
                 feesCollector: feesCollectorUpdates as FeesCollectorModel,
                 updateMask: { paths },
             }),
