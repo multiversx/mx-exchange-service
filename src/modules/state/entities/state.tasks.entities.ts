@@ -13,47 +13,39 @@ import {
 
 export enum StateTasks {
     INIT_STATE = 'initState',
-    ADD_PAIR = 'addPair',
+    INDEX_PAIR = 'indexPair',
     REFRESH_ANALYTICS = 'refreshAnalytics',
     UPDATE_SNAPSHOT = 'updateSnapshot',
     REFRESH_PAIR_RESERVES = 'refreshReserves',
     REFRESH_USDC_PRICE = 'refreshUsdcPrice',
     INDEX_LP_TOKEN = 'indexLpToken',
-    POPULATE_FARMS = 'populateFarms',
     REFRESH_FARM = 'refreshFarm',
-    REFRESH_FARM_INFO = 'refreshFarmInfo',
-    REFRESH_WEEK_TIMEKEEPING = 'refreshWeekTimekeeping',
-    POPULATE_STAKING_FARMS = 'populateStaking',
+    REFRESH_FARMS = 'refreshAllFarms',
     REFRESH_STAKING_FARM = 'refreshStakingFarm',
-    REFRESH_STAKING_FARM_INFO = 'refreshStakingFarmInfo',
-    POPULATE_STAKING_PROXIES = 'populateStakingProxies',
+    REFRESH_STAKING_FARMS = 'refreshAllStakingFarms',
+    REFRESH_FEES_COLLECTOR = 'refreshFeesCollector',
 }
 
 export const StateTaskPriority: Record<StateTasks, number> = {
     initState: 0,
-    addPair: 1,
-    populateFarms: 5,
-    populateStaking: 6,
-    populateStakingProxies: 7,
+    indexPair: 1,
     refreshReserves: 10,
     refreshUsdcPrice: 12,
+    refreshAllFarms: 13,
+    refreshAllStakingFarms: 13,
+    refreshFeesCollector: 13,
     refreshFarm: 15,
     refreshStakingFarm: 15,
-    refreshFarmInfo: 20,
-    refreshStakingFarmInfo: 20,
     indexLpToken: 100,
     updateSnapshot: 200,
-    refreshWeekTimekeeping: 300,
     refreshAnalytics: 1000,
 };
 
 export const StateTasksWithArguments = [
     StateTasks.INDEX_LP_TOKEN,
-    StateTasks.ADD_PAIR,
+    StateTasks.INDEX_PAIR,
     StateTasks.REFRESH_FARM,
-    StateTasks.REFRESH_FARM_INFO,
     StateTasks.REFRESH_STAKING_FARM,
-    StateTasks.REFRESH_STAKING_FARM_INFO,
 ];
 
 export class TaskDto {

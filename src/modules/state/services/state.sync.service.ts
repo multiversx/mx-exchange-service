@@ -26,6 +26,7 @@ import { StakingSyncService } from './sync/staking.sync.service';
 import { FeesCollectorSyncService } from './sync/fees-collector.sync.service';
 import { AnalyticsSyncService } from './sync/analytics.sync.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
+import { WeeklyRewardsSyncService } from './sync/weekly-rewards.sync.service';
 
 @Injectable()
 export class StateSyncService {
@@ -39,6 +40,7 @@ export class StateSyncService {
         private readonly stakingSync: StakingSyncService,
         private readonly feesCollectorSync: FeesCollectorSyncService,
         private readonly analyticsSync: AnalyticsSyncService,
+        private readonly weeklyRewardsSync: WeeklyRewardsSyncService,
         private readonly routerAbi: RouterAbiService,
         private readonly energyAbi: EnergyAbiService,
         private readonly remoteConfigGetter: RemoteConfigGetterService,
@@ -272,7 +274,7 @@ export class StateSyncService {
         return this.dataApi.getTokenPrice('USDC');
     }
 
-    async addPair(
+    async populatePairAndTokens(
         pairMetadata: PairMetadata,
         timestamp?: number,
     ): Promise<{
@@ -280,7 +282,7 @@ export class StateSyncService {
         firstToken: EsdtToken;
         secondToken: EsdtToken;
     }> {
-        return this.pairsSync.addPair(pairMetadata, timestamp);
+        return this.pairsSync.populatePairAndTokens(pairMetadata, timestamp);
     }
 
     async indexPairLpToken(address: string): Promise<EsdtToken | undefined> {
@@ -323,5 +325,71 @@ export class StateSyncService {
             stakingProxies,
             feesCollector,
         );
+    }
+
+    async getFarmReservesAndWeeklyRewards(
+        farm: FarmModelV2,
+    ): Promise<Partial<FarmModelV2>> {
+        const time = await this.weeklyRewardsSync.getWeekTimekeeping(
+            farm.address,
+        );
+
+        const reservesAndRewards = await this.farmsSync.getReservesAndRewards(
+            farm.address,
+            time.currentWeek,
+        );
+
+        const result: Partial<FarmModelV2> = {
+            time,
+            ...reservesAndRewards,
+        };
+
+        return result;
+    }
+
+    async getStakingFarmReservesAndWeeklyRewards(
+        stakingFarm: StakingModel,
+    ): Promise<Partial<StakingModel>> {
+        const time = await this.weeklyRewardsSync.getWeekTimekeeping(
+            stakingFarm.address,
+        );
+
+        const reservesAndRewards = await this.stakingSync.getReservesAndRewards(
+            stakingFarm.address,
+            time.currentWeek,
+        );
+
+        const result: Partial<StakingModel> = {
+            time,
+            ...reservesAndRewards,
+        };
+
+        return result;
+    }
+
+    async getFeesCollectorFeesAndWeekyRewards(
+        feesCollector: FeesCollectorModel,
+    ): Promise<Partial<FeesCollectorModel>> {
+        const time = await this.weeklyRewardsSync.getWeekTimekeeping(
+            feesCollector.address,
+        );
+
+        const { address, allTokens, lockedTokenId, lockedTokensPerEpoch } =
+            feesCollector;
+
+        const feesAndRewards = await this.feesCollectorSync.getRewardsAndFees(
+            address,
+            time,
+            allTokens,
+            lockedTokenId,
+            lockedTokensPerEpoch,
+        );
+
+        const result: Partial<FeesCollectorModel> = {
+            time,
+            ...feesAndRewards,
+        };
+
+        return result;
     }
 }

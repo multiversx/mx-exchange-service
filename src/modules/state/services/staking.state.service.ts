@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
+import { UpdateStakingFarmsResponse } from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { formatStakingFarm } from '../utils/state.format.utils';
@@ -43,6 +44,37 @@ export class StakingStateService {
             result.stakingFarms?.map((stakingFarm) =>
                 formatStakingFarm(stakingFarm, fields),
             ) ?? []
+        );
+    }
+
+    @StateRpcMetrics()
+    async updateStakingFarms(
+        stakingFarmUpdates: Map<string, Partial<StakingModel>>,
+    ): Promise<UpdateStakingFarmsResponse> {
+        if (stakingFarmUpdates.size === 0) {
+            return {
+                failedAddresses: [],
+                updatedCount: 0,
+            };
+        }
+
+        const stakingFarms: StakingModel[] = [];
+        const paths: string[] = [];
+
+        stakingFarmUpdates.forEach((stakingFarm, address) => {
+            paths.push(...Object.keys(stakingFarm));
+
+            stakingFarms.push({
+                address,
+                ...(stakingFarm as StakingModel),
+            });
+        });
+
+        return firstValueFrom(
+            this.stateGrpc.client.updateStakingFarms({
+                stakingFarms,
+                updateMask: { paths: [...new Set(paths)] },
+            }),
         );
     }
 

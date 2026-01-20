@@ -21,4 +21,21 @@ export class FeesCollectorStateService {
 
         return formatFeesCollector(result, fields);
     }
+
+    async updateFeesCollector(
+        feesCollectorUpdates: Partial<FeesCollectorModel>,
+    ): Promise<void> {
+        const paths = Object.keys(feesCollectorUpdates);
+
+        if (paths.length === 0) {
+            return;
+        }
+
+        await firstValueFrom(
+            this.stateGrpc.client.updateFeesCollector({
+                feesCollector: feesCollectorUpdates as FeesCollectorModel,
+                updateMask: { paths },
+            }),
+        );
+    }
 }

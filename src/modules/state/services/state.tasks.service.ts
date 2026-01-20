@@ -25,6 +25,8 @@ import {
     StateTasksWithArguments,
     TaskDto,
 } from '../entities/state.tasks.entities';
+import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
+import { StakingModel } from 'src/modules/staking/models/staking.model';
 
 export const STATE_TASKS_CACHE_KEY = 'dexService.stateTasks';
 const INDEX_LP_MAX_ATTEMPTS = 60;
@@ -93,8 +95,8 @@ export class StateTasksService {
                 case StateTasks.INIT_STATE:
                     await this.populateState();
                     break;
-                case StateTasks.ADD_PAIR:
-                    await this.addPair(
+                case StateTasks.INDEX_PAIR:
+                    await this.indexPair(
                         JSON.parse(task.args[0]),
                         parseInt(task.args[1]),
                     );
@@ -113,6 +115,21 @@ export class StateTasksService {
                     break;
                 case StateTasks.REFRESH_USDC_PRICE:
                     await this.refreshUsdcPrice();
+                    break;
+                case StateTasks.REFRESH_FARMS:
+                    await this.refreshFarms();
+                    break;
+                case StateTasks.REFRESH_FARM:
+                    await this.refreshFarm(task.args[0]);
+                    break;
+                case StateTasks.REFRESH_STAKING_FARMS:
+                    await this.refreshStakingFarms();
+                    break;
+                case StateTasks.REFRESH_STAKING_FARM:
+                    await this.refreshStakingFarm(task.args[0]);
+                    break;
+                case StateTasks.REFRESH_FEES_COLLECTOR:
+                    await this.refreshFeesCollector();
                     break;
                 default:
                     break;
@@ -159,12 +176,15 @@ export class StateTasksService {
         ]);
     }
 
-    async addPair(
+    async indexPair(
         pairMetadata: PairMetadata,
         timestamp: number,
     ): Promise<void> {
         const { pair, firstToken, secondToken } =
-            await this.syncService.addPair(pairMetadata, timestamp);
+            await this.syncService.populatePairAndTokens(
+                pairMetadata,
+                timestamp,
+            );
 
         await this.pairsState.addPair(pair, firstToken, secondToken);
     }
@@ -329,5 +349,124 @@ export class StateTasksService {
             context: StateTasksService.name,
             updateResult,
         });
+    }
+
+    async refreshFarms(): Promise<void> {
+        const farms = await this.farmsState.getAllFarms(['address']);
+
+        const farmUpdates = new Map<string, Partial<FarmModelV2>>();
+        for (const farm of farms) {
+            const updates =
+                await this.syncService.getFarmReservesAndWeeklyRewards(farm);
+
+            farmUpdates.set(farm.address, {
+                ...updates,
+            });
+        }
+
+        const updateResult = await this.farmsState.updateFarms(farmUpdates);
+
+        this.logger.debug(`Refresh farms task completed`, {
+            context: StateTasksService.name,
+            updateResult,
+        });
+    }
+
+    async refreshFarm(address: string): Promise<void> {
+        const [farm] = await this.farmsState.getFarms([address], ['address']);
+
+        if (!farm) {
+            throw new Error(`Farm ${address} not found`);
+        }
+
+        const farmUpdates = new Map<string, Partial<FarmModelV2>>();
+
+        const updates = await this.syncService.getFarmReservesAndWeeklyRewards(
+            farm,
+        );
+
+        farmUpdates.set(address, { ...updates });
+
+        const updateResult = await this.farmsState.updateFarms(farmUpdates);
+
+        this.logger.debug(`Refresh farm ${address} task completed`, {
+            context: StateTasksService.name,
+            updateResult,
+        });
+    }
+
+    async refreshStakingFarms(): Promise<void> {
+        const stakingFarms = await this.stakingState.getAllStakingFarms([
+            'address',
+        ]);
+
+        const stakingFarmUpdates = new Map<string, Partial<StakingModel>>();
+        for (const stakingFarm of stakingFarms) {
+            const updates =
+                await this.syncService.getStakingFarmReservesAndWeeklyRewards(
+                    stakingFarm,
+                );
+
+            stakingFarmUpdates.set(stakingFarm.address, {
+                ...updates,
+            });
+        }
+
+        const updateResult = await this.stakingState.updateStakingFarms(
+            stakingFarmUpdates,
+        );
+
+        this.logger.debug(`Refresh staking farms task completed`, {
+            context: StateTasksService.name,
+            updateResult,
+        });
+    }
+
+    async refreshStakingFarm(address: string): Promise<void> {
+        const [stakingFarm] = await this.stakingState.getStakingFarms(
+            [address],
+            ['address'],
+        );
+
+        if (!stakingFarm) {
+            throw new Error(`Staking farm ${address} not found`);
+        }
+
+        const stakingFarmUpdates = new Map<string, Partial<StakingModel>>();
+
+        const updates =
+            await this.syncService.getStakingFarmReservesAndWeeklyRewards(
+                stakingFarm,
+            );
+
+        stakingFarmUpdates.set(address, {
+            ...updates,
+        });
+
+        const updateResult = await this.stakingState.updateStakingFarms(
+            stakingFarmUpdates,
+        );
+
+        this.logger.debug(`Refresh staking farm ${address} task completed`, {
+            context: StateTasksService.name,
+            updateResult,
+        });
+    }
+
+    async refreshFeesCollector(): Promise<void> {
+        const feesCollector = await this.feesCollectorState.getFeesCollector([
+            'address',
+            'allTokens',
+            'lockedTokenId',
+            'lockedTokensPerEpoch',
+        ]);
+
+        const feesCollectorUpdates =
+            await this.syncService.getFeesCollectorFeesAndWeekyRewards(
+                feesCollector,
+            );
+
+        console.log(feesCollectorUpdates);
+        await this.feesCollectorState.updateFeesCollector(feesCollectorUpdates);
     }
 }
