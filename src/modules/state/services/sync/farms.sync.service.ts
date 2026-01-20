@@ -5,9 +5,6 @@ import { Logger } from 'winston';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
-import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
-import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { farmType } from 'src/utils/farm.utils';
 import { WeeklyRewardsSyncService } from './weekly-rewards.sync.service';
@@ -18,8 +15,6 @@ export class FarmsSyncService {
         private readonly farmAbiV2: FarmAbiServiceV2,
         @Inject(forwardRef(() => FarmComputeServiceV2))
         private readonly farmComputeV2: FarmComputeServiceV2,
-        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
-        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly apiService: MXApiService,
         private readonly weeklyRewardsUtils: WeeklyRewardsSyncService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -32,31 +27,23 @@ export class FarmsSyncService {
             farmingTokenId,
             farmedTokenId,
             farmTokenCollection,
-            produceRewardsEnabled,
             perBlockRewards,
             penaltyPercent,
             minimumFarmingEpochs,
             divisionSafetyConstant,
             state,
             burnGasLimit,
-            boostedYieldsRewardsPercentage,
+            boostedYieldsRewardsPercenatage,
             boostedYieldsFactors,
             lockingScAddress,
             lockEpochs,
             energyFactoryAddress,
-            farmTokenSupply,
-            lastRewardBlockNonce,
-            rewardPerShare,
-            rewardReserve,
             pairAddress,
-            lastGlobalUpdateWeek,
-            currentWeek,
-            firstWeekStartEpoch,
+            time,
         ] = await Promise.all([
             this.farmAbiV2.getFarmingTokenIDRaw(address),
             this.farmAbiV2.getFarmedTokenIDRaw(address),
             this.farmAbiV2.getFarmTokenIDRaw(address),
-            this.farmAbiV2.getProduceRewardsEnabledRaw(address),
             this.farmAbiV2.getRewardsPerBlockRaw(address),
             this.farmAbiV2.getPenaltyPercentRaw(address),
             this.farmAbiV2.getMinimumFarmingEpochsRaw(address),
@@ -68,37 +55,13 @@ export class FarmsSyncService {
             this.farmAbiV2.getLockingScAddressRaw(address),
             this.farmAbiV2.getLockEpochsRaw(address),
             this.farmAbiV2.getEnergyFactoryAddressRaw(address),
-            this.farmAbiV2.getFarmTokenSupplyRaw(address),
-            this.farmAbiV2.getLastRewardBlockNonceRaw(address),
-            this.farmAbiV2.getRewardPerShareRaw(address),
-            this.farmAbiV2.getRewardReserveRaw(address),
             this.farmAbiV2.getPairContractAddressRaw(address),
-            this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeekRaw(address),
-            this.weekTimekeepingAbi.getCurrentWeekRaw(address),
-            this.weekTimekeepingAbi.firstWeekStartEpochRaw(address),
+            this.weeklyRewardsUtils.getWeekTimekeeping(address),
         ]);
 
-        const [
-            boosterRewards,
-            farmTokenMetadata,
-            farmTokenSupplyCurrentWeek,
-            accumulatedRewards,
-            undistributedBoostedRewards,
-        ] = await Promise.all([
-            this.weeklyRewardsUtils.getGlobalInfoWeeklyModels(
-                address,
-                currentWeek,
-            ),
+        const [farmTokenMetadata, reservesAndRewards] = await Promise.all([
             this.apiService.getNftCollection(farmTokenCollection),
-            this.farmAbiV2.getFarmSupplyForWeekRaw(address, currentWeek),
-            this.farmAbiV2.getAccumulatedRewardsForWeekRaw(
-                address,
-                currentWeek,
-            ),
-            this.farmComputeV2.undistributedBoostedRewardsRaw(
-                address,
-                currentWeek,
-            ),
+            this.getReservesAndRewards(address, time.currentWeek),
         ]);
 
         const farm = new FarmModelV2({
@@ -107,35 +70,21 @@ export class FarmsSyncService {
             farmedTokenId,
             farmTokenCollection,
             farmTokenDecimals: farmTokenMetadata.decimals,
-            farmTokenSupply,
-            farmTokenSupplyCurrentWeek,
             pairAddress,
-            lastRewardBlockNonce,
-            rewardPerShare,
-            rewardReserve,
-            boosterRewards,
-            produceRewardsEnabled,
             perBlockRewards,
             penaltyPercent,
             minimumFarmingEpochs,
             divisionSafetyConstant,
             state,
             burnGasLimit,
-            boostedYieldsRewardsPercenatage: boostedYieldsRewardsPercentage,
+            boostedYieldsRewardsPercenatage,
             boostedYieldsFactors,
             lockingScAddress,
             lockEpochs: lockEpochs.toString(),
             energyFactoryAddress,
             rewardType: farmType(address),
-            time: new WeekTimekeepingModel({
-                currentWeek,
-                firstWeekStartEpoch,
-            }),
-            lastGlobalUpdateWeek,
-            accumulatedRewards,
-            undistributedBoostedRewards: undistributedBoostedRewards
-                .integerValue()
-                .toFixed(),
+            time,
+            ...reservesAndRewards,
         });
 
         profiler.stop();
@@ -147,6 +96,62 @@ export class FarmsSyncService {
                 tokens: [farmingTokenId, farmedTokenId, farmTokenCollection],
             },
         );
+
+        return farm;
+    }
+
+    async getReservesAndRewards(
+        address: string,
+        currentWeek: number,
+    ): Promise<Partial<FarmModelV2>> {
+        const [
+            farmTokenSupply,
+            lastRewardBlockNonce,
+            rewardPerShare,
+            rewardReserve,
+            produceRewardsEnabled,
+            farmTokenSupplyCurrentWeek,
+            accumulatedRewards,
+            undistributedBoostedRewards,
+            lastGlobalUpdateWeek,
+            boosterRewards,
+        ] = await Promise.all([
+            this.farmAbiV2.getFarmTokenSupplyRaw(address),
+            this.farmAbiV2.getLastRewardBlockNonceRaw(address),
+            this.farmAbiV2.getRewardPerShareRaw(address),
+            this.farmAbiV2.getRewardReserveRaw(address),
+            this.farmAbiV2.getProduceRewardsEnabledRaw(address),
+
+            this.farmAbiV2.getFarmSupplyForWeekRaw(address, currentWeek),
+            this.farmAbiV2.getAccumulatedRewardsForWeekRaw(
+                address,
+                currentWeek,
+            ),
+            this.farmComputeV2.undistributedBoostedRewardsRaw(
+                address,
+                currentWeek,
+            ),
+            this.weeklyRewardsUtils.getLastGlobalUpdateWeek(address),
+            this.weeklyRewardsUtils.getGlobalInfoWeeklyModels(
+                address,
+                currentWeek,
+            ),
+        ]);
+
+        const farm: Partial<FarmModelV2> = {
+            farmTokenSupply,
+            lastRewardBlockNonce,
+            rewardPerShare,
+            rewardReserve,
+            produceRewardsEnabled,
+            farmTokenSupplyCurrentWeek,
+            accumulatedRewards,
+            undistributedBoostedRewards: undistributedBoostedRewards
+                .integerValue()
+                .toFixed(),
+            lastGlobalUpdateWeek,
+            boosterRewards,
+        };
 
         return farm;
     }

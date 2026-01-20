@@ -7,9 +7,6 @@ import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.prox
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
-import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
-import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { WeeklyRewardsSyncService } from './weekly-rewards.sync.service';
 
@@ -19,8 +16,6 @@ export class StakingSyncService {
         private readonly stakingAbi: StakingAbiService,
         private readonly stakingCompute: StakingComputeService,
         private readonly stakingProxyAbi: StakingProxyAbiService,
-        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
-        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly apiService: MXApiService,
         private readonly weeklyRewardsUtils: WeeklyRewardsSyncService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -33,16 +28,10 @@ export class StakingSyncService {
             farmTokenCollection,
             farmingTokenId,
             rewardTokenId,
-            farmTokenSupply,
-            rewardPerShare,
-            accumulatedRewards,
-            rewardCapacity,
             annualPercentageRewards,
             perBlockRewards,
             minUnboundEpochs,
-            lastRewardBlockNonce,
             divisionSafetyConstant,
-            produceRewardsEnabled,
             lockedAssetFactoryManagedAddress,
             state,
             boostedYieldsRewardsPercentage,
@@ -50,23 +39,15 @@ export class StakingSyncService {
             energyFactoryAddress,
             stakingPositionMigrationNonce,
             deployedAt,
-            currentWeek,
-            firstWeekStartEpoch,
-            lastGlobalUpdateWeek,
+            time,
         ] = await Promise.all([
             this.stakingAbi.getFarmTokenIDRaw(address),
             this.stakingAbi.getFarmingTokenIDRaw(address),
             this.stakingAbi.getRewardTokenIDRaw(address),
-            this.stakingAbi.getFarmTokenSupplyRaw(address),
-            this.stakingAbi.getRewardPerShareRaw(address),
-            this.stakingAbi.getAccumulatedRewardsRaw(address),
-            this.stakingAbi.getRewardCapacityRaw(address),
             this.stakingAbi.getAnnualPercentageRewardsRaw(address),
             this.stakingAbi.getPerBlockRewardsAmountRaw(address),
             this.stakingAbi.getMinUnbondEpochsRaw(address),
-            this.stakingAbi.getLastRewardBlockNonceRaw(address),
             this.stakingAbi.getDivisionSafetyConstantRaw(address),
-            this.stakingAbi.getProduceRewardsEnabledRaw(address),
             this.stakingAbi.getLockedAssetFactoryAddressRaw(address),
             this.stakingAbi.getStateRaw(address),
             this.stakingAbi.getBoostedYieldsRewardsPercenatageRaw(address),
@@ -74,32 +55,12 @@ export class StakingSyncService {
             this.stakingAbi.getEnergyFactoryAddressRaw(address),
             this.stakingAbi.getFarmPositionMigrationNonceRaw(address),
             this.stakingCompute.computeDeployedAt(address),
-            this.weekTimekeepingAbi.getCurrentWeekRaw(address),
-            this.weekTimekeepingAbi.firstWeekStartEpochRaw(address),
-            this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeekRaw(address),
+            this.weeklyRewardsUtils.getWeekTimekeeping(address),
         ]);
 
-        const [
-            boosterRewards,
-            farmTokenMetadata,
-            farmTokenSupplyCurrentWeek,
-            accumulatedRewardsForWeek,
-            undistributedBoostedRewards,
-        ] = await Promise.all([
-            this.weeklyRewardsUtils.getGlobalInfoWeeklyModels(
-                address,
-                currentWeek,
-            ),
+        const [farmTokenMetadata, reservesAndRewards] = await Promise.all([
             this.apiService.getNftCollection(farmTokenCollection),
-            this.stakingAbi.getFarmSupplyForWeekRaw(address, currentWeek),
-            this.stakingAbi.getAccumulatedRewardsForWeekRaw(
-                address,
-                currentWeek,
-            ),
-            this.stakingCompute.undistributedBoostedRewardsRaw(
-                address,
-                currentWeek,
-            ),
+            this.getReservesAndRewards(address, time.currentWeek),
         ]);
 
         const stakingFarm = new StakingModel({
@@ -108,34 +69,19 @@ export class StakingSyncService {
             farmTokenDecimals: farmTokenMetadata.decimals,
             farmingTokenId,
             rewardTokenId,
-            farmTokenSupply,
-            rewardPerShare,
-            accumulatedRewards,
-            rewardCapacity,
             annualPercentageRewards,
             minUnboundEpochs,
             perBlockRewards,
-            lastRewardBlockNonce,
             divisionSafetyConstant: divisionSafetyConstant.toString(),
-            produceRewardsEnabled,
             lockedAssetFactoryManagedAddress,
             state,
             boostedYieldsRewardsPercenatage: boostedYieldsRewardsPercentage,
             boostedYieldsFactors,
-            time: new WeekTimekeepingModel({
-                currentWeek,
-                firstWeekStartEpoch,
-            }),
-            boosterRewards,
-            lastGlobalUpdateWeek,
-            farmTokenSupplyCurrentWeek,
+            time,
             energyFactoryAddress,
-            accumulatedRewardsForWeek,
-            undistributedBoostedRewards: undistributedBoostedRewards
-                .integerValue()
-                .toFixed(),
             stakingPositionMigrationNonce,
             deployedAt,
+            ...reservesAndRewards,
         });
 
         profiler.stop();
@@ -149,6 +95,64 @@ export class StakingSyncService {
         );
 
         return stakingFarm;
+    }
+
+    async getReservesAndRewards(
+        address: string,
+        currentWeek: number,
+    ): Promise<Partial<StakingModel>> {
+        const [
+            farmTokenSupply,
+            rewardPerShare,
+            accumulatedRewards,
+            rewardCapacity,
+            lastRewardBlockNonce,
+            produceRewardsEnabled,
+            farmTokenSupplyCurrentWeek,
+            accumulatedRewardsForWeek,
+            undistributedBoostedRewards,
+            lastGlobalUpdateWeek,
+            boosterRewards,
+        ] = await Promise.all([
+            this.stakingAbi.getFarmTokenSupplyRaw(address),
+            this.stakingAbi.getRewardPerShareRaw(address),
+            this.stakingAbi.getAccumulatedRewardsRaw(address),
+            this.stakingAbi.getRewardCapacityRaw(address),
+            this.stakingAbi.getLastRewardBlockNonceRaw(address),
+            this.stakingAbi.getProduceRewardsEnabledRaw(address),
+            this.stakingAbi.getFarmSupplyForWeekRaw(address, currentWeek),
+            this.stakingAbi.getAccumulatedRewardsForWeekRaw(
+                address,
+                currentWeek,
+            ),
+            this.stakingCompute.undistributedBoostedRewardsRaw(
+                address,
+                currentWeek,
+            ),
+            this.weeklyRewardsUtils.getLastGlobalUpdateWeek(address),
+            this.weeklyRewardsUtils.getGlobalInfoWeeklyModels(
+                address,
+                currentWeek,
+            ),
+        ]);
+
+        const stakingFarmUpdates: Partial<StakingModel> = {
+            farmTokenSupply,
+            rewardPerShare,
+            accumulatedRewards,
+            rewardCapacity,
+            lastRewardBlockNonce,
+            produceRewardsEnabled,
+            farmTokenSupplyCurrentWeek,
+            accumulatedRewardsForWeek,
+            undistributedBoostedRewards: undistributedBoostedRewards
+                .integerValue()
+                .toFixed(),
+            lastGlobalUpdateWeek,
+            boosterRewards,
+        };
+
+        return stakingFarmUpdates;
     }
 
     async populateStakingProxy(address: string): Promise<StakingProxyModel> {

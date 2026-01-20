@@ -7,21 +7,17 @@ import { constantsConfig, scAddress } from 'src/config';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fees-collector.abi.service';
 import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
-import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
-import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { WeeklyRewardsSyncService } from './weekly-rewards.sync.service';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 
 @Injectable()
 export class FeesCollectorSyncService {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly energyAbi: EnergyAbiService,
-        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
-        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly apiService: MXApiService,
         private readonly contextGetter: ContextGetterService,
         private readonly weeklyRewardsUtils: WeeklyRewardsSyncService,
@@ -37,60 +33,82 @@ export class FeesCollectorSyncService {
             allTokens,
             knownContracts,
             lockedTokensPerEpoch,
-            lastLockedTokensAddWeek,
             lockedTokenId,
-            currentWeek,
-            firstWeekStartEpoch,
-            lastGlobalUpdateWeek,
-            stats,
-            currentEpoch,
+            time,
         ] = await Promise.all([
             this.feesCollectorAbi.getAllTokensRaw(),
             this.feesCollectorAbi.getKnownContractsRaw(),
             this.feesCollectorAbi.getLockedTokensPerEpochRaw(),
-            this.feesCollectorAbi.getLastLockedTokensAddWeekRaw(),
             this.energyAbi.lockedTokenID(),
-            this.weekTimekeepingAbi.getCurrentWeekRaw(address),
-            this.weekTimekeepingAbi.firstWeekStartEpochRaw(address),
-            this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeekRaw(address),
-            this.apiService.getStats(),
-            this.contextGetter.getCurrentEpoch(),
+            this.weeklyRewardsUtils.getWeekTimekeeping(address),
         ]);
 
-        const startEpochForWeek =
-            firstWeekStartEpoch +
-            (currentWeek - 1) * constantsConfig.EPOCHS_IN_WEEK;
-        const endEpochForWeek =
-            startEpochForWeek + constantsConfig.EPOCHS_IN_WEEK - 1;
+        const rewardsAndFees = await this.getRewardsAndFees(
+            address,
+            time,
+            allTokens,
+            lockedTokenId,
+            lockedTokensPerEpoch,
+        );
 
-        const time = new WeekTimekeepingModel({
-            currentWeek,
-            firstWeekStartEpoch,
-            startEpochForWeek,
-            endEpochForWeek,
+        const feesCollector = new FeesCollectorModel({
+            address,
+            time,
+            startWeek: time.currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
+            endWeek: time.currentWeek,
+            allTokens,
+            knownContracts,
+            lockedTokenId,
+            lockedTokensPerEpoch,
+            ...rewardsAndFees,
         });
 
+        profiler.stop();
+        this.logger.debug(
+            `${this.populateFeesCollector.name} : ${profiler.duration}ms`,
+            {
+                context: FeesCollectorSyncService.name,
+            },
+        );
+
+        return feesCollector;
+    }
+
+    async getRewardsAndFees(
+        address: string,
+        time: WeekTimekeepingModel,
+        allTokens: string[],
+        lockedTokenId: string,
+        lockedTokensPerEpoch: string,
+    ): Promise<Partial<FeesCollectorModel>> {
+        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+
         const [
+            lastLockedTokensAddWeek,
+            lastGlobalUpdateWeek,
             undistributedRewards,
             blocksInWeek,
             accumulatedFees,
             rewardsClaimed,
+            stats,
         ] = await Promise.all([
+            this.feesCollectorAbi.getLastLockedTokensAddWeekRaw(),
+            this.weeklyRewardsUtils.getLastGlobalUpdateWeek(address),
             this.weeklyRewardsUtils.getGlobalInfoWeeklyModels(
                 address,
-                currentWeek,
+                time.currentWeek,
             ),
-            this.getBlocksInWeek(currentEpoch, time),
-            this.getFeesCollectorAccumulatedFees(currentWeek, allTokens),
-            this.getFeesCollectorRewardsClaimed(currentWeek, allTokens),
+            this.getBlocksInWeek(currentEpoch, time.startEpochForWeek),
+            this.getFeesCollectorAccumulatedFees(time.currentWeek, allTokens),
+            this.getFeesCollectorRewardsClaimed(time.currentWeek, allTokens),
+            this.apiService.getStats(),
         ]);
 
         const lockedTokensPerBlock = new BigNumber(lockedTokensPerEpoch)
             .dividedBy(stats.roundsPerEpoch)
-            .integerValue()
-            .toFixed();
+            .integerValue();
 
-        const accumulatedFeesUntilNow = new BigNumber(lockedTokensPerBlock)
+        const accumulatedFeesUntilNow = lockedTokensPerBlock
             .multipliedBy(blocksInWeek)
             .toFixed();
 
@@ -103,32 +121,16 @@ export class FeesCollectorSyncService {
             }),
         );
 
-        const feesCollector = new FeesCollectorModel({
-            address,
-            time,
-            startWeek: currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
-            endWeek: currentWeek,
+        const feesCollectorUpdates: Partial<FeesCollectorModel> = {
+            lockedTokensPerBlock: lockedTokensPerBlock.toFixed(),
             lastGlobalUpdateWeek,
             undistributedRewards,
-            allTokens,
-            knownContracts,
             accumulatedFees,
-            rewardsClaimed,
-            lockedTokenId,
-            lockedTokensPerBlock,
-            lockedTokensPerEpoch,
             lastLockedTokensAddWeek,
-        });
+            rewardsClaimed,
+        };
 
-        profiler.stop();
-        this.logger.debug(
-            `${this.populateFeesCollector.name} : ${profiler.duration}ms`,
-            {
-                context: FeesCollectorSyncService.name,
-            },
-        );
-
-        return feesCollector;
+        return feesCollectorUpdates;
     }
 
     private async getFeesCollectorRewardsClaimed(
@@ -175,14 +177,10 @@ export class FeesCollectorSyncService {
 
     private async getBlocksInWeek(
         currentEpoch: number,
-        time: WeekTimekeepingModel,
+        startEpochForWeek: number,
     ): Promise<number> {
         const promises = [];
-        for (
-            let epoch = time.startEpochForWeek;
-            epoch <= currentEpoch;
-            epoch++
-        ) {
+        for (let epoch = startEpochForWeek; epoch <= currentEpoch; epoch++) {
             promises.push(this.contextGetter.getBlocksCountInEpoch(epoch, 1));
         }
 
