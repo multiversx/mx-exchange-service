@@ -3,45 +3,46 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { UserToken } from '../models/user.model';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { TokensStateService } from 'src/modules/state/services/tokens.state.service';
+import { PairsStateService } from 'src/modules/state/services/pairs.state.service';
 
 @Injectable()
 export class UserEsdtComputeService {
     constructor(
         private readonly pairService: PairService,
-        private readonly pairCompute: PairComputeService,
-        private readonly tokenCompute: TokenComputeService,
+        private readonly tokensState: TokensStateService,
+        private readonly pairsState: PairsStateService,
     ) {}
 
     async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
-        const tokenPriceUSD = await this.pairCompute.tokenPriceUSD(
+        const [token] = await this.tokensState.getTokens([
             esdtToken.identifier,
-        );
+        ]);
         return new UserToken({
-            ...esdtToken,
+            ...token,
+            balance: esdtToken.balance,
             valueUSD: computeValueUSD(
                 esdtToken.balance,
                 esdtToken.decimals,
-                tokenPriceUSD,
+                token.price,
             ).toFixed(),
         });
     }
 
     async allEsdtTokensUSD(esdtTokens: EsdtToken[]): Promise<UserToken[]> {
-        const allTokenPrices =
-            await this.tokenCompute.getAllTokensPriceDerivedUSD(
-                esdtTokens.map((esdtToken) => esdtToken.identifier),
-            );
+        const tokens = await this.tokensState.getTokens(
+            esdtTokens.map((esdtToken) => esdtToken.identifier),
+        );
 
         return esdtTokens.map(
             (esdtToken, index) =>
                 new UserToken({
-                    ...esdtToken,
+                    ...tokens[index],
+                    balance: esdtToken.balance,
                     valueUSD: computeValueUSD(
                         esdtToken.balance,
-                        esdtToken.decimals,
-                        allTokenPrices[index],
+                        tokens[index].decimals,
+                        tokens[index].price,
                     ).toFixed(),
                 }),
         );
@@ -51,33 +52,49 @@ export class UserEsdtComputeService {
         esdtToken: EsdtToken,
         pairAddress: string,
     ): Promise<UserToken> {
-        const valueUSD = await this.pairService.getLiquidityPositionUSD(
-            pairAddress,
-            esdtToken.balance,
+        const [lpUserToken] = await this.allLpTokensUSD(
+            [esdtToken],
+            [pairAddress],
         );
-        return new UserToken({
-            ...esdtToken,
-            valueUSD: valueUSD,
-            pairAddress,
-        });
+        return lpUserToken;
     }
 
     async allLpTokensUSD(
         esdtTokens: EsdtToken[],
         pairAddresses: string[],
     ): Promise<UserToken[]> {
-        const valuesUSD = await this.pairService.getAllLiquidityPositionsUSD(
-            pairAddresses,
-            esdtTokens.map((token) => token.balance),
-        );
+        const pairs = await this.pairsState.getPairsWithTokens(pairAddresses, [
+            'address',
+            'info',
+            'firstTokenPriceUSD',
+            'secondTokenPriceUSD',
+        ]);
 
-        return esdtTokens.map(
-            (esdtToken, index) =>
-                new UserToken({
-                    ...esdtToken,
-                    valueUSD: valuesUSD[index],
-                    pairAddress: pairAddresses[index],
-                }),
-        );
+        return esdtTokens.map((esdtToken, index) => {
+            const pair = pairs[index];
+            const liquidityPosition = this.pairService.computeLiquidityPosition(
+                pair.info,
+                esdtToken.balance,
+            );
+            const valueUSD = computeValueUSD(
+                liquidityPosition.firstTokenAmount,
+                pair.firstToken.decimals,
+                pair.firstToken.price,
+            )
+                .plus(
+                    computeValueUSD(
+                        liquidityPosition.secondTokenAmount,
+                        pair.secondToken.decimals,
+                        pair.secondToken.price,
+                    ),
+                )
+                .toFixed();
+            return new UserToken({
+                ...pair.liquidityPoolToken,
+                balance: esdtToken.balance,
+                valueUSD,
+                pairAddress: pair.address,
+            });
+        });
     }
 }

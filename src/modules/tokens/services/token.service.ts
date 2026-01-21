@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import {
     BaseEsdtToken,
     EsdtToken,
@@ -27,6 +27,7 @@ import { TokensStateService } from 'src/modules/state/services/tokens.state.serv
 export class TokenService {
     constructor(
         private readonly tokenRepository: TokenRepositoryService,
+        @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
