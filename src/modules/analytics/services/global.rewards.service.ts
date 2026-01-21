@@ -23,7 +23,6 @@ import { FeesCollectorComputeService } from 'src/modules/fees-collector/services
 import { PairsStateService } from 'src/modules/state/services/pairs.state.service';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { TokensStateService } from 'src/modules/state/services/tokens.state.service';
-// import { FarmsStateService } from 'src/modules/state/services/farms.state.service';
 
 @Injectable()
 export class GlobalRewardsService {
@@ -37,7 +36,6 @@ export class GlobalRewardsService {
         private readonly stakingAbi: StakingAbiService,
         private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly pairsState: PairsStateService,
-        // private readonly farmsState: FarmsStateService,
         private readonly tokensState: TokensStateService,
     ) {}
 
@@ -109,13 +107,7 @@ export class GlobalRewardsService {
         const farmsData: FarmsGlobalRewards[] = [];
         const farmAddresses = farmsAddresses([FarmVersion.V2]);
 
-        // const farms = await this.farmsState.getAllFarms([
-        //     'address',
-        //     'pairAddress',
-        //     'boostedYieldsRewardsPercenatage',
-        //     'accumulatedRewards',
-        //     'boosterRewards'
-        // ]);
+        // TODO : resolve farms from stateRPC and remove abi calls
 
         const pairAddresses = await this.farmAbiV2.getAllPairContractAddresses(
             farmAddresses,
