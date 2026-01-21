@@ -29,7 +29,6 @@ import { StateModule } from '../state/state.module';
         StateModule,
     ],
     providers: [
-        TokenLoader,
         TokenService,
         TokenSetterService,
         TokenComputeService,
@@ -39,7 +38,6 @@ import { StateModule } from '../state/state.module';
     ],
     exports: [
         TokenRepositoryService,
-        TokenLoader,
         TokenService,
         TokenSetterService,
         TokenComputeService,
