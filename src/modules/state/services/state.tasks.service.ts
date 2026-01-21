@@ -485,7 +485,6 @@ export class StateTasksService {
                 feesCollector,
             );
 
-        console.log(feesCollectorUpdates);
         await this.feesCollectorState.updateFeesCollector(feesCollectorUpdates);
     }
 }
