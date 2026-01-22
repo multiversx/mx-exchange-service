@@ -40,15 +40,6 @@ export class TokenSetterService extends GenericSetterService {
         );
     }
 
-    async setEsdtTokenType(tokenID: string, type: string): Promise<string> {
-        return await this.setDataOrUpdateTtl(
-            this.getTokenCacheKey(tokenID, 'getEsdtTokenType'),
-            type,
-            CacheTtlInfo.Token.remoteTtl,
-            CacheTtlInfo.Token.localTtl,
-        );
-    }
-
     async setDerivedEGLD(tokenID: string, value: string): Promise<string> {
         return await this.setData(
             this.getTokenCacheKey(tokenID, 'tokenPriceDerivedEGLD'),
