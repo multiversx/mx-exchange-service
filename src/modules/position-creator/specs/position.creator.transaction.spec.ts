@@ -36,12 +36,12 @@ import { constantsConfig, gasConfig, scAddress } from 'src/config';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model';
-import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { SmartRouterServiceProvider } from 'src/modules/auto-router/mocks/smart.router.service.mock';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -65,7 +65,8 @@ describe('PositionCreatorTransaction', () => {
                 PairService,
                 PairComputeServiceProvider,
                 PairTransactionService,
-                PairFilteringService,
+                PairsStateServiceProvider,
+                TokensStateServiceProvider,
                 WrapService,
                 WrapAbiServiceProvider,
                 WrapTransactionsService,
@@ -78,7 +79,6 @@ describe('PositionCreatorTransaction', () => {
                 StakingAbiServiceProvider,
                 StakingProxyAbiServiceProvider,
                 TokenServiceProvider,
-                TokenComputeServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 ComposableTasksTransactionService,
                 ProxyFarmAbiServiceProvider,

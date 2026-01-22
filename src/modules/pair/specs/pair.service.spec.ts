@@ -105,15 +105,13 @@ describe('PairService', () => {
     it('should get liquidity position from pair in USD', async () => {
         const service = module.get<PairService>(PairService);
 
-        const [liquidityPositionUSD] =
-            await service.getAllLiquidityPositionsUSD(
-                [
-                    Address.fromHex(
-                        '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
-                ],
-                ['1000000000000000000'],
-            );
+        const liquidityPositionUSD = await service.getLiquidityPositionUSD(
+            Address.fromHex(
+                '0000000000000000000000000000000000000000000000000000000000000012',
+            ).bech32(),
+
+            '1000000000000000000',
+        );
         expect(liquidityPositionUSD).toEqual('20');
     });
 
