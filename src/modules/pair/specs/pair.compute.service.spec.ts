@@ -20,8 +20,6 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import BigNumber from 'bignumber.js';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { AssetsModel } from 'src/modules/tokens/models/assets.model';
-import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { PairAbiService } from '../services/pair.abi.service';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
@@ -191,26 +189,6 @@ describe('PairService', () => {
         );
 
         expect(lpTokenPriceUSD).toEqual('2000000000000');
-    });
-
-    it('should get pair type: Core', async () => {
-        const service = module.get<PairComputeService>(PairComputeService);
-        const type = await service.computeTypeFromTokens(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000013',
-            ).bech32(),
-        );
-        expect(type).toEqual('Core');
-    });
-
-    it('should get pair type: Ecosystem', async () => {
-        const service = module.get<PairComputeService>(PairComputeService);
-        const type = await service.computeTypeFromTokens(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-        );
-        expect(type).toEqual('Ecosystem');
     });
 
     it('should compute permanent locked value USD with 0 decimals', async () => {

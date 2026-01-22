@@ -19,10 +19,6 @@ export class TokenServiceMock {
         });
     }
 
-    async getEsdtTokenType(tokenID: string): Promise<string> {
-        return Tokens(tokenID).type;
-    }
-
     async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {
         const tokenIDs = [];
         for (const pair of pairs) {
