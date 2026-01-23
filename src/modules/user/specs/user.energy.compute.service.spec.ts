@@ -71,6 +71,8 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
 import { StakingProxyFilteringService } from 'src/modules/staking-proxy/services/staking.proxy.filtering.service';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
+import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('UserEnergyComputeService', () => {
     let module: TestingModule;
@@ -144,6 +146,8 @@ describe('UserEnergyComputeService', () => {
                 AbiLockedAssetServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                TokensStateServiceProvider,
+                PairsStateServiceProvider,
             ],
             imports: [
                 WinstonModule.forRoot({

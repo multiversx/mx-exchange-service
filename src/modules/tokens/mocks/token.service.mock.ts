@@ -8,6 +8,10 @@ export class TokenServiceMock {
         return Tokens(tokenID);
     }
 
+    async tokenMetadataFromState(tokenID: string): Promise<EsdtToken> {
+        return Tokens(tokenID);
+    }
+
     async baseTokenMetadata(tokenID: string): Promise<BaseEsdtToken> {
         return new BaseEsdtToken({
             identifier: Tokens(tokenID).identifier,

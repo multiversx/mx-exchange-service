@@ -12,9 +12,8 @@ import { TokenSetterService } from './services/token.setter.service';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { NftTokenResolver } from './nftToken.resolver';
 import { AnalyticsModule } from 'src/services/analytics/analytics.module';
-import { TokenFilteringService } from './services/token.filtering.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
-import { TokenLoader } from './services/token.loader';
+import { StateModule } from '../state/state.module';
 
 @Module({
     imports: [
@@ -27,24 +26,21 @@ import { TokenLoader } from './services/token.loader';
         ]),
         AnalyticsModule,
         ElasticSearchModule,
+        StateModule,
     ],
     providers: [
-        TokenLoader,
         TokenService,
         TokenSetterService,
         TokenComputeService,
         TokenRepositoryService,
         TokensResolver,
         NftTokenResolver,
-        TokenFilteringService,
     ],
     exports: [
         TokenRepositoryService,
-        TokenLoader,
         TokenService,
         TokenSetterService,
         TokenComputeService,
-        TokenFilteringService,
     ],
 })
 export class TokenModule {}
