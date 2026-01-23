@@ -58,7 +58,7 @@ export class PairResolver {
 
     @ResolveField()
     async type(): Promise<string> {
-        return 'Ecosystem';
+        return 'Experimental';
     }
 
     @ResolveField()

@@ -22,10 +22,7 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
-import {
-    EnergyModel,
-    UserEnergyModel,
-} from 'src/modules/energy/models/energy.model';
+import { UserEnergyModel } from 'src/modules/energy/models/energy.model';
 import BigNumber from 'bignumber.js';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { EnergyComputeService } from 'src/modules/energy/services/energy.compute.service';

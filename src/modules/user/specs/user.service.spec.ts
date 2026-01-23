@@ -182,7 +182,7 @@ describe('UserService', () => {
                 identifier: 'MEX-123456',
                 ticker: 'MEX',
                 name: 'MEX',
-                type: 'Ecosystem',
+                type: 'FungibleESDT',
                 owner: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
                 ).bech32(),
