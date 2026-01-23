@@ -14,7 +14,7 @@ import {
     PairSortingArgs,
 } from 'src/modules/router/models/filter.args';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { formatPair, formatToken } from '../state.format.utils';
+import { formatPair, formatToken } from '../utils/state.format.utils';
 import { StateGrpcClientService } from './state.grpc.client.service';
 
 const sortFieldMap = {

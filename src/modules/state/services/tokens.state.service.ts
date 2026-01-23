@@ -16,7 +16,7 @@ import {
     TokenSortingArgs,
     TokensSortableFields,
 } from 'src/modules/tokens/models/tokens.filter.args';
-import { formatToken } from '../state.format.utils';
+import { formatToken } from '../utils/state.format.utils';
 import { StateGrpcClientService } from './state.grpc.client.service';
 
 const sortFieldMap = {

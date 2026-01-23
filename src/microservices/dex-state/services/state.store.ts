@@ -24,6 +24,8 @@ export class StateStore {
     private readonly _tokensByType = new Map<EsdtTokenType, string[]>();
     private readonly _activePairs = new Set<string>();
     private readonly _activePairsTokens = new Set<string>();
+    private readonly _farmsPairs = new Map<string, string>();
+    private readonly _stakingFarmsPairs = new Map<string, string>();
 
     // Global state
     private _commonTokenIDs: string[] = [];
@@ -70,6 +72,14 @@ export class StateStore {
 
     get activePairsTokens(): Set<string> {
         return this._activePairsTokens;
+    }
+
+    get farmsPairs(): Map<string, string> {
+        return this._farmsPairs;
+    }
+
+    get stakingFarmsPairs(): Map<string, string> {
+        return this._stakingFarmsPairs;
     }
 
     get commonTokenIDs(): string[] {
@@ -152,6 +162,14 @@ export class StateStore {
         this._activePairsTokens.add(tokenId);
     }
 
+    addFarmPair(farmAddress: string, pairAddress: string): void {
+        this._farmsPairs.set(farmAddress, pairAddress);
+    }
+
+    addStakingFarmPair(stakingFarmAddress: string, pairAddress: string): void {
+        this._stakingFarmsPairs.set(stakingFarmAddress, pairAddress);
+    }
+
     // Clear methods for initialization
     clearAll(): void {
         this._tokens.clear();
@@ -165,6 +183,8 @@ export class StateStore {
         this._tokensByType.clear();
         this._activePairs.clear();
         this._activePairsTokens.clear();
+        this._farmsPairs.clear();
+        this._stakingFarmsPairs.clear();
 
         this._tokensByType.set(EsdtTokenType.FungibleToken, []);
         this._tokensByType.set(EsdtTokenType.FungibleLpToken, []);

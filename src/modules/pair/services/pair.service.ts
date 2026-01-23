@@ -51,7 +51,7 @@ export class PairService {
             CacheTtlInfo.TokenID,
         );
 
-        return this.tokenService.getAllTokensMetadata(tokenIDs);
+        return this.tokenService.getAllTokensMetadataFromState(tokenIDs);
     }
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
@@ -68,7 +68,7 @@ export class PairService {
             CacheTtlInfo.TokenID,
         );
 
-        return this.tokenService.getAllTokensMetadata(tokenIDs);
+        return this.tokenService.getAllTokensMetadataFromState(tokenIDs);
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
@@ -91,7 +91,7 @@ export class PairService {
     async getAllLpTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
         const tokenIDs = await this.getAllLpTokensIds(pairAddresses);
 
-        return this.tokenService.getAllTokensMetadata(tokenIDs);
+        return this.tokenService.getAllTokensMetadataFromState(tokenIDs);
     }
 
     async getAllStates(pairAddresses: string[]): Promise<string[]> {
@@ -285,7 +285,7 @@ export class PairService {
         return this.computeLiquidityPosition(pairInfo, amount);
     }
 
-    private computeLiquidityPosition(
+    computeLiquidityPosition(
         pairInfo: PairInfoModel,
         amount: string,
     ): LiquidityPosition {

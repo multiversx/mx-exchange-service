@@ -220,6 +220,16 @@ export interface GetAllFarmsRequest {
     fields: FieldMask;
 }
 
+export interface UpdateFarmsRequest {
+    farms: FarmModelV2[];
+    updateMask: FieldMask;
+}
+
+export interface UpdateFarmsResponse {
+    updatedCount: number;
+    failedAddresses: string[];
+}
+
 export interface GetStakingFarmsRequest {
     addresses: string[];
     fields: FieldMask;
@@ -227,6 +237,16 @@ export interface GetStakingFarmsRequest {
 
 export interface GetAllStakingFarmsRequest {
     fields: FieldMask;
+}
+
+export interface UpdateStakingFarmsRequest {
+    stakingFarms: StakingModel[];
+    updateMask: FieldMask;
+}
+
+export interface UpdateStakingFarmsResponse {
+    updatedCount: number;
+    failedAddresses: string[];
 }
 
 export interface GetStakingProxiesRequest {
@@ -240,6 +260,11 @@ export interface GetAllStakingProxiesRequest {
 
 export interface GetFeesCollectorRequest {
     fields: FieldMask;
+}
+
+export interface UpdateFeesCollectorRequest {
+    feesCollector: FeesCollectorModel;
+    updateMask: FieldMask;
 }
 
 export interface GetWeeklyTimekeepingRequest {
@@ -298,11 +323,17 @@ export interface IDexStateServiceClient {
 
     getAllFarms(request: GetAllFarmsRequest): Observable<Farms>;
 
+    updateFarms(request: UpdateFarmsRequest): Observable<UpdateFarmsResponse>;
+
     getStakingFarms(request: GetStakingFarmsRequest): Observable<StakingFarms>;
 
     getAllStakingFarms(
         request: GetAllStakingFarmsRequest,
     ): Observable<StakingFarms>;
+
+    updateStakingFarms(
+        request: UpdateStakingFarmsRequest,
+    ): Observable<UpdateStakingFarmsResponse>;
 
     getStakingProxies(
         request: GetStakingProxiesRequest,
@@ -315,6 +346,8 @@ export interface IDexStateServiceClient {
     getFeesCollector(
         request: GetFeesCollectorRequest,
     ): Observable<FeesCollectorModel>;
+
+    updateFeesCollector(request: UpdateFeesCollectorRequest): Observable<Empty>;
 
     getWeeklyTimekeeping(
         request: GetWeeklyTimekeepingRequest,
@@ -394,6 +427,13 @@ export interface IDexStateService {
         request: GetAllFarmsRequest,
     ): Promise<Farms> | Observable<Farms> | Farms;
 
+    updateFarms(
+        request: UpdateFarmsRequest,
+    ):
+        | Promise<UpdateFarmsResponse>
+        | Observable<UpdateFarmsResponse>
+        | UpdateFarmsResponse;
+
     getStakingFarms(
         request: GetStakingFarmsRequest,
     ): Promise<StakingFarms> | Observable<StakingFarms> | StakingFarms;
@@ -401,6 +441,13 @@ export interface IDexStateService {
     getAllStakingFarms(
         request: GetAllStakingFarmsRequest,
     ): Promise<StakingFarms> | Observable<StakingFarms> | StakingFarms;
+
+    updateStakingFarms(
+        request: UpdateStakingFarmsRequest,
+    ):
+        | Promise<UpdateStakingFarmsResponse>
+        | Observable<UpdateStakingFarmsResponse>
+        | UpdateStakingFarmsResponse;
 
     getStakingProxies(
         request: GetStakingProxiesRequest,
@@ -416,6 +463,8 @@ export interface IDexStateService {
         | Promise<FeesCollectorModel>
         | Observable<FeesCollectorModel>
         | FeesCollectorModel;
+
+    updateFeesCollector(request: UpdateFeesCollectorRequest): void;
 
     getWeeklyTimekeeping(
         request: GetWeeklyTimekeepingRequest,

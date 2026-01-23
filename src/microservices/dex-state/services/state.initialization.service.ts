@@ -89,7 +89,7 @@ export class StateInitializationService {
     }
 
     private initializePairs(pairs: PairModel[]): void {
-        for (const pair of pairs.values()) {
+        for (const pair of pairs) {
             const pairWithAPR: PairModel = {
                 ...pair,
                 compoundedAPR: new PairCompoundedAPRModel({
@@ -117,7 +117,7 @@ export class StateInitializationService {
     }
 
     private initializeFarms(farms: FarmModelV2[]): void {
-        for (const farm of farms.values()) {
+        for (const farm of farms) {
             const completeFarm =
                 this.farmComputeService.computeMissingFarmFields(
                     farm,
@@ -139,6 +139,8 @@ export class StateInitializationService {
                     completeFarm.boostedApr;
 
                 this.stateStore.setPair(pair.address, updatedPair);
+
+                this.stateStore.addFarmPair(completeFarm.address, pair.address);
             }
 
             this.stateStore.setFarm(completeFarm.address, { ...completeFarm });
@@ -146,7 +148,7 @@ export class StateInitializationService {
     }
 
     private initializeStakingFarms(stakingFarms: StakingModel[]): void {
-        for (const stakingFarm of stakingFarms.values()) {
+        for (const stakingFarm of stakingFarms) {
             const completeStakingFarm =
                 this.stakingComputeService.computeMissingStakingFarmFields(
                     stakingFarm,
@@ -162,7 +164,7 @@ export class StateInitializationService {
     private initializeStakingProxies(
         stakingProxies: StakingProxyModel[],
     ): void {
-        for (const stakingProxy of stakingProxies.values()) {
+        for (const stakingProxy of stakingProxies) {
             const completeStakingProxy =
                 this.stakingComputeService.computeMissingStakingProxyFields(
                     stakingProxy,
@@ -188,6 +190,11 @@ export class StateInitializationService {
                     stakingFarm.maxBoostedApr;
 
                 this.stateStore.setPair(pair.address, updatedPair);
+
+                this.stateStore.addStakingFarmPair(
+                    stakingProxy.stakingFarmAddress,
+                    pair.address,
+                );
             }
 
             this.stateStore.setStakingProxy(completeStakingProxy.address, {

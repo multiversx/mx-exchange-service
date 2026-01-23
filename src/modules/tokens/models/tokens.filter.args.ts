@@ -22,7 +22,7 @@ registerEnumType(TokensSortableFields, { name: 'TokensSortableFields' });
 @ArgsType()
 export class TokensFiltersArgs {
     @Field(() => [String], { nullable: true })
-    identifiers: string;
+    identifiers: string[];
     @Field({ nullable: true })
     type: string;
     @Field({ defaultValue: false })

@@ -13,9 +13,10 @@ import { FeesCollectorStateHandler } from './services/handlers/fees-collector.st
 import { TimekeepingStateHandler } from './services/handlers/timekeeping.state.handler';
 import { StateInitializationService } from './services/state.initialization.service';
 import { FeesCollectorComputeService } from './services/compute/fees-collector.compute.service';
+import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 @Module({
-    imports: [],
+    imports: [DynamicModuleUtils.getCacheModule()],
     providers: [
         StateStore,
         FarmComputeService,

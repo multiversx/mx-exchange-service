@@ -33,8 +33,12 @@ export class PairDayDataModel {
     @Field()
     firstToken: EsdtToken;
 
+    firstTokenId: string;
+
     @Field()
     secondToken: EsdtToken;
+
+    secondTokenId: string;
 
     @Field()
     lockedValueUSD: string;

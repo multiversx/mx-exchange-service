@@ -223,6 +223,16 @@ message GetAllFarmsRequest {
   google.protobuf.FieldMask fields = 1;
 }
 
+message UpdateFarmsRequest {
+  repeated Farm farms = 1;
+  google.protobuf.FieldMask updateMask = 2; 
+}
+
+message UpdateFarmsResponse {
+  uint32 updatedCount = 1;
+  repeated string failedAddresses = 3;  
+}
+
 message GetStakingFarmsRequest {
   repeated string addresses = 1;
   google.protobuf.FieldMask fields = 2;
@@ -230,6 +240,16 @@ message GetStakingFarmsRequest {
 
 message GetAllStakingFarmsRequest {
   google.protobuf.FieldMask fields = 1;
+}
+
+message UpdateStakingFarmsRequest {
+  repeated StakingProxy stakingFarms = 1;
+  google.protobuf.FieldMask updateMask = 2; 
+}
+
+message UpdateStakingFarmsResponse {
+  uint32 updatedCount = 1;
+  repeated string failedAddresses = 3;  
 }
 
 message GetStakingProxiesRequest {
@@ -243,6 +263,11 @@ message GetAllStakingProxiesRequest {
 
 message GetFeesCollectorRequest {
   google.protobuf.FieldMask fields = 1;
+}
+
+message UpdateFeesCollectorRequest {
+  FeesCollector feesCollector = 1;
+  google.protobuf.FieldMask updateMask = 2; 
 }
 
 message GetWeeklyTimekeepingRequest {
@@ -279,14 +304,17 @@ service DexStateService {
 
   rpc GetFarms (GetFarmsRequest) returns (Farms) {}
   rpc GetAllFarms (GetAllFarmsRequest) returns (Farms) {}
+  rpc UpdateFarms (UpdateFarmsRequest) returns (UpdateFarmsResponse) {}
 
   rpc GetStakingFarms (GetStakingFarmsRequest) returns (StakingFarms) {}
   rpc GetAllStakingFarms (GetAllStakingFarmsRequest) returns (StakingFarms) {}
+  rpc UpdateStakingFarms (UpdateStakingFarmsRequest) returns (UpdateStakingFarmsResponse) {}
 
   rpc GetStakingProxies (GetStakingProxiesRequest) returns (StakingProxies) {}
   rpc GetAllStakingProxies (GetAllStakingProxiesRequest) returns (StakingProxies) {}
 
   rpc GetFeesCollector (GetFeesCollectorRequest) returns (FeesCollector) {}
+  rpc UpdateFeesCollector (UpdateFeesCollectorRequest) returns (google.protobuf.Empty) {}
 
   rpc GetWeeklyTimekeeping (GetWeeklyTimekeepingRequest) returns (WeekTimekeeping) {}
 

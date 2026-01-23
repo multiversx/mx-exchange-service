@@ -778,3 +778,22 @@ export async function PairsMap(): Promise<Map<string, string[]>> {
 export const PairsData = (pairAddress: string) => {
     return pairs.find((p) => p.address === pairAddress);
 };
+
+export const MockedTokens = [
+    'WEGLD-123456',
+    'MEX-123456',
+    'USDC-123456',
+    'USDT-123456',
+    'TOK4-123456',
+    'TOK5-123456',
+    'TOK6-123456',
+    'EGLDUSDCLP-abcdef',
+    'EGLDMEXLP-abcdef',
+    'EGLDTOK4LP-abcdef',
+    'EGLDTOK5LP-abcdef',
+    'TOK5TOK6LP-abcdef',
+    'TOK5USDCLP-abcdef',
+    'TOK5USDTLP-abcdef',
+    'TOK5USDTLP-abcdef',
+    'EGLDUSDTLP-abcdef',
+];
