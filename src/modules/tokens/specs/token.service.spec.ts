@@ -12,12 +12,11 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { CacheService } from 'src/services/caching/cache.service';
-import { TokenComputeServiceProvider } from '../mocks/token.compute.service.mock';
-import { TokenFilteringService } from '../services/token.filtering.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
+import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
 
 describe('TokenService', () => {
     let module: TestingModule;
@@ -41,9 +40,8 @@ describe('TokenService', () => {
                 MXApiServiceProvider,
                 TokenService,
                 ApiConfigService,
-                TokenComputeServiceProvider,
-                TokenFilteringService,
                 ContextGetterServiceProvider,
+                TokensStateServiceProvider,
             ],
         }).compile();
     });
@@ -70,5 +68,15 @@ describe('TokenService', () => {
         await cachingService.deleteInCache(cacheKey);
         token = await service.tokenMetadata(tokenID);
         expect(token).toEqual(undefined);
+    });
+
+    it('should get token metadata from state rpc', async () => {
+        const service: TokenService = module.get<TokenService>(TokenService);
+
+        const tokenID = 'WEGLD-123456';
+        const expectedToken = Tokens(tokenID);
+
+        const token = await service.tokenMetadataFromState(tokenID);
+        expect(token).toEqual(expectedToken);
     });
 });

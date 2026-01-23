@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import {
     AddPairLpTokenRequest,
     AddPairRequest,
@@ -22,8 +22,13 @@ import {
     StakingFarms,
     StakingProxies,
     Tokens,
+    UpdateFarmsRequest,
+    UpdateFarmsResponse,
+    UpdateFeesCollectorRequest,
     UpdatePairsRequest,
     UpdatePairsResponse,
+    UpdateStakingFarmsRequest,
+    UpdateStakingFarmsResponse,
     UpdateTokensRequest,
     UpdateTokensResponse,
     UpdateUsdcPriceRequest,
@@ -40,9 +45,15 @@ import { StakingStateHandler } from './handlers/staking.state.handler';
 import { FeesCollectorStateHandler } from './handlers/fees-collector.state.handler';
 import { TimekeepingStateHandler } from './handlers/timekeeping.state.handler';
 import { BulkUpdatesService } from './bulk.updates.service';
+import { queueStateTasks } from 'src/modules/state/utils/state.task.utils';
+import { CacheService } from 'src/services/caching/cache.service';
+import {
+    StateTasks,
+    TaskDto,
+} from 'src/modules/state/entities/state.tasks.entities';
 
 @Injectable()
-export class DexStateService {
+export class DexStateService implements OnModuleInit {
     private bulkUpdatesService: BulkUpdatesService;
 
     constructor(
@@ -54,8 +65,17 @@ export class DexStateService {
         private readonly stakingHandler: StakingStateHandler,
         private readonly feesCollectorHandler: FeesCollectorStateHandler,
         private readonly timekeepingHandler: TimekeepingStateHandler,
+        private readonly cacheService: CacheService,
     ) {
         this.bulkUpdatesService = new BulkUpdatesService();
+    }
+
+    async onModuleInit() {
+        await queueStateTasks(this.cacheService, [
+            new TaskDto({
+                name: StateTasks.INIT_STATE,
+            }),
+        ]);
     }
 
     isReady(): boolean {
@@ -132,6 +152,10 @@ export class DexStateService {
         return this.farmsHandler.getAllFarms(fields);
     }
 
+    updateFarms(request: UpdateFarmsRequest): UpdateFarmsResponse {
+        return this.farmsHandler.updateFarms(request);
+    }
+
     getStakingFarms(addresses: string[], fields: string[] = []): StakingFarms {
         return this.stakingHandler.getStakingFarms(addresses, fields);
     }
@@ -139,6 +163,12 @@ export class DexStateService {
     getAllStakingFarms(request: GetAllStakingFarmsRequest): StakingFarms {
         const fields = request.fields?.paths ?? [];
         return this.stakingHandler.getAllStakingFarms(fields);
+    }
+
+    updateStakingFarms(
+        request: UpdateStakingFarmsRequest,
+    ): UpdateStakingFarmsResponse {
+        return this.stakingHandler.updateStakingFarms(request);
     }
 
     getStakingProxies(
@@ -156,6 +186,10 @@ export class DexStateService {
     getFeesCollector(request: GetFeesCollectorRequest): FeesCollectorModel {
         const fields = request.fields?.paths ?? [];
         return this.feesCollectorHandler.getFeesCollector(fields);
+    }
+
+    updateFeesCollector(request: UpdateFeesCollectorRequest): void {
+        this.feesCollectorHandler.updateFeesCollector(request);
     }
 
     getWeeklyTimekeeping(

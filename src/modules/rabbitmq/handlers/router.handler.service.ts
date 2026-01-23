@@ -22,6 +22,12 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { SwapEventPairData } from 'src/modules/trading-contest/types';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { StateTasksService } from 'src/modules/state/services/state.tasks.service';
+import {
+    StateTasks,
+    TaskDto,
+} from 'src/modules/state/entities/state.tasks.entities';
 
 @Injectable()
 export class RouterHandlerService {
@@ -35,14 +41,13 @@ export class RouterHandlerService {
         private readonly tokenRepository: TokenRepositoryService,
         private readonly tokenCompute: TokenComputeService,
         private readonly dataApi: MXDataApiService,
+        private readonly stateTasks: StateTasksService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     async handleCreatePairEvent(event: CreatePairEvent): Promise<void> {
-        const [firstTokenID, secondTokenID] = [
-            event.toJSON().firstTokenID,
-            event.toJSON().secondTokenID,
-        ];
+        const { pairAddress, firstTokenID, secondTokenID } = event.toJSON();
+
         const [
             pairsMetadata,
             pairsAddresses,
@@ -122,6 +127,24 @@ export class RouterHandlerService {
         }
 
         await this.deleteCacheKeys(keys);
+
+        const taskArgs = [
+            JSON.stringify(
+                new PairMetadata({
+                    address: pairAddress,
+                    firstTokenID,
+                    secondTokenID,
+                }),
+            ),
+            event.getTimestamp().toFixed(),
+        ];
+
+        await this.stateTasks.queueTasks([
+            new TaskDto({
+                name: StateTasks.INDEX_PAIR,
+                args: taskArgs,
+            }),
+        ]);
 
         await this.pubSub.publish(ROUTER_EVENTS.CREATE_PAIR, {
             createPairEvent: event,

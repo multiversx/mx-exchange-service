@@ -71,6 +71,8 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { ContractType } from '../models/user.model';
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
+import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('UserEnergyTransactionService', () => {
     let module: TestingModule;
@@ -150,6 +152,8 @@ describe('UserEnergyTransactionService', () => {
                 AbiLockedAssetServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                TokensStateServiceProvider,
+                PairsStateServiceProvider,
             ],
         }).compile();
     });
