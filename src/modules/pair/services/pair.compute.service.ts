@@ -11,7 +11,6 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { IPairComputeService } from '../interfaces';
-import { TokenService } from 'src/modules/tokens/services/token.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { farmsAddresses, farmType } from 'src/utils/farm.utils';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
@@ -36,8 +35,6 @@ export class PairComputeService implements IPairComputeService {
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
-        @Inject(forwardRef(() => TokenService))
-        private readonly tokenService: TokenService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly dataApi: MXDataApiService,
