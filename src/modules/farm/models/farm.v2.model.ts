@@ -45,7 +45,7 @@ export class FarmModelV2 extends BaseFarmModel {
     @Field()
     accumulatedRewards: string;
     @Field(() => [GlobalInfoByWeekModel], { complexity: nestedFieldComplexity })
-    boosterRewards: [GlobalInfoByWeekModel];
+    boosterRewards: GlobalInfoByWeekModel[];
     @Field()
     lastGlobalUpdateWeek: number;
     @Field()
@@ -56,6 +56,12 @@ export class FarmModelV2 extends BaseFarmModel {
     boostedApr: string;
     @Field()
     optimalEnergyPerLp: string;
+    boostedRewardsPerWeek: string;
+    farmedTokenId: string;
+    farmTokenCollection: string;
+    farmTokenDecimals: number;
+    farmingTokenId: string;
+    pairAddress: string;
 
     constructor(init?: Partial<FarmModelV2>) {
         super(init);

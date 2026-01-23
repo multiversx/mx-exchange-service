@@ -111,7 +111,7 @@ export class GovernanceTokenSnapshotService {
         const feeTokenId = await this.governanceAbiFactory
             .useAbi(contractAddress)
             .feeTokenId(contractAddress);
-        return await this.tokenService.tokenMetadata(feeTokenId);
+        return await this.tokenService.tokenMetadataFromState(feeTokenId);
     }
 
     @ErrorLoggerAsync()

@@ -41,9 +41,9 @@ import { PairComputeLoader } from './services/pair.compute.loader';
 export class PairRewardTokensResolver extends GenericResolver {
     constructor(
         private readonly pairCompute: PairComputeService,
-        private readonly pairService: PairService,
         private readonly stakingProxyService: StakingProxyService,
         private readonly energyService: EnergyService,
+        private readonly pairAbiLoader: PairAbiLoader,
     ) {
         super();
     }
@@ -51,8 +51,8 @@ export class PairRewardTokensResolver extends GenericResolver {
     @ResolveField()
     async poolRewards(parent: PairRewardTokensModel): Promise<EsdtToken[]> {
         return Promise.all([
-            this.pairService.getFirstToken(parent.address),
-            this.pairService.getSecondToken(parent.address),
+            this.pairAbiLoader.firstTokenLoader.load(parent.address),
+            this.pairAbiLoader.secondTokenLoader.load(parent.address),
         ]);
     }
 
