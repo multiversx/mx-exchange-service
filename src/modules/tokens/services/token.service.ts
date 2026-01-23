@@ -102,6 +102,10 @@ export class TokenService {
         return this.tokensState.getTokens(tokenIDs, fields);
     }
 
+    async getAllTokens(fields: (keyof EsdtToken)[] = []): Promise<EsdtToken[]> {
+        return this.tokensState.getAllTokens(fields);
+    }
+
     @ErrorLoggerAsync({
         logArgs: true,
     })
