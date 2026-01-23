@@ -43,6 +43,7 @@ import ConnectionArgs, {
 import PageResponse from '../common/page.response';
 import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
 import { relayQueryEstimator } from 'src/helpers/complexity/query.estimators';
+import { StateDataLoader } from '../state/services/state.dataloader';
 
 @Resolver(() => StakingBoostedRewardsModel)
 export class StakingBoostedRewardsResolver {
@@ -123,6 +124,7 @@ export class StakingResolver {
         private readonly stakingTransactionService: StakingTransactionService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
+        private readonly stateDataLoader: StateDataLoader,
     ) {}
 
     @ResolveField()
@@ -132,12 +134,20 @@ export class StakingResolver {
 
     @ResolveField()
     async farmingToken(parent: StakingModel) {
-        return this.stakingService.getFarmingToken(parent.address);
+        // TODO: remove abi call once staking model is resolved from state rpc
+        const farmingTokenId = await this.stakingAbi.farmingTokenID(
+            parent.address,
+        );
+        return this.stateDataLoader.loadToken(farmingTokenId);
     }
 
     @ResolveField()
     async rewardToken(parent: StakingModel) {
-        return this.stakingService.getRewardToken(parent.address);
+        // TODO: remove abi call once staking model is resolved from state rpc
+        const rewardTokenID = await this.stakingAbi.rewardTokenID(
+            parent.address,
+        );
+        return this.stateDataLoader.loadToken(rewardTokenID);
     }
 
     @ResolveField()
