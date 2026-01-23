@@ -88,28 +88,12 @@ export class PairService {
         );
     }
 
-    async getAllLpTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
-        const tokenIDs = await this.getAllLpTokensIds(pairAddresses);
-
-        return this.tokenService.getAllTokensMetadataFromState(tokenIDs);
-    }
-
     async getAllStates(pairAddresses: string[]): Promise<string[]> {
         return getAllKeys<string>(
             this.cachingService,
             pairAddresses,
             'pair.state',
             this.pairAbi.state.bind(this.pairAbi),
-            CacheTtlInfo.ContractState,
-        );
-    }
-
-    async getAllFeeStates(pairAddresses: string[]): Promise<boolean[]> {
-        return getAllKeys<boolean>(
-            this.cachingService,
-            pairAddresses,
-            'pair.feeState',
-            this.pairAbi.feeState.bind(this.pairAbi),
             CacheTtlInfo.ContractState,
         );
     }
@@ -124,46 +108,7 @@ export class PairService {
         );
     }
 
-    async getAllDeployedAt(pairAddresses: string[]): Promise<number[]> {
-        return getAllKeys(
-            this.cachingService,
-            pairAddresses,
-            'pair.deployedAt',
-            this.pairCompute.deployedAt.bind(this.pairCompute),
-            CacheTtlInfo.ContractState,
-        );
-    }
-
-    async getAllTradesCount(pairAddresses: string[]): Promise<number[]> {
-        return getAllKeys(
-            this.cachingService,
-            pairAddresses,
-            'pair.tradesCount',
-            this.pairCompute.tradesCount.bind(this.pairCompute),
-            CacheTtlInfo.ContractState,
-        );
-    }
-
-    async getAllHasFarms(pairAddresses: string[]): Promise<boolean[]> {
-        return getAllKeys(
-            this.cachingService,
-            pairAddresses,
-            'pair.hasFarms',
-            this.pairCompute.hasFarms.bind(this.pairCompute),
-            CacheTtlInfo.ContractState,
-        );
-    }
-
-    async getAllHasDualFarms(pairAddresses: string[]): Promise<boolean[]> {
-        return getAllKeys(
-            this.cachingService,
-            pairAddresses,
-            'pair.hasDualFarms',
-            this.pairCompute.hasDualFarms.bind(this.pairCompute),
-            CacheTtlInfo.ContractState,
-        );
-    }
-
+    // TODO : add method to state gRPC
     async getAmountOut(
         pairAddress: string,
         tokenInID: string,
@@ -206,6 +151,7 @@ export class PairService {
         }
     }
 
+    // TODO : add method to state gRPC
     async getAmountIn(
         pairAddress: string,
         tokenOutID: string,
@@ -351,38 +297,6 @@ export class PairService {
             .toFixed();
     }
 
-    async getAllLiquidityPositionsUSD(
-        pairAddresses: string[],
-        amounts: string[],
-    ): Promise<string[]> {
-        const allFirstTokens = await this.getAllFirstTokens(pairAddresses);
-        const allSecondTokens = await this.getAllSecondTokens(pairAddresses);
-        const allFirstTokensPriceUSD =
-            await this.pairCompute.getAllFirstTokensPriceUSD(pairAddresses);
-        const allSecondTokensPriceUSD =
-            await this.pairCompute.getAllSecondTokensPricesUSD(pairAddresses);
-        const allLiquidityPositions = await this.getAllLiquidityPositions(
-            pairAddresses,
-            amounts,
-        );
-
-        return pairAddresses.map((_, index) => {
-            return computeValueUSD(
-                allLiquidityPositions[index].firstTokenAmount,
-                allFirstTokens[index].decimals,
-                allFirstTokensPriceUSD[index],
-            )
-                .plus(
-                    computeValueUSD(
-                        allLiquidityPositions[index].secondTokenAmount,
-                        allSecondTokens[index].decimals,
-                        allSecondTokensPriceUSD[index],
-                    ),
-                )
-                .toFixed();
-        });
-    }
-
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
         const cachedValue: string = await this.cachingService.get(
             `${tokenID}.pairAddress`,
@@ -409,31 +323,12 @@ export class PairService {
         return returnedData;
     }
 
-    async isPairEsdtToken(tokenID: string): Promise<boolean> {
-        const pairsAddress = await this.routerAbi.pairsAddress();
-        for (const pairAddress of pairsAddress) {
-            const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
-                this.pairAbi.firstTokenID(pairAddress),
-                this.pairAbi.secondTokenID(pairAddress),
-                this.pairAbi.lpTokenID(pairAddress),
-            ]);
-
-            if (
-                tokenID === firstTokenID ||
-                tokenID === secondTokenID ||
-                tokenID === lpTokenID
-            ) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     async requireOwner(sender: string) {
         if ((await this.routerAbi.owner()) !== sender)
             throw new Error('You are not the owner.');
     }
 
+    // TODO : remove after adding refresh to state rpc
     async getLockedTokensInfo(pairAddress: string): Promise<LockedTokensInfo> {
         const [
             lockingScAddress,
