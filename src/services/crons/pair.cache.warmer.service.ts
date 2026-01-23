@@ -16,7 +16,6 @@ import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Logger } from 'winston';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterSetterService } from 'src/modules/router/services/router.setter.service';
 
@@ -69,12 +68,6 @@ export class PairCacheWarmerService {
             ];
 
             if (lpTokenID !== undefined) {
-                cacheSetPromises.push(
-                    this.tokenSetter.setEsdtTokenType(
-                        lpTokenID,
-                        EsdtTokenType.FungibleLpToken,
-                    ),
-                );
                 cacheSetPromises.push(
                     this.tokenSetter.setMetadata(lpTokenID, lpToken),
                 );
