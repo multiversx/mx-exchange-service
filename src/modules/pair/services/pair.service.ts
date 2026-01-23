@@ -13,7 +13,10 @@ import { CacheService } from 'src/services/caching/cache.service';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from './pair.abi.service';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import {
+    EsdtToken,
+    EsdtTokenType,
+} from 'src/modules/tokens/models/esdtToken.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { PairComputeService } from './pair.compute.service';
@@ -22,6 +25,7 @@ import { TokenService } from 'src/modules/tokens/services/token.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { PairInfoModel } from '../models/pair-info.model';
+import { PairsStateService } from 'src/modules/state/services/pairs.state.service';
 
 @Injectable()
 export class PairService {
@@ -35,6 +39,7 @@ export class PairService {
         private readonly tokenService: TokenService,
         private readonly cachingService: CacheService,
         private readonly contextGetter: ContextGetterService,
+        private readonly pairsState: PairsStateService,
     ) {}
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
@@ -42,33 +47,9 @@ export class PairService {
         return this.tokenService.tokenMetadata(firstTokenID);
     }
 
-    async getAllFirstTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
-        const tokenIDs = await getAllKeys<string>(
-            this.cachingService,
-            pairAddresses,
-            'pair.firstTokenID',
-            this.pairAbi.firstTokenID.bind(this.pairAbi),
-            CacheTtlInfo.TokenID,
-        );
-
-        return this.tokenService.getAllTokensMetadataFromState(tokenIDs);
-    }
-
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.pairAbi.secondTokenID(pairAddress);
         return this.tokenService.tokenMetadata(secondTokenID);
-    }
-
-    async getAllSecondTokens(pairAddresses: string[]): Promise<EsdtToken[]> {
-        const tokenIDs = await getAllKeys<string>(
-            this.cachingService,
-            pairAddresses,
-            'pair.secondTokenID',
-            this.pairAbi.secondTokenID.bind(this.pairAbi),
-            CacheTtlInfo.TokenID,
-        );
-
-        return this.tokenService.getAllTokensMetadataFromState(tokenIDs);
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
@@ -76,26 +57,6 @@ export class PairService {
         return lpTokenID === undefined
             ? undefined
             : this.tokenService.tokenMetadata(lpTokenID);
-    }
-
-    async getAllLpTokensIds(pairAddresses: string[]): Promise<string[]> {
-        return getAllKeys<string>(
-            this.cachingService,
-            pairAddresses,
-            'pair.lpTokenID',
-            this.pairAbi.lpTokenID.bind(this.pairAbi),
-            CacheTtlInfo.TokenID,
-        );
-    }
-
-    async getAllStates(pairAddresses: string[]): Promise<string[]> {
-        return getAllKeys<string>(
-            this.cachingService,
-            pairAddresses,
-            'pair.state',
-            this.pairAbi.state.bind(this.pairAbi),
-            CacheTtlInfo.ContractState,
-        );
     }
 
     async getAllLockedValueUSD(pairAddresses: string[]): Promise<string[]> {
@@ -108,42 +69,37 @@ export class PairService {
         );
     }
 
-    // TODO : add method to state gRPC
     async getAmountOut(
         pairAddress: string,
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const [
-            wrappedTokenID,
-            firstTokenID,
-            secondTokenID,
-            pairInfo,
-            totalFeePercent,
-        ] = await Promise.all([
+        const [wrappedTokenID, [pair]] = await Promise.all([
             this.wrapAbi.wrappedEgldTokenID(),
-            this.pairAbi.firstTokenID(pairAddress),
-            this.pairAbi.secondTokenID(pairAddress),
-            this.pairAbi.pairInfoMetadata(pairAddress),
-            this.pairAbi.totalFeePercent(pairAddress),
+            this.pairsState.getPairs(
+                [pairAddress],
+                ['firstTokenId', 'secondTokenId', 'info', 'totalFeePercent'],
+            ),
         ]);
+
+        const { firstTokenId, secondTokenId, info, totalFeePercent } = pair;
 
         const tokenIn =
             tokenInID === mxConfig.EGLDIdentifier ? wrappedTokenID : tokenInID;
 
         switch (tokenIn) {
-            case firstTokenID:
+            case firstTokenId:
                 return getAmountOut(
                     amount,
-                    pairInfo.reserves0,
-                    pairInfo.reserves1,
+                    info.reserves0,
+                    info.reserves1,
                     totalFeePercent,
                 ).toFixed();
-            case secondTokenID:
+            case secondTokenId:
                 return getAmountOut(
                     amount,
-                    pairInfo.reserves1,
-                    pairInfo.reserves0,
+                    info.reserves1,
+                    info.reserves0,
                     totalFeePercent,
                 ).toFixed();
             default:
@@ -151,25 +107,20 @@ export class PairService {
         }
     }
 
-    // TODO : add method to state gRPC
     async getAmountIn(
         pairAddress: string,
         tokenOutID: string,
         amount: string,
     ): Promise<string> {
-        const [
-            wrappedTokenID,
-            firstTokenID,
-            secondTokenID,
-            pairInfo,
-            totalFeePercent,
-        ] = await Promise.all([
+        const [wrappedTokenID, [pair]] = await Promise.all([
             this.wrapAbi.wrappedEgldTokenID(),
-            this.pairAbi.firstTokenID(pairAddress),
-            this.pairAbi.secondTokenID(pairAddress),
-            this.pairAbi.pairInfoMetadata(pairAddress),
-            this.pairAbi.totalFeePercent(pairAddress),
+            this.pairsState.getPairs(
+                [pairAddress],
+                ['firstTokenId', 'secondTokenId', 'info', 'totalFeePercent'],
+            ),
         ]);
+
+        const { firstTokenId, secondTokenId, info, totalFeePercent } = pair;
 
         const tokenOut =
             tokenOutID === mxConfig.EGLDIdentifier
@@ -177,18 +128,18 @@ export class PairService {
                 : tokenOutID;
 
         switch (tokenOut) {
-            case firstTokenID:
+            case firstTokenId:
                 return getAmountIn(
                     amount,
-                    pairInfo.reserves1,
-                    pairInfo.reserves0,
+                    info.reserves1,
+                    info.reserves0,
                     totalFeePercent,
                 ).toFixed();
-            case secondTokenID:
+            case secondTokenId:
                 return getAmountIn(
                     amount,
-                    pairInfo.reserves0,
-                    pairInfo.reserves1,
+                    info.reserves0,
+                    info.reserves1,
                     totalFeePercent,
                 ).toFixed();
             default:
@@ -252,49 +203,47 @@ export class PairService {
         });
     }
 
-    async getAllLiquidityPositions(
-        pairAddresses: string[],
-        amounts: string[],
-    ): Promise<LiquidityPosition[]> {
-        const allPairsInfo = await this.pairAbi.getAllPairsInfoMetadata(
-            pairAddresses,
-        );
-
-        return allPairsInfo.map((pairInfo, index) =>
-            this.computeLiquidityPosition(pairInfo, amounts[index]),
-        );
-    }
-
     async getLiquidityPositionUSD(
         pairAddress: string,
         amount: string,
     ): Promise<string> {
-        const [
-            firstToken,
-            secondToken,
-            firstTokenPriceUSD,
-            secondTokenPriceUSD,
-            liquidityPosition,
-        ] = await Promise.all([
-            this.getFirstToken(pairAddress),
-            this.getSecondToken(pairAddress),
-            this.pairCompute.firstTokenPriceUSD(pairAddress),
-            this.pairCompute.secondTokenPriceUSD(pairAddress),
-            this.getLiquidityPosition(pairAddress, amount),
+        const [result] = await this.getAllLiquidityPositionsUSD(
+            [pairAddress],
+            [amount],
+        );
+
+        return result;
+    }
+
+    async getAllLiquidityPositionsUSD(
+        pairAddresses: string[],
+        amounts: string[],
+    ): Promise<string[]> {
+        const pairs = await this.pairsState.getPairsWithTokens(pairAddresses, [
+            'address',
+            'info',
         ]);
-        return computeValueUSD(
-            liquidityPosition.firstTokenAmount,
-            firstToken.decimals,
-            firstTokenPriceUSD,
-        )
-            .plus(
-                computeValueUSD(
-                    liquidityPosition.secondTokenAmount,
-                    secondToken.decimals,
-                    secondTokenPriceUSD,
-                ),
+
+        return pairs.map((pair, index) => {
+            const liquidityPosition = this.computeLiquidityPosition(
+                pair.info,
+                amounts[index],
+            );
+
+            return computeValueUSD(
+                liquidityPosition.firstTokenAmount,
+                pair.firstToken.decimals,
+                pair.firstToken.price,
             )
-            .toFixed();
+                .plus(
+                    computeValueUSD(
+                        liquidityPosition.secondTokenAmount,
+                        pair.secondToken.decimals,
+                        pair.secondToken.price,
+                    ),
+                )
+                .toFixed();
+        });
     }
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
@@ -304,16 +253,18 @@ export class PairService {
         if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
-        const pairsAddress = await this.routerAbi.pairsAddress();
-        const lpTokenIDs = await this.getAllLpTokensIds(pairsAddress);
 
         let returnedData = null;
-        for (let index = 0; index < lpTokenIDs.length; index++) {
-            if (lpTokenIDs[index] === tokenID) {
-                returnedData = pairsAddress[index];
-                break;
+        try {
+            const token = await this.tokenService.tokenMetadataFromState(
+                tokenID,
+                ['type', 'pairAddress'],
+            );
+
+            if (token && token.type === EsdtTokenType.FungibleLpToken) {
+                returnedData = token.pairAddress;
             }
-        }
+        } catch (error) {}
 
         await this.cachingService.set(
             `${tokenID}.pairAddress`,
