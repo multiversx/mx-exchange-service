@@ -21,6 +21,7 @@ import { StakingModule } from '../staking/staking.module';
 import { EnergyModule } from '../energy/energy.module';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { StateDataLoaderModule } from '../state/state.dataloader.module';
+import { StateModule } from '../state/state.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -39,6 +40,7 @@ import { StateDataLoaderModule } from '../state/state.dataloader.module';
         EnergyModule,
         ElasticSearchModule,
         StateDataLoaderModule,
+        StateModule,
     ],
     providers: [
         PairService,
