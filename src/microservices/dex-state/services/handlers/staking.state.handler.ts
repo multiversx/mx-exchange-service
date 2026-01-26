@@ -106,7 +106,7 @@ export class StakingStateHandler {
                 const completeStakingFarm =
                     this.stakingComputeService.computeMissingStakingFarmFields(
                         stakingFarm,
-                        this.stateStore.tokens,
+                        this.stateStore,
                     );
 
                 this.stateStore.setStakingFarm(address, {

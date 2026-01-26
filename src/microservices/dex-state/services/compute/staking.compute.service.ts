@@ -4,20 +4,22 @@ import { constantsConfig } from 'src/config';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { computeValueUSD } from 'src/utils/token.converters';
 import {
     computeDistribution,
     refreshWeekStartAndEndEpochs,
 } from '../../utils/rewards.compute.utils';
+import { StateStore } from '../state.store';
 
 @Injectable()
 export class StakingComputeService {
     computeMissingStakingProxyFields(
         stakingProxy: StakingProxyModel,
-        stakingFarms: Map<string, StakingModel>,
+        stateStore: StateStore,
     ): StakingProxyModel {
-        const stakingFarm = stakingFarms.get(stakingProxy.stakingFarmAddress);
+        const stakingFarm = stateStore.stakingFarms.get(
+            stakingProxy.stakingFarmAddress,
+        );
 
         stakingProxy.stakingMinUnboundEpochs =
             stakingFarm?.minUnboundEpochs ?? 0;
@@ -27,7 +29,7 @@ export class StakingComputeService {
 
     computeMissingStakingFarmFields(
         stakingFarm: StakingModel,
-        tokens: Map<string, EsdtToken>,
+        stateStore: StateStore,
     ): StakingModel {
         refreshWeekStartAndEndEpochs(stakingFarm.time);
 
@@ -37,12 +39,12 @@ export class StakingComputeService {
             }
             globalInfo.rewardsDistributionForWeek = computeDistribution(
                 globalInfo.totalRewardsForWeek,
-                tokens,
+                stateStore,
             );
             globalInfo.apr = '0';
         });
 
-        const farmingToken = tokens.get(stakingFarm.farmingTokenId);
+        const farmingToken = stateStore.tokens.get(stakingFarm.farmingTokenId);
 
         stakingFarm.isProducingRewards =
             !stakingFarm.produceRewardsEnabled ||

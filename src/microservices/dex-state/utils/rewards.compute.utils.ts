@@ -5,6 +5,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { StateStore } from '../services/state.store';
 
 export function refreshWeekStartAndEndEpochs(time: WeekTimekeepingModel): void {
     time.startEpochForWeek =
@@ -16,11 +17,16 @@ export function refreshWeekStartAndEndEpochs(time: WeekTimekeepingModel): void {
 
 export function computeDistribution(
     payments: EsdtTokenPayment[],
-    tokens: Map<string, EsdtToken>,
+    stateStore: StateStore,
 ): TokenDistributionModel[] {
     let totalPriceUSD = new BigNumber(0);
     const paymentsValueUSD = payments.map((payment) => {
-        const token = tokens.get(payment.tokenID);
+        let token: EsdtToken;
+        if (payment.tokenID === stateStore.lockedTokenCollection) {
+            token = stateStore.tokens.get(constantsConfig.MEX_TOKEN_ID);
+        } else {
+            token = stateStore.tokens.get(payment.tokenID);
+        }
 
         if (!token) {
             throw new Error(`Token ${payment.tokenID} missing`);

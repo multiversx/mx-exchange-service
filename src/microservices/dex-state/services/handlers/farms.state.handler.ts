@@ -95,8 +95,7 @@ export class FarmsStateHandler {
                 const completeFarm =
                     this.farmComputeService.computeMissingFarmFields(
                         farm,
-                        this.stateStore.pairs,
-                        this.stateStore.tokens,
+                        this.stateStore,
                     );
 
                 this.stateStore.setFarm(address, { ...completeFarm });
