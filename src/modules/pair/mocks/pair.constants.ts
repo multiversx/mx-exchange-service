@@ -147,6 +147,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 accounts: 1,
                 transactions: 1,
                 assets: new AssetsModel(),
+                price: '0.1',
             });
         case 'TOK5-123456':
             return new EsdtToken({
