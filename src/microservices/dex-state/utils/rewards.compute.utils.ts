@@ -17,10 +17,19 @@ export function refreshWeekStartAndEndEpochs(time: WeekTimekeepingModel): void {
 export function computeDistribution(
     payments: EsdtTokenPayment[],
     tokens: Map<string, EsdtToken>,
+    lockedTokenCollection?: string,
 ): TokenDistributionModel[] {
     let totalPriceUSD = new BigNumber(0);
     const paymentsValueUSD = payments.map((payment) => {
-        const token = tokens.get(payment.tokenID);
+        let token: EsdtToken;
+        if (
+            lockedTokenCollection !== undefined &&
+            payment.tokenID === lockedTokenCollection
+        ) {
+            token = tokens.get(constantsConfig.MEX_TOKEN_ID);
+        } else {
+            token = tokens.get(payment.tokenID);
+        }
 
         if (!token) {
             throw new Error(`Token ${payment.tokenID} missing`);

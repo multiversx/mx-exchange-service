@@ -52,7 +52,6 @@ export class FeesCollectorStateHandler {
         const completeFeesCollector =
             this.feesCollectorComputeService.computeMissingFeesCollectorFields(
                 updatedFeesCollector,
-                this.stateStore.tokens,
             );
 
         this.stateStore.setFeesCollector({ ...completeFeesCollector });
