@@ -88,6 +88,10 @@ export class PairsStateServiceMock {
     async getPairsWithTokens(addresses: string[]): Promise<PairModel[]> {
         return this.getPairs(addresses);
     }
+
+    async getPairsCount(): Promise<number> {
+        return pairs.length;
+    }
 }
 
 export const PairsStateServiceProvider = {

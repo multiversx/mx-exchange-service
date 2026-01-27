@@ -283,10 +283,15 @@ message UpdateUsdcPriceResponse {
   repeated string tokensWithPriceUpdates = 1;
 }
 
+message PairsCountResponse {
+  uint32 count = 1;
+}
+
 service DexStateService {
   rpc GetPairs (GetPairsRequest) returns (Pairs) {}
   rpc GetFilteredPairs (GetFilteredPairsRequest) returns (PaginatedPairs) {}
   rpc GetAllPairs (GetAllPairsRequest) returns (Pairs) {}
+  rpc GetPairsCount (google.protobuf.Empty) returns (PairsCountResponse) {}
   
   rpc GetPairsTokens (GetPairsAndTokensRequest) returns (PairsAndTokensResponse) {}
 

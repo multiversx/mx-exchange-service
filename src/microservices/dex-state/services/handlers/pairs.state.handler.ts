@@ -237,6 +237,10 @@ export class PairsStateHandler {
         };
     }
 
+    getPairsCount(): number {
+        return this.stateStore.pairs.size;
+    }
+
     getPairsTokens(request: GetPairsAndTokensRequest): PairsAndTokensResponse {
         const { addresses, pairFields, tokenFields } = request;
 
