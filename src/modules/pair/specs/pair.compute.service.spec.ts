@@ -37,6 +37,7 @@ import { StakingService } from 'src/modules/staking/services/staking.service';
 import { StakingFilteringService } from 'src/modules/staking/services/staking.filtering.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -70,6 +71,7 @@ describe('PairService', () => {
                 StakingProxyAbiServiceProvider,
                 FarmComputeServiceV2,
                 FarmServiceV2,
+                FarmsStateServiceProvider,
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,
                 WeeklyRewardsSplittingAbiServiceProvider,
