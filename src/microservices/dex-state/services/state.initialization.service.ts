@@ -119,10 +119,7 @@ export class StateInitializationService {
     private initializeFarms(farms: FarmModelV2[]): void {
         for (const farm of farms) {
             const completeFarm =
-                this.farmComputeService.computeMissingFarmFields(
-                    farm,
-                    this.stateStore,
-                );
+                this.farmComputeService.computeMissingFarmFields(farm);
 
             const pair = this.stateStore.pairs.get(completeFarm.pairAddress);
 
@@ -167,7 +164,6 @@ export class StateInitializationService {
             const completeStakingProxy =
                 this.stakingComputeService.computeMissingStakingProxyFields(
                     stakingProxy,
-                    this.stateStore,
                 );
 
             const pair = this.stateStore.pairs.get(
@@ -206,7 +202,6 @@ export class StateInitializationService {
         const completeFeesCollector =
             this.feesCollectorComputeService.computeMissingFeesCollectorFields(
                 feesCollector,
-                this.stateStore,
             );
 
         this.stateStore.setFeesCollector({ ...completeFeesCollector });

@@ -93,10 +93,7 @@ export class FarmsStateHandler {
         if (updatedFarms.size > 0) {
             for (const [address, farm] of updatedFarms.entries()) {
                 const completeFarm =
-                    this.farmComputeService.computeMissingFarmFields(
-                        farm,
-                        this.stateStore,
-                    );
+                    this.farmComputeService.computeMissingFarmFields(farm);
 
                 this.stateStore.setFarm(address, { ...completeFarm });
 

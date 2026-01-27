@@ -8,9 +8,10 @@ import { StateStore } from '../state.store';
 
 @Injectable()
 export class FeesCollectorComputeService {
+    constructor(private readonly stateStore: StateStore) {}
+
     computeMissingFeesCollectorFields(
         feesCollector: FeesCollectorModel,
-        stateStore: StateStore,
     ): FeesCollectorModel {
         refreshWeekStartAndEndEpochs(feesCollector.time);
 
@@ -21,7 +22,8 @@ export class FeesCollectorComputeService {
 
             globalInfo.rewardsDistributionForWeek = computeDistribution(
                 globalInfo.totalRewardsForWeek,
-                stateStore,
+                this.stateStore.tokens,
+                this.stateStore.lockedTokenCollection,
             );
             globalInfo.apr = '0';
         });

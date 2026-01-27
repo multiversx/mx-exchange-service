@@ -12,10 +12,9 @@ import { StateStore } from '../state.store';
 
 @Injectable()
 export class FarmComputeService {
-    computeMissingFarmFields(
-        farm: FarmModelV2,
-        stateStore: StateStore,
-    ): FarmModelV2 {
+    constructor(private readonly stateStore: StateStore) {}
+
+    computeMissingFarmFields(farm: FarmModelV2): FarmModelV2 {
         refreshWeekStartAndEndEpochs(farm.time);
 
         farm.boosterRewards.forEach((globalInfo) => {
@@ -24,13 +23,13 @@ export class FarmComputeService {
             }
             globalInfo.rewardsDistributionForWeek = computeDistribution(
                 globalInfo.totalRewardsForWeek,
-                stateStore,
+                this.stateStore.tokens,
             );
             globalInfo.apr = '0';
         });
 
-        const pair = stateStore.pairs.get(farm.pairAddress);
-        const farmedToken = stateStore.tokens.get(farm.farmedTokenId);
+        const pair = this.stateStore.pairs.get(farm.pairAddress);
+        const farmedToken = this.stateStore.tokens.get(farm.farmedTokenId);
 
         farm.farmedTokenPriceUSD = farmedToken.price;
         farm.farmingTokenPriceUSD = pair.liquidityPoolTokenPriceUSD;

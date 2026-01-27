@@ -13,11 +13,12 @@ import { StateStore } from '../state.store';
 
 @Injectable()
 export class StakingComputeService {
+    constructor(private readonly stateStore: StateStore) {}
+
     computeMissingStakingProxyFields(
         stakingProxy: StakingProxyModel,
-        stateStore: StateStore,
     ): StakingProxyModel {
-        const stakingFarm = stateStore.stakingFarms.get(
+        const stakingFarm = this.stateStore.stakingFarms.get(
             stakingProxy.stakingFarmAddress,
         );
 
@@ -39,7 +40,7 @@ export class StakingComputeService {
             }
             globalInfo.rewardsDistributionForWeek = computeDistribution(
                 globalInfo.totalRewardsForWeek,
-                stateStore,
+                this.stateStore.tokens,
             );
             globalInfo.apr = '0';
         });
