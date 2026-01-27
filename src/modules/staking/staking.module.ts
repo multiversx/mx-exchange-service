@@ -15,8 +15,8 @@ import {
 } from './staking.resolver';
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 import { WeeklyRewardsSplittingModule } from 'src/submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
-import { StakingFilteringService } from './services/staking.filtering.service';
 import { StateDataLoaderModule } from '../state/state.dataloader.module';
+import { StateModule } from '../state/state.module';
 
 @Module({
     imports: [
@@ -28,6 +28,7 @@ import { StateDataLoaderModule } from '../state/state.dataloader.module';
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
         StateDataLoaderModule,
+        StateModule,
     ],
     providers: [
         StakingAbiService,
@@ -35,7 +36,6 @@ import { StateDataLoaderModule } from '../state/state.dataloader.module';
         StakingSetterService,
         StakingComputeService,
         StakingTransactionService,
-        StakingFilteringService,
         StakingResolver,
         StakingBoostedRewardsResolver,
     ],
@@ -44,7 +44,6 @@ import { StateDataLoaderModule } from '../state/state.dataloader.module';
         StakingService,
         StakingSetterService,
         StakingComputeService,
-        StakingFilteringService,
     ],
 })
 export class StakingModule {}

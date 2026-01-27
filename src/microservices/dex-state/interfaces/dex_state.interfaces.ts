@@ -41,6 +41,15 @@ export enum PairSortField {
     UNRECOGNIZED = -1,
 }
 
+export enum StakingFarmSortField {
+    STAKING_SORT_UNSPECIFIED = 0,
+    STAKING_SORT_PRICE = 1,
+    STAKING_SORT_TVL = 2,
+    STAKING_SORT_APR = 3,
+    STAKING_SORT_DEPLOYED_AT = 4,
+    UNRECOGNIZED = -1,
+}
+
 export enum SortOrder {
     SORT_ORDER_UNSPECIFIED = 0,
     SORT_ASC = 1,
@@ -207,6 +216,11 @@ export interface StakingFarms {
     stakingFarms: StakingModel[];
 }
 
+export interface PaginatedStakingFarms {
+    stakingFarms: StakingModel[];
+    count: number;
+}
+
 export interface StakingProxies {
     stakingProxies: StakingProxyModel[];
 }
@@ -236,6 +250,16 @@ export interface GetStakingFarmsRequest {
 }
 
 export interface GetAllStakingFarmsRequest {
+    fields: FieldMask;
+}
+
+export interface GetFilteredStakingFarmsRequest {
+    searchToken?: string;
+    rewardsEnded?: boolean;
+    offset: number;
+    limit: number;
+    sortField: StakingFarmSortField;
+    sortOrder: SortOrder;
     fields: FieldMask;
 }
 
@@ -336,6 +360,10 @@ export interface IDexStateServiceClient {
     getAllStakingFarms(
         request: GetAllStakingFarmsRequest,
     ): Observable<StakingFarms>;
+
+    getFilteredStakingFarms(
+        request: GetFilteredStakingFarmsRequest,
+    ): Observable<PaginatedStakingFarms>;
 
     updateStakingFarms(
         request: UpdateStakingFarmsRequest,
@@ -454,6 +482,13 @@ export interface IDexStateService {
     getAllStakingFarms(
         request: GetAllStakingFarmsRequest,
     ): Promise<StakingFarms> | Observable<StakingFarms> | StakingFarms;
+
+    getFilteredStakingFarms(
+        request: GetFilteredStakingFarmsRequest,
+    ):
+        | Promise<PaginatedStakingFarms>
+        | Observable<PaginatedStakingFarms>
+        | PaginatedStakingFarms;
 
     updateStakingFarms(
         request: UpdateStakingFarmsRequest,
