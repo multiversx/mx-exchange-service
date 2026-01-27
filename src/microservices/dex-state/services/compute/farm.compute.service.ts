@@ -2,22 +2,19 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
-import { PairModel } from 'src/modules/pair/models/pair.model';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { computeValueUSD } from 'src/utils/token.converters';
 import {
     computeBaseRewards,
     computeDistribution,
     refreshWeekStartAndEndEpochs,
 } from '../../utils/rewards.compute.utils';
+import { StateStore } from '../state.store';
 
 @Injectable()
 export class FarmComputeService {
-    computeMissingFarmFields(
-        farm: FarmModelV2,
-        pairs: Map<string, PairModel>,
-        tokens: Map<string, EsdtToken>,
-    ): FarmModelV2 {
+    constructor(private readonly stateStore: StateStore) {}
+
+    computeMissingFarmFields(farm: FarmModelV2): FarmModelV2 {
         refreshWeekStartAndEndEpochs(farm.time);
 
         farm.boosterRewards.forEach((globalInfo) => {
@@ -26,13 +23,13 @@ export class FarmComputeService {
             }
             globalInfo.rewardsDistributionForWeek = computeDistribution(
                 globalInfo.totalRewardsForWeek,
-                tokens,
+                this.stateStore.tokens,
             );
             globalInfo.apr = '0';
         });
 
-        const pair = pairs.get(farm.pairAddress);
-        const farmedToken = tokens.get(farm.farmedTokenId);
+        const pair = this.stateStore.pairs.get(farm.pairAddress);
+        const farmedToken = this.stateStore.tokens.get(farm.farmedTokenId);
 
         farm.farmedTokenPriceUSD = farmedToken.price;
         farm.farmingTokenPriceUSD = pair.liquidityPoolTokenPriceUSD;

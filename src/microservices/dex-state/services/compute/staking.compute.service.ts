@@ -4,20 +4,23 @@ import { constantsConfig } from 'src/config';
 import { BoostedYieldsFactors } from 'src/modules/farm/models/farm.v2.model';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { computeValueUSD } from 'src/utils/token.converters';
 import {
     computeDistribution,
     refreshWeekStartAndEndEpochs,
 } from '../../utils/rewards.compute.utils';
+import { StateStore } from '../state.store';
 
 @Injectable()
 export class StakingComputeService {
+    constructor(private readonly stateStore: StateStore) {}
+
     computeMissingStakingProxyFields(
         stakingProxy: StakingProxyModel,
-        stakingFarms: Map<string, StakingModel>,
     ): StakingProxyModel {
-        const stakingFarm = stakingFarms.get(stakingProxy.stakingFarmAddress);
+        const stakingFarm = this.stateStore.stakingFarms.get(
+            stakingProxy.stakingFarmAddress,
+        );
 
         stakingProxy.stakingMinUnboundEpochs =
             stakingFarm?.minUnboundEpochs ?? 0;
@@ -25,10 +28,7 @@ export class StakingComputeService {
         return stakingProxy;
     }
 
-    computeMissingStakingFarmFields(
-        stakingFarm: StakingModel,
-        tokens: Map<string, EsdtToken>,
-    ): StakingModel {
+    computeMissingStakingFarmFields(stakingFarm: StakingModel): StakingModel {
         refreshWeekStartAndEndEpochs(stakingFarm.time);
 
         stakingFarm.boosterRewards.forEach((globalInfo) => {
@@ -37,12 +37,14 @@ export class StakingComputeService {
             }
             globalInfo.rewardsDistributionForWeek = computeDistribution(
                 globalInfo.totalRewardsForWeek,
-                tokens,
+                this.stateStore.tokens,
             );
             globalInfo.apr = '0';
         });
 
-        const farmingToken = tokens.get(stakingFarm.farmingTokenId);
+        const farmingToken = this.stateStore.tokens.get(
+            stakingFarm.farmingTokenId,
+        );
 
         stakingFarm.isProducingRewards =
             !stakingFarm.produceRewardsEnabled ||
