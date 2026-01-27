@@ -9,9 +9,10 @@ import { CoinGeckoController } from './controllers/coin.gecko.controller';
 import { EnergyModule } from '../energy/energy.module';
 import { MexService } from './services/mex.service';
 import { MexAnalyticsController } from './controllers/mex.analytics.controller';
+import { StateModule } from '../state/state.module';
 
 @Module({
-    imports: [TokenModule, RouterModule, PairModule, EnergyModule],
+    imports: [TokenModule, RouterModule, PairModule, EnergyModule, StateModule],
     providers: [TradingViewService, CoinGeckoService, MexService],
     controllers: [
         TradingViewController,

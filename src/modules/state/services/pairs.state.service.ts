@@ -70,6 +70,15 @@ export class PairsStateService {
     }
 
     @StateRpcMetrics()
+    async getPairsCount(): Promise<number> {
+        const result = await firstValueFrom(
+            this.stateGrpc.client.getPairsCount({}),
+        );
+
+        return result.count;
+    }
+
+    @StateRpcMetrics()
     async getAllPairs(fields: (keyof PairModel)[] = []): Promise<PairModel[]> {
         const result = await firstValueFrom(
             this.stateGrpc.client.getAllPairs({

@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Tokens, pairs } from 'src/modules/pair/mocks/pair.constants';
+import {
+    Tokens,
+    pairs,
+    MockedTokens,
+} from 'src/modules/pair/mocks/pair.constants';
 import { BaseEsdtToken, EsdtToken } from '../models/esdtToken.model';
 import { TokenService } from '../services/token.service';
 
@@ -19,10 +23,6 @@ export class TokenServiceMock {
         });
     }
 
-    async getEsdtTokenType(tokenID: string): Promise<string> {
-        return Tokens(tokenID).type;
-    }
-
     async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {
         const tokenIDs = [];
         for (const pair of pairs) {
@@ -36,6 +36,11 @@ export class TokenServiceMock {
     async getAllTokensMetadata(tokenIDs: string[]): Promise<EsdtToken[]> {
         return tokenIDs.map((tokenID) => Tokens(tokenID));
     }
+
+    async getAllTokens(fields: (keyof EsdtToken)[] = []): Promise<EsdtToken[]> {
+        return MockedTokens.map((tokenId) => Tokens(tokenId));
+    }
+
     async getAllBaseTokensMetadata(
         tokenIDs: string[],
     ): Promise<BaseEsdtToken[]> {

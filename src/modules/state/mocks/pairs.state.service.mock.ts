@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { pairs, PairsData } from 'src/modules/pair/mocks/pair.constants';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { PairsFilter } from 'src/modules/router/models/filter.args';
@@ -10,9 +11,61 @@ export class PairsStateServiceMock {
         filters: PairsFilter,
     ): Promise<{ pairs: PairModel[]; count: number }> {
         const pairAddresses: string[] = [];
+        const {
+            state,
+            feeState,
+            firstTokenID,
+            secondTokenID,
+            minVolume,
+            minLockedValueUSD,
+        } = filters;
+
+        let minVolumeBN: BigNumber;
+        let minLockedValueBN: BigNumber;
+
+        if (minVolume) {
+            minVolumeBN = new BigNumber(minVolume);
+        }
+
+        if (minLockedValueUSD) {
+            minLockedValueBN = new BigNumber(minLockedValueUSD);
+        }
 
         for (const pair of pairs) {
-            if (filters.state && !filters.state.includes(pair.state)) {
+            if (firstTokenID && secondTokenID) {
+                if (
+                    ![firstTokenID, secondTokenID].includesEvery([
+                        pair.firstToken.identifier,
+                        pair.secondToken.identifier,
+                    ])
+                ) {
+                    continue;
+                }
+            } else if (
+                firstTokenID &&
+                pair.firstToken.identifier !== firstTokenID
+            ) {
+                continue;
+            } else if (
+                secondTokenID &&
+                pair.secondToken.identifier !== secondTokenID
+            ) {
+                continue;
+            }
+
+            if (state && !state.includes(pair.state)) {
+                continue;
+            }
+
+            if (feeState !== undefined && pair.feeState !== feeState) {
+                continue;
+            }
+
+            if (minVolumeBN && minVolumeBN.gt(pair.volumeUSD)) {
+                continue;
+            }
+
+            if (minLockedValueBN && minLockedValueBN.gt(pair.lockedValueUSD)) {
                 continue;
             }
 
@@ -34,6 +87,10 @@ export class PairsStateServiceMock {
 
     async getPairsWithTokens(addresses: string[]): Promise<PairModel[]> {
         return this.getPairs(addresses);
+    }
+
+    async getPairsCount(): Promise<number> {
+        return pairs.length;
     }
 }
 

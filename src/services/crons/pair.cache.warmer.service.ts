@@ -16,7 +16,6 @@ import { Lock } from '@multiversx/sdk-nestjs-common';
 import { Logger } from 'winston';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { EsdtTokenType } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterSetterService } from 'src/modules/router/services/router.setter.service';
 
@@ -69,12 +68,6 @@ export class PairCacheWarmerService {
             ];
 
             if (lpTokenID !== undefined) {
-                cacheSetPromises.push(
-                    this.tokenSetter.setEsdtTokenType(
-                        lpTokenID,
-                        EsdtTokenType.FungibleLpToken,
-                    ),
-                );
                 cacheSetPromises.push(
                     this.tokenSetter.setMetadata(lpTokenID, lpToken),
                 );
@@ -216,7 +209,6 @@ export class PairCacheWarmerService {
             const [
                 feesAPR,
                 state,
-                type,
                 feeState,
                 totalFeePercent,
                 specialFeePercent,
@@ -234,7 +226,6 @@ export class PairCacheWarmerService {
             ] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.pairAbi.getStateRaw(pairAddress),
-                this.pairComputeService.computeTypeFromTokens(pairAddress),
                 this.pairAbi.getFeeStateRaw(pairAddress),
                 this.pairAbi.getTotalFeePercentRaw(pairAddress),
                 this.pairAbi.getSpecialFeePercentRaw(pairAddress),
@@ -263,7 +254,6 @@ export class PairCacheWarmerService {
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
                 this.pairSetterService.setState(pairAddress, state),
-                this.pairSetterService.setType(pairAddress, type),
                 this.pairSetterService.setFeeState(pairAddress, feeState),
                 this.pairSetterService.setTotalFeePercent(
                     pairAddress,

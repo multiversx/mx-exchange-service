@@ -28,6 +28,7 @@ import {
     PaginatedTokens,
     Pairs,
     PairsAndTokensResponse,
+    PairsCountResponse,
     StakingFarms,
     StakingProxies,
     Tokens,
@@ -73,6 +74,12 @@ export class DexStateController implements IDexStateService {
     getFilteredPairs(request: GetFilteredPairsRequest): PaginatedPairs {
         this.ensureReady();
         return this.dexStateService.getFilteredPairs(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetPairsCount')
+    getPairsCount(): PairsCountResponse {
+        this.ensureReady();
+        return this.dexStateService.getPairsCount();
     }
 
     @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetPairsTokens')

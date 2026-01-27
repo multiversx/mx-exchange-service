@@ -19,6 +19,7 @@ import {
     PaginatedTokens,
     Pairs,
     PairsAndTokensResponse,
+    PairsCountResponse,
     StakingFarms,
     StakingProxies,
     Tokens,
@@ -97,6 +98,12 @@ export class DexStateService implements OnModuleInit {
 
     getFilteredPairs(request: GetFilteredPairsRequest): PaginatedPairs {
         return this.pairsHandler.getFilteredPairs(request);
+    }
+
+    getPairsCount(): PairsCountResponse {
+        return {
+            count: this.pairsHandler.getPairsCount(),
+        };
     }
 
     getPairsTokens(request: GetPairsAndTokensRequest): PairsAndTokensResponse {

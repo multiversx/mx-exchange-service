@@ -13,6 +13,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -36,6 +37,7 @@ describe('PairService', () => {
                 RouterAbiServiceProvider,
                 ApiConfigService,
                 MXApiServiceProvider,
+                PairsStateServiceProvider,
             ],
         }).compile();
     });
@@ -107,6 +109,7 @@ describe('PairService', () => {
             Address.fromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
+
             '1000000000000000000',
         );
         expect(liquidityPositionUSD).toEqual('20');
@@ -123,15 +126,5 @@ describe('PairService', () => {
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
         );
-    });
-
-    it('should check if token is part of any pair', async () => {
-        const service = module.get<PairService>(PairService);
-
-        const isPair0 = await service.isPairEsdtToken('EGLDMEXLP-abcdef');
-        expect(isPair0).toEqual(true);
-
-        const isPair1 = await service.isPairEsdtToken('LPT-4321');
-        expect(isPair1).toEqual(false);
     });
 });

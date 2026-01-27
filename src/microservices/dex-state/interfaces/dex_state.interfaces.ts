@@ -280,6 +280,10 @@ export interface UpdateUsdcPriceResponse {
     tokensWithPriceUpdates: string[];
 }
 
+export interface PairsCountResponse {
+    count: number;
+}
+
 export const DEX_STATE_PACKAGE_NAME = 'dex_state';
 
 export interface IDexStateServiceClient {
@@ -290,6 +294,8 @@ export interface IDexStateServiceClient {
     ): Observable<PaginatedPairs>;
 
     getAllPairs(request: GetAllPairsRequest): Observable<Pairs>;
+
+    getPairsCount(request: Empty): Observable<PairsCountResponse>;
 
     getPairsTokens(
         request: GetPairsAndTokensRequest,
@@ -370,6 +376,13 @@ export interface IDexStateService {
     getAllPairs(
         request: GetAllPairsRequest,
     ): Promise<Pairs> | Observable<Pairs> | Pairs;
+
+    getPairsCount(
+        request: Empty,
+    ):
+        | Promise<PairsCountResponse>
+        | Observable<PairsCountResponse>
+        | PairsCountResponse;
 
     getPairsTokens(
         request: GetPairsAndTokensRequest,

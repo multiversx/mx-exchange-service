@@ -22,7 +22,7 @@ import { Address } from '@multiversx/sdk-core';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
-import { PairsData, Tokens } from 'src/modules/pair/mocks/pair.constants';
+import { PairsData } from 'src/modules/pair/mocks/pair.constants';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
@@ -34,13 +34,12 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
-import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
-import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 import { SmartRouterService } from '../services/smart.router.service';
 import { BinaryUtils } from '@multiversx/sdk-nestjs-common';
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
 
 describe('SmartRouterService', () => {
     let autoRouterService: AutoRouterService;
@@ -271,7 +270,6 @@ describe('SmartRouterService', () => {
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
                 TokenServiceProvider,
-                TokenComputeServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 PairService,
@@ -287,7 +285,8 @@ describe('SmartRouterService', () => {
                 ComposableTasksTransactionService,
                 ApiConfigService,
                 MXApiServiceProvider,
-                PairFilteringService,
+                PairsStateServiceProvider,
+                TokensStateServiceProvider,
                 SmartRouterService,
                 SmartRouterEvaluationServiceProvider,
                 ComposableTasksAbiServiceProvider,
@@ -409,22 +408,9 @@ function formatTestPairs(
     const pairs: Record<string, PairModel> = {};
 
     for (const [pair, addressHex] of Object.entries(testPairs)) {
-        const { address, firstToken, secondToken, info, totalFeePercent } =
-            PairsData(Address.newFromHex(addressHex).toBech32());
-
-        pairs[pair] = new PairModel({
-            address,
-            firstToken: new EsdtToken({
-                identifier: Tokens(firstToken.identifier).identifier,
-                decimals: Tokens(firstToken.identifier).decimals,
-            }),
-            secondToken: new EsdtToken({
-                identifier: Tokens(secondToken.identifier).identifier,
-                decimals: Tokens(secondToken.identifier).decimals,
-            }),
-            info,
-            totalFeePercent,
-        });
+        pairs[pair] = PairsData(
+            Address.newFromHex(addressHex).toBech32(),
+        ) as unknown as PairModel;
     }
 
     return pairs;

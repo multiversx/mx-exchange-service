@@ -47,6 +47,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { StakingFilteringService } from 'src/modules/staking/services/staking.filtering.service';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('AnalyticsService', () => {
     let module: TestingModule;
@@ -81,6 +82,7 @@ describe('AnalyticsService', () => {
                 FarmServiceV1_3,
                 FarmServiceV2,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 ProxyAbiServiceProvider,

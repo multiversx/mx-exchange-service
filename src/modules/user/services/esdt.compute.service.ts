@@ -66,8 +66,6 @@ export class UserEsdtComputeService {
         const pairs = await this.pairsState.getPairsWithTokens(pairAddresses, [
             'address',
             'info',
-            'firstTokenPriceUSD',
-            'secondTokenPriceUSD',
         ]);
 
         return esdtTokens.map((esdtToken, index) => {

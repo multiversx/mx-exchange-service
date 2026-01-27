@@ -1,16 +1,10 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import {
-    BaseEsdtToken,
-    EsdtToken,
-    EsdtTokenType,
-} from '../models/esdtToken.model';
+import { Injectable } from '@nestjs/common';
+import { BaseEsdtToken, EsdtToken } from '../models/esdtToken.model';
 import {
     TokenSortingArgs,
     TokensFilter,
     TokensFiltersArgs,
 } from '../models/tokens.filter.args';
-import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
-import { TokenRepositoryService } from './token.repository.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
@@ -20,16 +14,11 @@ import { CacheService } from 'src/services/caching/cache.service';
 import { CollectionType } from 'src/modules/common/collection.type';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { getAllKeys } from 'src/utils/get.many.utils';
-import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokensStateService } from 'src/modules/state/services/tokens.state.service';
 
 @Injectable()
 export class TokenService {
     constructor(
-        private readonly tokenRepository: TokenRepositoryService,
-        @Inject(forwardRef(() => PairService))
-        private readonly pairService: PairService,
-        private readonly routerAbi: RouterAbiService,
         private readonly apiService: MXApiService,
         protected readonly cachingService: CacheService,
         private readonly tokensState: TokensStateService,
@@ -77,35 +66,6 @@ export class TokenService {
         remoteTtl: CacheTtlInfo.Token.remoteTtl,
         localTtl: CacheTtlInfo.Token.localTtl,
     })
-    async getEsdtTokenType(tokenID: string): Promise<string> {
-        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            tokenID,
-        );
-        if (pairAddress) {
-            return EsdtTokenType.FungibleLpToken;
-        }
-
-        return this.tokenRepository.getTokenType(tokenID);
-    }
-
-    async getAllEsdtTokensType(tokenIDs: string[]): Promise<string[]> {
-        return getAllKeys<string>(
-            this.cachingService,
-            tokenIDs,
-            'token.getEsdtTokenType',
-            this.getEsdtTokenType.bind(this),
-            CacheTtlInfo.Token,
-        );
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'token',
-        remoteTtl: CacheTtlInfo.Token.remoteTtl,
-        localTtl: CacheTtlInfo.Token.localTtl,
-    })
     async tokenMetadata(tokenID: string): Promise<EsdtToken> {
         return this.tokenMetadataRaw(tokenID);
     }
@@ -140,6 +100,10 @@ export class TokenService {
         fields: (keyof EsdtToken)[] = [],
     ): Promise<EsdtToken[]> {
         return this.tokensState.getTokens(tokenIDs, fields);
+    }
+
+    async getAllTokens(fields: (keyof EsdtToken)[] = []): Promise<EsdtToken[]> {
+        return this.tokensState.getAllTokens(fields);
     }
 
     @ErrorLoggerAsync({
@@ -206,23 +170,20 @@ export class TokenService {
     }
 
     async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {
-        const pairsMetadata = await this.routerAbi.pairsMetadata();
-        const tokenIDs: string[] = [];
-        const pairStates = activePool
-            ? await this.pairService.getAllStates(
-                  pairsMetadata.map((pair) => pair.address),
-              )
-            : [];
+        const filters = new TokensFilter();
 
-        for (const [index, pair] of pairsMetadata.entries()) {
-            if (activePool) {
-                if (pairStates[index] !== 'Active') {
-                    continue;
-                }
-            }
-            tokenIDs.push(...[pair.firstTokenID, pair.secondTokenID]);
+        if (activePool) {
+            filters.enabledSwaps = true;
         }
 
-        return [...new Set(tokenIDs)];
+        const result = await this.tokensState.getFilteredTokens(
+            0,
+            10000,
+            filters,
+            undefined,
+            ['identifier'],
+        );
+
+        return result.tokens.map((token) => token.identifier);
     }
 }
