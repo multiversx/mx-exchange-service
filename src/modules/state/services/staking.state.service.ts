@@ -1,11 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { StateRpcMetrics } from 'src/helpers/decorators/state.rpc.metrics.decorator';
-import { UpdateStakingFarmsResponse } from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
+import {
+    PaginatedStakingFarms,
+    SortOrder,
+    StakingFarmSortField,
+    UpdateStakingFarmsResponse,
+} from 'src/microservices/dex-state/interfaces/dex_state.interfaces';
+import { SortingOrder } from 'src/modules/common/page.data';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
+import {
+    StakingFarmsFilter,
+    StakingFarmsSortableFields,
+    StakingFarmsSortingArgs,
+} from 'src/modules/staking/models/staking.args';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import { formatStakingFarm } from '../utils/state.format.utils';
 import { StateGrpcClientService } from './state.grpc.client.service';
+
+const sortFieldMap = {
+    [StakingFarmsSortableFields.PRICE]: StakingFarmSortField.STAKING_SORT_PRICE,
+    [StakingFarmsSortableFields.TVL]: StakingFarmSortField.STAKING_SORT_TVL,
+    [StakingFarmsSortableFields.APR]: StakingFarmSortField.STAKING_SORT_APR,
+    [StakingFarmsSortableFields.DEPLOYED_AT]:
+        StakingFarmSortField.STAKING_SORT_DEPLOYED_AT,
+};
 
 @Injectable()
 export class StakingStateService {
@@ -45,6 +64,45 @@ export class StakingStateService {
                 formatStakingFarm(stakingFarm, fields),
             ) ?? []
         );
+    }
+
+    @StateRpcMetrics()
+    async getFilteredStakingFarms(
+        offset: number,
+        limit: number,
+        filters: StakingFarmsFilter,
+        sortArgs?: StakingFarmsSortingArgs,
+        fields: (keyof StakingModel)[] = [],
+    ): Promise<PaginatedStakingFarms> {
+        const sortOrder = sortArgs
+            ? sortArgs.sortOrder === SortingOrder.ASC
+                ? SortOrder.SORT_ASC
+                : SortOrder.SORT_DESC
+            : SortOrder.SORT_ORDER_UNSPECIFIED;
+
+        const sortField =
+            sortArgs && sortArgs.sortField
+                ? sortFieldMap[sortArgs.sortField]
+                : StakingFarmSortField.STAKING_SORT_UNSPECIFIED;
+
+        const result = await firstValueFrom(
+            this.stateGrpc.client.getFilteredStakingFarms({
+                ...filters,
+                offset,
+                limit,
+                sortField,
+                sortOrder,
+                fields: { paths: fields },
+            }),
+        );
+
+        return {
+            stakingFarms:
+                result.stakingFarms?.map((stakingFarm) =>
+                    formatStakingFarm(stakingFarm, fields),
+                ) ?? [],
+            count: result.count,
+        };
     }
 
     @StateRpcMetrics()

@@ -14,6 +14,7 @@ import {
     GetFarmsRequest,
     GetFeesCollectorRequest,
     GetFilteredPairsRequest,
+    GetFilteredStakingFarmsRequest,
     GetFilteredTokensRequest,
     GetPairsAndTokensRequest,
     GetPairsRequest,
@@ -25,6 +26,7 @@ import {
     InitStateRequest,
     InitStateResponse,
     PaginatedPairs,
+    PaginatedStakingFarms,
     PaginatedTokens,
     Pairs,
     PairsAndTokensResponse,
@@ -173,6 +175,14 @@ export class DexStateController implements IDexStateService {
     getAllStakingFarms(request: GetAllStakingFarmsRequest): StakingFarms {
         this.ensureReady();
         return this.dexStateService.getAllStakingFarms(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'GetFilteredStakingFarms')
+    getFilteredStakingFarms(
+        request: GetFilteredStakingFarmsRequest,
+    ): PaginatedStakingFarms {
+        this.ensureReady();
+        return this.dexStateService.getFilteredStakingFarms(request);
     }
 
     @GrpcMethod(DEX_STATE_SERVICE_NAME, 'UpdateStakingFarms')
