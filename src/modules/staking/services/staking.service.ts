@@ -34,11 +34,9 @@ import { CollectionType } from 'src/modules/common/collection.type';
 import { PaginationArgs } from 'src/modules/dex.model';
 import {
     StakingFarmsFilter,
-    StakingFarmsSortableFields,
     StakingFarmsSortingArgs,
 } from '../models/staking.args';
-import { SortingOrder } from 'src/modules/common/page.data';
-import { StakingFilteringService } from './staking.filtering.service';
+import { StakingStateService } from 'src/modules/state/services/staking.state.service';
 
 @Injectable()
 export class StakingService {
@@ -52,24 +50,13 @@ export class StakingService {
         private readonly remoteConfigGetter: RemoteConfigGetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
-        @Inject(forwardRef(() => StakingFilteringService))
-        private readonly stakingFilteringService: StakingFilteringService,
+        private readonly stakingState: StakingStateService,
     ) {}
 
-    async getFarmsStaking(): Promise<StakingModel[]> {
-        const farmsStakingAddresses =
-            await this.remoteConfigGetter.getStakingAddresses();
-
-        const farmsStaking: StakingModel[] = [];
-        for (const address of farmsStakingAddresses) {
-            farmsStaking.push(
-                new StakingModel({
-                    address,
-                }),
-            );
-        }
-
-        return farmsStaking;
+    async getFarmsStaking(
+        fields: (keyof StakingModel)[] = [],
+    ): Promise<StakingModel[]> {
+        return this.stakingState.getAllStakingFarms(fields);
     }
 
     async getFilteredFarmsStaking(
@@ -77,41 +64,18 @@ export class StakingService {
         filters: StakingFarmsFilter,
         sorting: StakingFarmsSortingArgs,
     ): Promise<CollectionType<StakingModel>> {
-        let farmsStakingAddresses =
-            await this.remoteConfigGetter.getStakingAddresses();
+        const { offset, limit } = pagination;
 
-        farmsStakingAddresses =
-            await this.stakingFilteringService.stakingFarmsByToken(
-                filters,
-                farmsStakingAddresses,
-            );
-
-        farmsStakingAddresses =
-            await this.stakingFilteringService.stakingFarmsByRewardsDepleted(
-                filters,
-                farmsStakingAddresses,
-            );
-
-        if (sorting) {
-            farmsStakingAddresses = await this.sortFarms(
-                farmsStakingAddresses,
-                sorting,
-            );
-        }
-
-        const farmsStaking = farmsStakingAddresses.map(
-            (address) =>
-                new StakingModel({
-                    address,
-                }),
+        const result = await this.stakingState.getFilteredStakingFarms(
+            offset,
+            limit,
+            filters,
+            sorting,
         );
 
         return new CollectionType({
-            count: farmsStaking.length,
-            items: farmsStaking.slice(
-                pagination.offset,
-                pagination.offset + pagination.limit,
-            ),
+            count: result.count,
+            items: result.stakingFarms,
         });
     }
 
@@ -125,19 +89,6 @@ export class StakingService {
             stakeAddress,
         );
         return this.tokenService.tokenMetadata(farmingTokenID);
-    }
-
-    async getAllFarmingTokens(stakeAddresses: string[]): Promise<EsdtToken[]> {
-        const farmingTokenIDs = await this.stakingAbi.getAllFarmingTokensIds(
-            stakeAddresses,
-        );
-
-        return this.tokenService.getAllTokensMetadata(farmingTokenIDs);
-    }
-
-    async getRewardToken(stakeAddress: string): Promise<EsdtToken> {
-        const rewardTokenID = await this.stakingAbi.rewardTokenID(stakeAddress);
-        return this.tokenService.tokenMetadata(rewardTokenID);
     }
 
     decodeStakingTokenAttributes(
@@ -381,80 +332,5 @@ export class StakingService {
         ) {
             throw new Error('Sender is not the owner of the contract.');
         }
-    }
-
-    private async sortFarms(
-        stakeAddresses: string[],
-        stakingFarmsSorting: StakingFarmsSortingArgs,
-    ): Promise<string[]> {
-        let sortFieldData = [];
-
-        switch (stakingFarmsSorting.sortField) {
-            case StakingFarmsSortableFields.PRICE:
-                sortFieldData = await Promise.all(
-                    stakeAddresses.map((address) =>
-                        this.stakingCompute.farmingTokenPriceUSD(address),
-                    ),
-                );
-                break;
-            case StakingFarmsSortableFields.APR:
-                sortFieldData = await Promise.all(
-                    stakeAddresses.map((address) =>
-                        this.stakingCompute.stakeFarmAPR(address),
-                    ),
-                );
-                break;
-            case StakingFarmsSortableFields.TVL:
-                sortFieldData = await Promise.all(
-                    stakeAddresses.map((address) =>
-                        this.stakingCompute.stakedValueUSD(address),
-                    ),
-                );
-                break;
-            case StakingFarmsSortableFields.DEPLOYED_AT:
-                sortFieldData = await Promise.all(
-                    stakeAddresses.map((address) =>
-                        this.stakingCompute.deployedAt(address),
-                    ),
-                );
-                break;
-            default:
-                break;
-        }
-
-        const allProduceRewardsEnabled =
-            await this.stakingAbi.getAllProduceRewardsEnabled(stakeAddresses);
-        const allAccumulatedRewards =
-            await this.stakingAbi.getAllAccumulatedRewards(stakeAddresses);
-        const allRewardCapacity = await this.stakingAbi.getAllRewardCapacity(
-            stakeAddresses,
-        );
-
-        const rewardsEnded: boolean[] = stakeAddresses.map(
-            (_, index) =>
-                allAccumulatedRewards[index] === allRewardCapacity[index] ||
-                !allProduceRewardsEnabled[index],
-        );
-
-        const combined = stakeAddresses.map((address, index) => ({
-            address,
-            sortValue: new BigNumber(sortFieldData[index] || 0),
-            rewardsEnded: rewardsEnded[index],
-        }));
-
-        combined.sort((a, b) => {
-            const comparison =
-                stakingFarmsSorting.sortOrder === SortingOrder.ASC
-                    ? a.sortValue.comparedTo(b.sortValue)
-                    : b.sortValue.comparedTo(a.sortValue);
-
-            if (a.rewardsEnded !== b.rewardsEnded) {
-                return a.rewardsEnded ? 1 : -1;
-            }
-
-            return comparison;
-        });
-
-        return combined.map((item) => item.address);
     }
 }
