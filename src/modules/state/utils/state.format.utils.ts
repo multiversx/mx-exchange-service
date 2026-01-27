@@ -1,3 +1,4 @@
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
@@ -78,6 +79,7 @@ export function formatFarm(
                 farm.boosterRewards?.map((globalInfo) =>
                     formatGlobalInfoModel(globalInfo),
                 ) ?? [],
+            version: FarmVersion.V2,
         });
     }
 
@@ -89,6 +91,7 @@ export function formatFarm(
                     formatGlobalInfoModel(globalInfo),
                 ) ?? [],
         }),
+        version: FarmVersion.V2,
     });
 }
 

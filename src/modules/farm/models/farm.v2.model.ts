@@ -1,8 +1,11 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { BaseFarmModel, FarmRewardType } from './farm.model';
+import { FarmRewardType, FarmVersion } from './farm.model';
 import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 
 @ObjectType()
 export class BoostedYieldsFactors {
@@ -23,7 +26,53 @@ export class BoostedYieldsFactors {
 }
 
 @ObjectType()
-export class FarmModelV2 extends BaseFarmModel {
+export class FarmModelV2 {
+    @Field()
+    address: string;
+    @Field({ complexity: nestedFieldComplexity })
+    farmedToken: EsdtToken;
+    @Field()
+    farmedTokenPriceUSD: string;
+    @Field({ complexity: nestedFieldComplexity })
+    farmToken: NftCollection;
+    @Field()
+    farmTokenPriceUSD: string;
+    @Field({ complexity: nestedFieldComplexity })
+    farmingToken: EsdtToken;
+    @Field()
+    farmingTokenPriceUSD: string;
+    @Field()
+    produceRewardsEnabled: boolean;
+    @Field()
+    perBlockRewards: string;
+    @Field()
+    farmTokenSupply: string;
+    @Field(() => Int)
+    penaltyPercent: number;
+    @Field(() => Int)
+    minimumFarmingEpochs: number;
+    @Field()
+    rewardPerShare: string;
+    @Field()
+    rewardReserve: string;
+    @Field(() => Int)
+    lastRewardBlockNonce: number;
+    @Field()
+    divisionSafetyConstant: string;
+    @Field()
+    totalValueLockedUSD: string;
+    @Field()
+    state: string;
+    @Field()
+    version: FarmVersion;
+    @Field({ nullable: true })
+    burnGasLimit: string;
+    @Field({ nullable: true })
+    transferExecGasLimit: string;
+    @Field({ nullable: true, complexity: nestedFieldComplexity })
+    pair: PairModel;
+    @Field({ nullable: true })
+    lastErrorMessage: string;
     @Field(() => Int)
     boostedYieldsRewardsPercenatage: number;
     @Field(() => BoostedYieldsFactors, { complexity: nestedFieldComplexity })
@@ -64,7 +113,6 @@ export class FarmModelV2 extends BaseFarmModel {
     pairAddress: string;
 
     constructor(init?: Partial<FarmModelV2>) {
-        super(init);
         Object.assign(this, init);
     }
 }

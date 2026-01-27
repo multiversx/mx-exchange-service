@@ -68,6 +68,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
 import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('UserService', () => {
     let module: TestingModule;
@@ -107,6 +108,7 @@ describe('UserService', () => {
                     useClass: FarmAbiServiceMock,
                 },
                 FarmAbiFactory,
+                FarmsStateServiceProvider,
                 LockedTokenWrapperAbiServiceProvider,
                 ProxyService,
                 ProxyAbiServiceProvider,
