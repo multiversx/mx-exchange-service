@@ -18,10 +18,12 @@ export class CoinGeckoService {
     ) {}
 
     async getTickersFromPairs(): Promise<CoinGeckoTicker[]> {
+        const pairsCount = await this.pairsState.getPairsCount();
+
         const [pairsResult, commonTokens] = await Promise.all([
             this.pairsState.getFilteredPairs(
                 0,
-                Number.MAX_VALUE,
+                pairsCount,
                 { state: ['Active'] } as PairsFilter,
                 undefined,
                 [

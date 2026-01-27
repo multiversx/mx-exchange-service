@@ -82,24 +82,29 @@ export class PairService {
             ),
         ]);
 
-        const { firstTokenId, secondTokenId, info, totalFeePercent } = pair;
+        const {
+            firstTokenId: firstTokenID,
+            secondTokenId: secondTokenID,
+            info: pairInfo,
+            totalFeePercent,
+        } = pair;
 
         const tokenIn =
             tokenInID === mxConfig.EGLDIdentifier ? wrappedTokenID : tokenInID;
 
         switch (tokenIn) {
-            case firstTokenId:
+            case firstTokenID:
                 return getAmountOut(
                     amount,
-                    info.reserves0,
-                    info.reserves1,
+                    pairInfo.reserves0,
+                    pairInfo.reserves1,
                     totalFeePercent,
                 ).toFixed();
-            case secondTokenId:
+            case secondTokenID:
                 return getAmountOut(
                     amount,
-                    info.reserves1,
-                    info.reserves0,
+                    pairInfo.reserves1,
+                    pairInfo.reserves0,
                     totalFeePercent,
                 ).toFixed();
             default:
@@ -120,7 +125,12 @@ export class PairService {
             ),
         ]);
 
-        const { firstTokenId, secondTokenId, info, totalFeePercent } = pair;
+        const {
+            firstTokenId: firstTokenID,
+            secondTokenId: secondTokenID,
+            info: pairInfo,
+            totalFeePercent,
+        } = pair;
 
         const tokenOut =
             tokenOutID === mxConfig.EGLDIdentifier
@@ -128,18 +138,18 @@ export class PairService {
                 : tokenOutID;
 
         switch (tokenOut) {
-            case firstTokenId:
+            case firstTokenID:
                 return getAmountIn(
                     amount,
-                    info.reserves1,
-                    info.reserves0,
+                    pairInfo.reserves1,
+                    pairInfo.reserves0,
                     totalFeePercent,
                 ).toFixed();
-            case secondTokenId:
+            case secondTokenID:
                 return getAmountIn(
                     amount,
-                    info.reserves0,
-                    info.reserves1,
+                    pairInfo.reserves0,
+                    pairInfo.reserves1,
                     totalFeePercent,
                 ).toFixed();
             default:

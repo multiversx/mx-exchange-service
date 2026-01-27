@@ -381,9 +381,11 @@ export class AutoRouterService {
     }
 
     private async getAllActivePairs(): Promise<PairModel[]> {
+        const pairsCount = await this.pairsState.getPairsCount();
+
         const pairsResult = await this.pairsState.getFilteredPairs(
             0,
-            1000,
+            pairsCount,
             { state: ['Active'] } as PairsFilter,
             undefined,
             [
@@ -392,6 +394,7 @@ export class AutoRouterService {
                 'secondTokenId',
                 'totalFeePercent',
                 'info',
+                'lockedTokensInfo',
             ],
         );
 
