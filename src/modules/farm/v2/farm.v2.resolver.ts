@@ -19,6 +19,8 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { StateDataLoader } from 'src/modules/state/services/state.dataloader';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
+import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 
 @Resolver(() => BoostedRewardsModel)
 export class FarmBoostedRewardsResolver {
@@ -130,6 +132,29 @@ export class FarmResolverV2 {
         }
 
         return this.farmAbi.accumulatedRewardsForWeek(parent.address, week);
+    }
+
+    // TODO: remove after updating GlobalInfoByWeekResolver
+    @ResolveField()
+    async boosterRewards(
+        parent: FarmModelV2,
+    ): Promise<GlobalInfoByWeekModel[]> {
+        return parent.boosterRewards.map(
+            (globalInfo) =>
+                new GlobalInfoByWeekModel({
+                    scAddress: parent.address,
+                    ...globalInfo,
+                }),
+        );
+    }
+
+    // TODO: remove after updating WeekTimekeepingResolver
+    @ResolveField()
+    async time(parent: FarmModelV2): Promise<WeekTimekeepingModel> {
+        return new WeekTimekeepingModel({
+            scAddress: parent.address,
+            ...parent.time,
+        });
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
