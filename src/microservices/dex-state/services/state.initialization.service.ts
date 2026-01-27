@@ -148,7 +148,6 @@ export class StateInitializationService {
             const completeStakingFarm =
                 this.stakingComputeService.computeMissingStakingFarmFields(
                     stakingFarm,
-                    this.stateStore,
                 );
 
             this.stateStore.setStakingFarm(completeStakingFarm.address, {

@@ -28,10 +28,7 @@ export class StakingComputeService {
         return stakingProxy;
     }
 
-    computeMissingStakingFarmFields(
-        stakingFarm: StakingModel,
-        stateStore: StateStore,
-    ): StakingModel {
+    computeMissingStakingFarmFields(stakingFarm: StakingModel): StakingModel {
         refreshWeekStartAndEndEpochs(stakingFarm.time);
 
         stakingFarm.boosterRewards.forEach((globalInfo) => {
@@ -45,7 +42,9 @@ export class StakingComputeService {
             globalInfo.apr = '0';
         });
 
-        const farmingToken = stateStore.tokens.get(stakingFarm.farmingTokenId);
+        const farmingToken = this.stateStore.tokens.get(
+            stakingFarm.farmingTokenId,
+        );
 
         stakingFarm.isProducingRewards =
             !stakingFarm.produceRewardsEnabled ||
