@@ -13,7 +13,6 @@ import { scAddress } from '../../config';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
 import {
     ClaimProgress,
-    GlobalInfoByWeekModel,
     UserInfoByWeekModel,
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { TransactionModel } from '../../models/transaction.model';
@@ -22,87 +21,14 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { FeesCollectorTransactionService } from './services/fees-collector.transaction.service';
 import { FeesCollectorComputeService } from './services/fees-collector.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
-import { EnergyAbiService } from '../energy/services/energy.abi.service';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
-        private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly feesCollectorService: FeesCollectorService,
         private readonly feesCollectorTransaction: FeesCollectorTransactionService,
-        private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
-        private readonly energyAbi: EnergyAbiService,
     ) {}
-
-    @ResolveField()
-    async lastGlobalUpdateWeek(parent: FeesCollectorModel): Promise<number> {
-        return this.weeklyRewardsSplittingAbi.lastGlobalUpdateWeek(
-            parent.address,
-        );
-    }
-
-    @ResolveField(() => [GlobalInfoByWeekModel])
-    async undistributedRewards(
-        parent: FeesCollectorModel,
-    ): Promise<GlobalInfoByWeekModel[]> {
-        return this.feesCollectorService.getWeeklyRewardsSplit(
-            parent.address,
-            parent.startWeek,
-            parent.endWeek,
-        );
-    }
-
-    @ResolveField(() => [EsdtTokenPayment])
-    async accumulatedFees(
-        parent: FeesCollectorModel,
-    ): Promise<EsdtTokenPayment[]> {
-        return this.feesCollectorService.getAccumulatedFees(
-            parent.address,
-            parent.time.currentWeek,
-            parent.allTokens,
-        );
-    }
-
-    @ResolveField(() => [EsdtTokenPayment])
-    async rewardsClaimed(
-        parent: FeesCollectorModel,
-    ): Promise<EsdtTokenPayment[]> {
-        return this.feesCollectorService.getRewardsClaimed(
-            parent.time.currentWeek,
-            parent.allTokens,
-        );
-    }
-
-    @ResolveField()
-    async lockedTokenId(): Promise<string> {
-        return this.energyAbi.lockedTokenID();
-    }
-
-    @ResolveField()
-    async lockedTokensPerBlock(): Promise<string> {
-        return this.feesCollectorCompute.lockedTokensPerBlock();
-    }
-
-    @ResolveField(() => [String])
-    async allTokens(): Promise<string[]> {
-        return this.feesCollectorAbi.allTokens();
-    }
-
-    @ResolveField(() => [String])
-    async knownContracts(): Promise<string[]> {
-        return this.feesCollectorAbi.knownContracts();
-    }
-
-    @ResolveField()
-    async lockedTokensPerEpoch(): Promise<string> {
-        return this.feesCollectorAbi.lockedTokensPerEpoch();
-    }
-
-    @ResolveField(() => [String])
-    async lastLockedTokensAddWeek(): Promise<number> {
-        return this.feesCollectorAbi.lastLockedTokensAddWeek();
-    }
 
     @ResolveField(() => Boolean)
     async allowExternalClaimRewards(
@@ -113,7 +39,7 @@ export class FeesCollectorResolver {
 
     @Query(() => FeesCollectorModel)
     async feesCollector(): Promise<FeesCollectorModel> {
-        return this.feesCollectorService.feesCollector(scAddress.feesCollector);
+        return this.feesCollectorService.feesCollector();
     }
 
     @UseGuards(JwtOrNativeAdminGuard)
