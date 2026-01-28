@@ -41,13 +41,8 @@ export class FeesCollectorCacheWarmerService {
 
         const tokensAccumulatedFeesCacheKeys =
             await this.cacheTokensAccumulatedFees(allTokens, currentWeek);
-        const rewardsClaimed = await this.cacheRewardsClaimed(
-            allTokens,
-            currentWeek,
-        );
 
         cachedKeys.push(...tokensAccumulatedFeesCacheKeys);
-        cachedKeys.push(...rewardsClaimed);
 
         await this.deleteCacheKeys(cachedKeys);
 
@@ -73,27 +68,6 @@ export class FeesCollectorCacheWarmerService {
                 week,
                 token,
                 accumulatedFees,
-            );
-
-            cachedKeys.push(cacheKey);
-        }
-
-        return cachedKeys;
-    }
-
-    private async cacheRewardsClaimed(
-        allTokens: string[],
-        week: number,
-    ): Promise<string[]> {
-        const cachedKeys = [];
-        for (const token of allTokens) {
-            const rewardsClaimed =
-                await this.feesCollectorAbi.getRewardsClaimedRaw(week, token);
-
-            const cacheKey = await this.feesCollectorSetter.rewardsClaimed(
-                week,
-                token,
-                rewardsClaimed,
             );
 
             cachedKeys.push(cacheKey);
