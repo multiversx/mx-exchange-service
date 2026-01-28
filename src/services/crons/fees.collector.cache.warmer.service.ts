@@ -9,7 +9,6 @@ import { FeesCollectorAbiService } from 'src/modules/fees-collector/services/fee
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { scAddress } from 'src/config';
 import { FeesCollectorSetterService } from 'src/modules/fees-collector/services/fees-collector.setter.service';
-import { FeesCollectorComputeService } from 'src/modules/fees-collector/services/fees-collector.compute.service';
 import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
@@ -18,7 +17,6 @@ export class FeesCollectorCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private readonly feesCollectorAbi: FeesCollectorAbiService,
-        private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly feesCollectorSetter: FeesCollectorSetterService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
     ) {}
@@ -37,30 +35,14 @@ export class FeesCollectorCacheWarmerService {
             this.weekTimekeepingAbi.getCurrentWeekRaw(scAddress.feesCollector),
         ]);
 
-        const accumulatedFeesUntilNow =
-            await this.feesCollectorCompute.computeAccumulatedFeesUntilNow(
-                scAddress.feesCollector,
-                currentWeek,
-            );
-
         const cachedKeys = await Promise.all([
             this.feesCollectorSetter.allTokens(allTokens),
-            this.feesCollectorSetter.accumulatedFeesUntilNow(
-                scAddress.feesCollector,
-                currentWeek,
-                accumulatedFeesUntilNow,
-            ),
         ]);
 
         const tokensAccumulatedFeesCacheKeys =
             await this.cacheTokensAccumulatedFees(allTokens, currentWeek);
-        const rewardsClaimed = await this.cacheRewardsClaimed(
-            allTokens,
-            currentWeek,
-        );
 
         cachedKeys.push(...tokensAccumulatedFeesCacheKeys);
-        cachedKeys.push(...rewardsClaimed);
 
         await this.deleteCacheKeys(cachedKeys);
 
@@ -86,27 +68,6 @@ export class FeesCollectorCacheWarmerService {
                 week,
                 token,
                 accumulatedFees,
-            );
-
-            cachedKeys.push(cacheKey);
-        }
-
-        return cachedKeys;
-    }
-
-    private async cacheRewardsClaimed(
-        allTokens: string[],
-        week: number,
-    ): Promise<string[]> {
-        const cachedKeys = [];
-        for (const token of allTokens) {
-            const rewardsClaimed =
-                await this.feesCollectorAbi.getRewardsClaimedRaw(week, token);
-
-            const cacheKey = await this.feesCollectorSetter.rewardsClaimed(
-                week,
-                token,
-                rewardsClaimed,
             );
 
             cachedKeys.push(cacheKey);
