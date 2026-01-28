@@ -106,16 +106,6 @@ export class UserEntryFeesCollectorResolver {
         );
     }
 
-    @ResolveField()
-    async lastActiveWeekForUser(
-        parent: UserEntryFeesCollectorModel,
-    ): Promise<number> {
-        return this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(
-            parent.address,
-            parent.userAddress,
-        );
-    }
-
     @ResolveField(() => ClaimProgress)
     async claimProgress(
         parent: UserEntryFeesCollectorModel,

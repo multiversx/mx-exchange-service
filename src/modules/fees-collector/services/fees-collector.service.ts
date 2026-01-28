@@ -8,87 +8,15 @@ import { UserInfoByWeekModel } from '../../../submodules/weekly-rewards-splittin
 import { constantsConfig } from '../../../config';
 import BigNumber from 'bignumber.js';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
-import { FeesCollectorAbiService } from './fees-collector.abi.service';
-import { FeesCollectorComputeService } from './fees-collector.compute.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service';
 import { FeesCollectorStateService } from 'src/modules/state/services/fees.collector.state.service';
 
 @Injectable()
 export class FeesCollectorService {
     constructor(
-        private readonly feesCollectorAbi: FeesCollectorAbiService,
-        private readonly feesCollectorCompute: FeesCollectorComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
-        private readonly energyAbi: EnergyAbiService,
         private readonly feesCollectorState: FeesCollectorStateService,
     ) {}
-
-    async getAccumulatedFees(
-        scAddress: string,
-        week: number,
-        allTokens: string[],
-    ): Promise<EsdtTokenPayment[]> {
-        const accumulatedFees: EsdtTokenPayment[] = [];
-
-        const promises = allTokens.map((token) =>
-            this.feesCollectorAbi.accumulatedFees(week, token),
-        );
-
-        const accumulatedFeesByToken = await Promise.all(promises);
-
-        accumulatedFeesByToken.forEach((accumulatedFee, index) => {
-            accumulatedFees.push(
-                new EsdtTokenPayment({
-                    tokenID: allTokens[index],
-                    tokenType: 0,
-                    amount: accumulatedFee,
-                    nonce: 0,
-                }),
-            );
-        });
-
-        const [lockedTokenId, accumulatedTokenForInflation] = await Promise.all(
-            [
-                this.energyAbi.lockedTokenID(),
-                this.feesCollectorCompute.accumulatedFeesUntilNow(
-                    scAddress,
-                    week,
-                ),
-            ],
-        );
-        accumulatedFees.push(
-            new EsdtTokenPayment({
-                tokenID: `Minted${lockedTokenId}`,
-                tokenType: 0,
-                amount: accumulatedTokenForInflation,
-                nonce: 0,
-            }),
-        );
-
-        return accumulatedFees;
-    }
-
-    async getRewardsClaimed(
-        week: number,
-        allTokens: string[],
-    ): Promise<EsdtTokenPayment[]> {
-        const claimAmounts = await Promise.all(
-            allTokens.map((token) =>
-                this.feesCollectorAbi.rewardsClaimed(week, token),
-            ),
-        );
-
-        return allTokens.map(
-            (token, index) =>
-                new EsdtTokenPayment({
-                    tokenID: token,
-                    tokenType: 0,
-                    amount: claimAmounts[index],
-                    nonce: 0,
-                }),
-        );
-    }
 
     async feesCollector(): Promise<FeesCollectorModel> {
         return this.feesCollectorState.getFeesCollector();
@@ -122,6 +50,7 @@ export class FeesCollectorService {
                 scAddress: scAddress,
                 ...feesCollector.time,
             }),
+            lastActiveWeekForUser,
         });
     }
 
@@ -152,19 +81,17 @@ export class FeesCollectorService {
         userAddress: string,
         currentWeek: number,
     ): Promise<EsdtTokenPayment[]> {
-        const allTokens = await this.feesCollectorAbi.allTokens();
-        const [accumulatedFees, totalEnergyForWeek, currentClaimProgress] =
-            await Promise.all([
-                this.getAccumulatedFees(scAddress, currentWeek, allTokens),
-                this.weeklyRewardsSplittingAbi.totalEnergyForWeek(
-                    scAddress,
-                    currentWeek,
-                ),
-                this.weeklyRewardsSplittingAbi.currentClaimProgress(
-                    scAddress,
-                    userAddress,
-                ),
-            ]);
+        const [currentClaimProgress, feesCollector] = await Promise.all([
+            this.weeklyRewardsSplittingAbi.currentClaimProgress(
+                scAddress,
+                userAddress,
+            ),
+            this.feesCollectorState.getFeesCollector([
+                'address',
+                'accumulatedFees',
+                'undistributedRewards',
+            ]),
+        ]);
 
         if (
             currentClaimProgress.week === 0 ||
@@ -172,6 +99,13 @@ export class FeesCollectorService {
         ) {
             return [];
         }
+
+        const totalEnergyForWeek =
+            feesCollector.undistributedRewards.find(
+                (globalInfo) => globalInfo.week === currentWeek,
+            ).totalEnergyForWeek ?? '0';
+
+        const { accumulatedFees } = feesCollector;
 
         const accumulatedRewards = [];
         const percentage = new BigNumber(
