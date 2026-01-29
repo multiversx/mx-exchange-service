@@ -1,14 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
 import { StakingProxyModel } from 'src/modules/staking-proxy/models/staking.proxy.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 import {
+    GetFilteredStakingFarmsRequest,
+    PaginatedStakingFarms,
     StakingFarms,
+    StakingFarmSortField,
     StakingProxies,
     UpdateStakingFarmsRequest,
     UpdateStakingFarmsResponse,
+    SortOrder,
 } from '../../interfaces/dex_state.interfaces';
 import { StakingComputeService } from '../compute/staking.compute.service';
 import { StateStore } from '../state.store';
+
+const STAKING_FARM_SORT_FIELD_MAP = {
+    [StakingFarmSortField.STAKING_SORT_PRICE]: 'farmingTokenPriceUSD',
+    [StakingFarmSortField.STAKING_SORT_TVL]: 'stakedValueUSD',
+    [StakingFarmSortField.STAKING_SORT_APR]: 'apr',
+    [StakingFarmSortField.STAKING_SORT_DEPLOYED_AT]: 'deployedAt',
+};
 
 @Injectable()
 export class StakingStateHandler {
@@ -50,6 +62,97 @@ export class StakingStateHandler {
             Array.from(this.stateStore.stakingFarms.keys()),
             fields,
         );
+    }
+
+    getFilteredStakingFarms(
+        request: GetFilteredStakingFarmsRequest,
+    ): PaginatedStakingFarms {
+        const fields = request.fields?.paths ?? [];
+
+        const {
+            searchToken,
+            rewardsEnded,
+            offset,
+            limit,
+            sortField,
+            sortOrder,
+        } = request;
+
+        const stakingFarmAddresses: string[] = [];
+        this.stateStore.stakingFarms.forEach((stakingFarm) => {
+            if (searchToken && searchToken.trim().length > 0) {
+                const farmingToken = this.stateStore.tokens.get(
+                    stakingFarm.farmingTokenId,
+                );
+                const searchTerm = searchToken.toUpperCase().trim();
+
+                if (
+                    !farmingToken.name.toUpperCase().includes(searchTerm) &&
+                    !farmingToken.identifier
+                        .toUpperCase()
+                        .includes(searchTerm) &&
+                    !farmingToken.ticker.toUpperCase().includes(searchTerm)
+                ) {
+                    return;
+                }
+            }
+
+            if (
+                rewardsEnded !== undefined &&
+                stakingFarm.isProducingRewards === rewardsEnded
+            ) {
+                return;
+            }
+
+            stakingFarmAddresses.push(stakingFarm.address);
+        });
+
+        if (sortField === StakingFarmSortField.STAKING_SORT_UNSPECIFIED) {
+            const { stakingFarms } = this.getStakingFarms(
+                stakingFarmAddresses.slice(offset, offset + limit),
+                fields,
+            );
+
+            return {
+                count: stakingFarmAddresses.length,
+                stakingFarms,
+            };
+        }
+
+        const decodedSortField = STAKING_FARM_SORT_FIELD_MAP[sortField];
+
+        const sortedAddresses = stakingFarmAddresses
+            .map((address) => {
+                const stakingFarm = this.stateStore.stakingFarms.get(address);
+                return {
+                    address,
+                    sortValue: new BigNumber(
+                        stakingFarm?.[decodedSortField] ?? 0,
+                    ),
+                    rewardsEnded: !stakingFarm?.isProducingRewards ?? true,
+                };
+            })
+            .sort((a, b) => {
+                if (a.rewardsEnded !== b.rewardsEnded) {
+                    return a.rewardsEnded ? 1 : -1;
+                }
+
+                if (sortOrder === SortOrder.SORT_ASC) {
+                    return a.sortValue.comparedTo(b.sortValue);
+                }
+                return b.sortValue.comparedTo(a.sortValue);
+            })
+            .map((item) => item.address);
+
+        const { stakingFarms } = this.getStakingFarms(
+            sortedAddresses.slice(offset, offset + limit),
+            fields,
+        );
+
+        return {
+            count: sortedAddresses.length,
+            stakingFarms,
+        };
     }
 
     updateStakingFarms(

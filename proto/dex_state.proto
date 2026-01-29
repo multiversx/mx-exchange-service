@@ -40,6 +40,14 @@ enum PairSortField {
   PAIRS_SORT_APR              = 7;
 }
 
+enum StakingFarmSortField {
+  STAKING_SORT_UNSPECIFIED    = 0;
+  STAKING_SORT_PRICE          = 1;
+  STAKING_SORT_TVL            = 2;
+  STAKING_SORT_APR            = 3;
+  STAKING_SORT_DEPLOYED_AT    = 4;
+}
+
 enum SortOrder {
   SORT_ORDER_UNSPECIFIED = 0;
   SORT_ASC = 1;
@@ -210,6 +218,11 @@ message StakingFarms {
   repeated StakingFarm stakingFarms = 1;
 }
 
+message PaginatedStakingFarms {
+  repeated StakingFarm stakingFarms = 1;
+  uint32 count = 2;
+}
+
 message StakingProxies {
   repeated StakingProxy stakingProxies = 1;
 }
@@ -240,6 +253,19 @@ message GetStakingFarmsRequest {
 
 message GetAllStakingFarmsRequest {
   google.protobuf.FieldMask fields = 1;
+}
+
+message GetFilteredStakingFarmsRequest {
+  string searchToken               = 1;
+  bool rewardsEnded                = 2;
+ 
+  uint32 offset                    = 3;
+  uint32 limit                     = 4;
+
+  StakingFarmSortField sortField   = 5;
+  SortOrder sortOrder              = 6;
+
+  google.protobuf.FieldMask fields = 7;
 }
 
 message UpdateStakingFarmsRequest {
@@ -313,6 +339,7 @@ service DexStateService {
 
   rpc GetStakingFarms (GetStakingFarmsRequest) returns (StakingFarms) {}
   rpc GetAllStakingFarms (GetAllStakingFarmsRequest) returns (StakingFarms) {}
+  rpc GetFilteredStakingFarms (GetFilteredStakingFarmsRequest) returns (PaginatedStakingFarms) {}
   rpc UpdateStakingFarms (UpdateStakingFarmsRequest) returns (UpdateStakingFarmsResponse) {}
 
   rpc GetStakingProxies (GetStakingProxiesRequest) returns (StakingProxies) {}

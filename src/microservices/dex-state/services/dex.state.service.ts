@@ -10,12 +10,14 @@ import {
     GetAllTokensRequest,
     GetFeesCollectorRequest,
     GetFilteredPairsRequest,
+    GetFilteredStakingFarmsRequest,
     GetFilteredTokensRequest,
     GetPairsAndTokensRequest,
     GetWeeklyTimekeepingRequest,
     InitStateRequest,
     InitStateResponse,
     PaginatedPairs,
+    PaginatedStakingFarms,
     PaginatedTokens,
     Pairs,
     PairsAndTokensResponse,
@@ -170,6 +172,12 @@ export class DexStateService implements OnModuleInit {
     getAllStakingFarms(request: GetAllStakingFarmsRequest): StakingFarms {
         const fields = request.fields?.paths ?? [];
         return this.stakingHandler.getAllStakingFarms(fields);
+    }
+
+    getFilteredStakingFarms(
+        request: GetFilteredStakingFarmsRequest,
+    ): PaginatedStakingFarms {
+        return this.stakingHandler.getFilteredStakingFarms(request);
     }
 
     updateStakingFarms(
