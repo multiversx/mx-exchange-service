@@ -28,8 +28,6 @@ import { StakingTransactionService } from './services/staking.transactions.servi
 import { StakingAbiService } from './services/staking.abi.service';
 import { StakingComputeService } from './services/staking.compute.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
-import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
-import { GlobalInfoByWeekModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { StakeAddressValidationPipe } from './validators/stake.address.validator';
 import { UserTotalBoostedPosition } from '../farm/models/farm.model';
 import { StakingFarmsResponse } from './models/staking.farms.response';
@@ -134,29 +132,6 @@ export class StakingResolver {
     @ResolveField()
     async rewardToken(parent: StakingModel) {
         return this.stateDataLoader.loadToken(parent.rewardTokenId);
-    }
-
-    // TODO: remove after updating WeekTimekeepingResolver
-    @ResolveField()
-    async time(parent: StakingModel): Promise<WeekTimekeepingModel> {
-        return new WeekTimekeepingModel({
-            scAddress: parent.address,
-            ...parent.time,
-        });
-    }
-
-    // TODO: remove after updating GlobalInfoByWeekResolver
-    @ResolveField()
-    async boosterRewards(
-        parent: StakingModel,
-    ): Promise<GlobalInfoByWeekModel[]> {
-        return parent.boosterRewards.map(
-            (globalInfo) =>
-                new GlobalInfoByWeekModel({
-                    scAddress: parent.address,
-                    ...globalInfo,
-                }),
-        );
     }
 
     @ResolveField()
