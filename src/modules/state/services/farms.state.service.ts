@@ -15,6 +15,10 @@ export class FarmsStateService {
         addresses: string[] = [],
         fields: (keyof FarmModelV2)[] = [],
     ): Promise<FarmModelV2[]> {
+        if (!addresses || addresses.length === 0) {
+            return [];
+        }
+
         const result = await firstValueFrom(
             this.stateGrpc.client.getFarms({
                 addresses,

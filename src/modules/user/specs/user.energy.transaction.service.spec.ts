@@ -73,6 +73,7 @@ import { StakingComputeService } from 'src/modules/staking/services/staking.comp
 import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
 import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('UserEnergyTransactionService', () => {
     let module: TestingModule;
@@ -111,6 +112,7 @@ describe('UserEnergyTransactionService', () => {
                 FarmAbiService,
                 FarmAbiServiceProviderV1_2,
                 FarmAbiServiceProviderV1_3,
+                FarmsStateServiceProvider,
                 LockedTokenWrapperService,
                 {
                     provide: FarmAbiServiceV2,

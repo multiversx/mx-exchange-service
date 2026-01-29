@@ -42,6 +42,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -101,6 +102,7 @@ describe('FarmService', () => {
                 MXDataApiServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                FarmsStateServiceProvider,
             ],
         }).compile();
     });
@@ -139,7 +141,7 @@ describe('FarmService', () => {
 
     it('should get farms', async () => {
         const factory = module.get<FarmFactoryService>(FarmFactoryService);
-        const farms = factory.getFarms();
+        const farms = await factory.getFarms();
         expect(farms).toEqual([
             {
                 address:
@@ -170,6 +172,12 @@ describe('FarmService', () => {
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
                 rewardType: 'lockedRewards',
                 version: 'v2',
+                farmedTokenId: 'MEX-123456',
+                farmTokenCollection: 'EGLDMEXFL-ghijkl',
+                farmingTokenId: 'EGLDMEXLP-abcdef',
+                farmTokenSupply: '1000000000000000000',
+                perBlockRewards: '2000000000000000000',
+                rewardPerShare: '0',
             },
         ]);
     });
