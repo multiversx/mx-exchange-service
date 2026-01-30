@@ -47,6 +47,7 @@ import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.
 import { StakingProxyFilteringService } from '../services/staking.proxy.filtering.service';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
+import { StakingStateServiceProvider } from 'src/modules/state/mocks/staking.state.service.mock';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -88,6 +89,7 @@ describe('StakingProxyTransactionService', () => {
                 FarmAbiServiceProviderV1_3,
                 FarmAbiServiceProviderV2,
                 StakingAbiServiceProvider,
+                StakingStateServiceProvider,
                 ContextGetterServiceProvider,
                 WeekTimekeepingAbiServiceProvider,
                 WeekTimekeepingComputeService,
