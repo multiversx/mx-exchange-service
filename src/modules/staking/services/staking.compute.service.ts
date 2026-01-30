@@ -9,7 +9,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
-import { OptimalCompoundModel } from '../models/staking.model';
+import { OptimalCompoundModel, StakingModel } from '../models/staking.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
@@ -34,16 +34,16 @@ export class StakingComputeService {
         private readonly apiService: MXApiService,
     ) {}
 
-    async computeStakeRewardsForPosition(
-        stakeAddress: string,
+    computeStakeRewardsForPosition(
+        stakingFarm: StakingModel,
         liquidity: string,
         decodedAttributes: StakingTokenAttributesModel,
-    ): Promise<BigNumber> {
-        const [futureRewardsPerShare, divisionSafetyConstant] =
-            await Promise.all([
-                this.computeFutureRewardsPerShare(stakeAddress),
-                this.stakingAbi.divisionSafetyConstant(stakeAddress),
-            ]);
+        currentNonce: number,
+    ): BigNumber {
+        const futureRewardsPerShare = this.computeFutureRewardsPerShare(
+            stakingFarm,
+            currentNonce,
+        );
 
         const amountBig = new BigNumber(liquidity);
         const futureRewardsPerShareBig = new BigNumber(futureRewardsPerShare);
@@ -56,38 +56,32 @@ export class StakingComputeService {
         );
         return amountBig
             .multipliedBy(rewardPerShareDiff)
-            .dividedBy(divisionSafetyConstant);
+            .dividedBy(stakingFarm.divisionSafetyConstant);
     }
 
-    async computeFutureRewardsPerShare(
-        stakeAddress: string,
-    ): Promise<BigNumber> {
-        let extraRewards = await this.computeExtraRewardsSinceLastAllocation(
-            stakeAddress,
+    computeFutureRewardsPerShare(
+        stakingFarm: StakingModel,
+        currentNonce: number,
+    ): BigNumber {
+        let extraRewards = this.computeExtraRewardsSinceLastAllocation(
+            stakingFarm,
+            currentNonce,
         );
 
-        const [
-            accumulatedRewards,
-            rewardsCapacity,
-            farmRewardPerShare,
-            farmTokenSupply,
-            divisionSafetyConstant,
-        ] = await Promise.all([
-            this.stakingAbi.accumulatedRewards(stakeAddress),
-            this.stakingAbi.rewardCapacity(stakeAddress),
-            this.stakingAbi.rewardPerShare(stakeAddress),
-            this.stakingAbi.farmTokenSupply(stakeAddress),
-            this.stakingAbi.divisionSafetyConstant(stakeAddress),
-        ]);
-
-        const farmRewardPerShareBig = new BigNumber(farmRewardPerShare);
-        const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
-        const divisionSafetyConstantBig = new BigNumber(divisionSafetyConstant);
+        const farmRewardPerShareBig = new BigNumber(stakingFarm.rewardPerShare);
+        const farmTokenSupplyBig = new BigNumber(stakingFarm.farmTokenSupply);
+        const divisionSafetyConstantBig = new BigNumber(
+            stakingFarm.divisionSafetyConstant,
+        );
 
         if (extraRewards.isGreaterThan(0)) {
-            const totalRewards = extraRewards.plus(accumulatedRewards);
-            if (totalRewards.isGreaterThan(rewardsCapacity)) {
-                const amountOverCapacity = totalRewards.minus(rewardsCapacity);
+            const totalRewards = extraRewards.plus(
+                stakingFarm.accumulatedRewards,
+            );
+            if (totalRewards.isGreaterThan(stakingFarm.rewardCapacity)) {
+                const amountOverCapacity = totalRewards.minus(
+                    stakingFarm.rewardCapacity,
+                );
                 extraRewards = extraRewards.minus(amountOverCapacity);
             }
 
@@ -101,33 +95,28 @@ export class StakingComputeService {
         return farmRewardPerShareBig;
     }
 
-    async computeExtraRewardsSinceLastAllocation(
-        stakeAddress: string,
-    ): Promise<BigNumber> {
-        const [
-            currentNonce,
-            lastRewardBlockNonce,
-            perBlockRewardAmount,
-            produceRewardsEnabled,
-        ] = await Promise.all([
-            this.contextGetter.getShardCurrentBlockNonce(1),
-            this.stakingAbi.lastRewardBlockNonce(stakeAddress),
-            this.stakingAbi.perBlockRewardsAmount(stakeAddress),
-            this.stakingAbi.produceRewardsEnabled(stakeAddress),
-        ]);
-
+    computeExtraRewardsSinceLastAllocation(
+        stakingFarm: StakingModel,
+        currentNonce: number,
+    ): BigNumber {
         const currentBlockBig = new BigNumber(currentNonce);
-        const lastRewardBlockNonceBig = new BigNumber(lastRewardBlockNonce);
-        const perBlockRewardAmountBig = new BigNumber(perBlockRewardAmount);
+        const lastRewardBlockNonceBig = new BigNumber(
+            stakingFarm.lastRewardBlockNonce,
+        );
+        const perBlockRewardAmountBig = new BigNumber(
+            stakingFarm.perBlockRewards,
+        );
         const blockDifferenceBig = currentBlockBig.minus(
             lastRewardBlockNonceBig,
         );
-        if (currentNonce > lastRewardBlockNonce && produceRewardsEnabled) {
+        if (
+            currentNonce > stakingFarm.lastRewardBlockNonce &&
+            stakingFarm.produceRewardsEnabled
+        ) {
             const extraRewardsUnbounded =
                 perBlockRewardAmountBig.times(blockDifferenceBig);
-            const extraRewardsBounded = await this.computeExtraRewardsBounded(
-                stakeAddress,
-                blockDifferenceBig,
+            const extraRewardsBounded = blockDifferenceBig.multipliedBy(
+                stakingFarm.rewardsPerBlockAPRBound,
             );
 
             return extraRewardsUnbounded.isLessThan(extraRewardsBounded)

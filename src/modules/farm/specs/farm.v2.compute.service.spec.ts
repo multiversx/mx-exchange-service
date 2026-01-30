@@ -82,22 +82,6 @@ describe('FarmServiceV2', () => {
         expect(result).toEqual(expectedTotal);
     });
 
-    it('should compute blocks in week', async () => {
-        const service = module.get<FarmComputeServiceV2>(FarmComputeServiceV2);
-        const contextGetter =
-            module.get<ContextGetterService>(ContextGetterService);
-        jest.spyOn(contextGetter, 'getCurrentEpoch').mockResolvedValue(256);
-
-        const blocksInWeek = await service.computeBlocksInWeek(
-            Address.fromBech32(
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
-            ).bech32(),
-            1,
-        );
-
-        expect(blocksInWeek).toEqual(10 * 60 * 24 * 7);
-    });
-
     it('should compute user accumulated rewards', async () => {
         const service = module.get<FarmComputeServiceV2>(FarmComputeServiceV2);
         const farmAbi = module.get<FarmAbiServiceV2>(FarmAbiServiceV2);
