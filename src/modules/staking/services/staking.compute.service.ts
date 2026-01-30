@@ -60,27 +60,27 @@ export class StakingComputeService {
     }
 
     computeFutureRewardsPerShare(
-        stakeFarm: StakingModel,
+        stakingFarm: StakingModel,
         currentNonce: number,
     ): BigNumber {
         let extraRewards = this.computeExtraRewardsSinceLastAllocation(
-            stakeFarm,
+            stakingFarm,
             currentNonce,
         );
 
-        const farmRewardPerShareBig = new BigNumber(stakeFarm.rewardPerShare);
-        const farmTokenSupplyBig = new BigNumber(stakeFarm.farmTokenSupply);
+        const farmRewardPerShareBig = new BigNumber(stakingFarm.rewardPerShare);
+        const farmTokenSupplyBig = new BigNumber(stakingFarm.farmTokenSupply);
         const divisionSafetyConstantBig = new BigNumber(
-            stakeFarm.divisionSafetyConstant,
+            stakingFarm.divisionSafetyConstant,
         );
 
         if (extraRewards.isGreaterThan(0)) {
             const totalRewards = extraRewards.plus(
-                stakeFarm.accumulatedRewards,
+                stakingFarm.accumulatedRewards,
             );
-            if (totalRewards.isGreaterThan(stakeFarm.rewardCapacity)) {
+            if (totalRewards.isGreaterThan(stakingFarm.rewardCapacity)) {
                 const amountOverCapacity = totalRewards.minus(
-                    stakeFarm.rewardCapacity,
+                    stakingFarm.rewardCapacity,
                 );
                 extraRewards = extraRewards.minus(amountOverCapacity);
             }
@@ -96,27 +96,27 @@ export class StakingComputeService {
     }
 
     computeExtraRewardsSinceLastAllocation(
-        stakeFarm: StakingModel,
+        stakingFarm: StakingModel,
         currentNonce: number,
     ): BigNumber {
         const currentBlockBig = new BigNumber(currentNonce);
         const lastRewardBlockNonceBig = new BigNumber(
-            stakeFarm.lastRewardBlockNonce,
+            stakingFarm.lastRewardBlockNonce,
         );
         const perBlockRewardAmountBig = new BigNumber(
-            stakeFarm.perBlockRewards,
+            stakingFarm.perBlockRewards,
         );
         const blockDifferenceBig = currentBlockBig.minus(
             lastRewardBlockNonceBig,
         );
         if (
-            currentNonce > stakeFarm.lastRewardBlockNonce &&
-            stakeFarm.produceRewardsEnabled
+            currentNonce > stakingFarm.lastRewardBlockNonce &&
+            stakingFarm.produceRewardsEnabled
         ) {
             const extraRewardsUnbounded =
                 perBlockRewardAmountBig.times(blockDifferenceBig);
             const extraRewardsBounded = blockDifferenceBig.multipliedBy(
-                stakeFarm.rewardsPerBlockAPRBound,
+                stakingFarm.rewardsPerBlockAPRBound,
             );
 
             return extraRewardsUnbounded.isLessThan(extraRewardsBounded)
