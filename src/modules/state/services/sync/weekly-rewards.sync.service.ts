@@ -47,6 +47,7 @@ export class WeeklyRewardsSyncService {
 
             result.push(
                 new GlobalInfoByWeekModel({
+                    scAddress: address,
                     week,
                     totalRewardsForWeek,
                     totalEnergyForWeek,
@@ -71,6 +72,7 @@ export class WeeklyRewardsSyncService {
             startEpochForWeek + constantsConfig.EPOCHS_IN_WEEK - 1;
 
         return new WeekTimekeepingModel({
+            scAddress: address,
             currentWeek,
             firstWeekStartEpoch,
             startEpochForWeek,

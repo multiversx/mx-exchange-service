@@ -11,10 +11,11 @@ message BoostedYieldsFactors {
 }
 
 message WeekTimekeeping {
-  uint32 firstWeekStartEpoch = 1;
-  uint32 currentWeek = 2;
-  uint32 startEpochForWeek = 3;
-  uint32 endEpochForWeek = 4;
+  string scAddress = 1;
+  uint32 firstWeekStartEpoch = 2;
+  uint32 currentWeek = 3;
+  uint32 startEpochForWeek = 4;
+  uint32 endEpochForWeek = 5;
 }
 
 message EsdtTokenPayment {
@@ -30,10 +31,11 @@ message TokenDistribution {
 }
 
 message GlobalInfo {
-  uint32 week = 1;
-  string apr = 2;
-  repeated EsdtTokenPayment totalRewardsForWeek = 3;
-  repeated TokenDistribution rewardsDistributionForWeek = 4;
-  string totalEnergyForWeek = 5;
-  string totalLockedTokensForWeek = 6;
+  string scAddress = 1;
+  uint32 week = 2;
+  string apr = 3;
+  repeated EsdtTokenPayment totalRewardsForWeek = 4;
+  repeated TokenDistribution rewardsDistributionForWeek = 5;
+  string totalEnergyForWeek = 6;
+  string totalLockedTokensForWeek = 7;
 }
