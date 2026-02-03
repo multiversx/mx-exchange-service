@@ -31,6 +31,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('FarmServiceV2', () => {
     let module: TestingModule;
@@ -67,6 +68,7 @@ describe('FarmServiceV2', () => {
                 FarmServiceV2,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                FarmsStateServiceProvider,
             ],
         }).compile();
     });

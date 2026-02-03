@@ -46,6 +46,7 @@ import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/anal
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { StakingProxyFilteringService } from '../services/staking.proxy.filtering.service';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('StakingProxyTransactionService', () => {
     let module: TestingModule;
@@ -82,6 +83,7 @@ describe('StakingProxyTransactionService', () => {
                 FarmComputeServiceV1_2,
                 FarmComputeServiceV1_3,
                 FarmComputeServiceV2,
+                FarmsStateServiceProvider,
                 FarmAbiServiceProviderV1_2,
                 FarmAbiServiceProviderV1_3,
                 FarmAbiServiceProviderV2,

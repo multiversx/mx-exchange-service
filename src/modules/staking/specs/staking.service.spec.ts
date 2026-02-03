@@ -20,7 +20,7 @@ import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
-import { StakingFilteringService } from '../services/staking.filtering.service';
+import { StakingStateServiceProvider } from 'src/modules/state/mocks/staking.state.service.mock';
 
 describe('StakingService', () => {
     let module: TestingModule;
@@ -38,6 +38,7 @@ describe('StakingService', () => {
                 StakingService,
                 StakingAbiServiceProvider,
                 StakingComputeService,
+                StakingStateServiceProvider,
                 EnergyAbiServiceProvider,
                 ContextGetterServiceProvider,
                 WeekTimekeepingAbiServiceProvider,
@@ -51,7 +52,6 @@ describe('StakingService', () => {
                 TokenServiceProvider,
                 TokenComputeServiceProvider,
                 ApiConfigService,
-                StakingFilteringService,
             ],
         }).compile();
     });

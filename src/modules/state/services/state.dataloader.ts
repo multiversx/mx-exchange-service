@@ -1,10 +1,12 @@
 import { Injectable, Scope } from '@nestjs/common';
 import DataLoader from 'dataloader';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { FeesCollectorStateService } from './fees.collector.state.service';
+import { PairsStateService } from './pairs.state.service';
 import { TokensStateService } from './tokens.state.service';
 
 @Injectable({ scope: Scope.REQUEST })
@@ -13,6 +15,7 @@ export class StateDataLoader {
         protected readonly tokenState: TokensStateService,
         protected readonly tokenService: TokenService,
         protected readonly feesCollectorState: FeesCollectorStateService,
+        protected readonly pairState: PairsStateService,
     ) {}
 
     private readonly tokenLoader = new DataLoader<string, EsdtToken>(
@@ -36,6 +39,12 @@ export class StateDataLoader {
         return addresses.map(() => feescollector);
     });
 
+    private readonly pairLoader = new DataLoader<string, PairModel>(
+        async (addresses: string[]) => {
+            return this.pairState.getPairs(addresses);
+        },
+    );
+
     async loadToken(tokenID: string): Promise<EsdtToken> {
         return this.tokenLoader.load(tokenID);
     }
@@ -46,5 +55,9 @@ export class StateDataLoader {
 
     async loadFeesCollector(address: string): Promise<FeesCollectorModel> {
         return this.feesCollectorLoader.load(address);
+    }
+
+    async loadPair(address: string): Promise<PairModel> {
+        return this.pairLoader.load(address);
     }
 }
