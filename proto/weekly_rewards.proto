@@ -31,10 +31,11 @@ message TokenDistribution {
 }
 
 message GlobalInfo {
-  uint32 week = 1;
-  string apr = 2;
-  repeated EsdtTokenPayment totalRewardsForWeek = 3;
-  repeated TokenDistribution rewardsDistributionForWeek = 4;
-  string totalEnergyForWeek = 5;
-  string totalLockedTokensForWeek = 6;
+  string scAddress = 1;
+  uint32 week = 2;
+  string apr = 3;
+  repeated EsdtTokenPayment totalRewardsForWeek = 4;
+  repeated TokenDistribution rewardsDistributionForWeek = 5;
+  string totalEnergyForWeek = 6;
+  string totalLockedTokensForWeek = 7;
 }

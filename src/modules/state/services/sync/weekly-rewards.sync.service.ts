@@ -47,6 +47,7 @@ export class WeeklyRewardsSyncService {
 
             result.push(
                 new GlobalInfoByWeekModel({
+                    scAddress: address,
                     week,
                     totalRewardsForWeek,
                     totalEnergyForWeek,
