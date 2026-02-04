@@ -103,13 +103,9 @@ export class StateChangesConsumer {
             ]);
         }
 
-        profiler.stop();
-
-        this.logger.info(
-            `Finished processing state changes for block ${blockData.hash} in ${profiler.duration}`,
-            {
-                context: StateChangesConsumer.name,
-            },
+        profiler.stop(
+            `Processed state changes for block ${blockData.hash} in`,
+            true,
         );
     }
 
