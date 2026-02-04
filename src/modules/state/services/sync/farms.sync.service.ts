@@ -107,6 +107,7 @@ export class FarmsSyncService {
         const [
             farmTokenSupply,
             lastRewardBlockNonce,
+            perBlockRewards,
             rewardPerShare,
             rewardReserve,
             produceRewardsEnabled,
@@ -118,6 +119,7 @@ export class FarmsSyncService {
         ] = await Promise.all([
             this.farmAbiV2.getFarmTokenSupplyRaw(address),
             this.farmAbiV2.getLastRewardBlockNonceRaw(address),
+            this.farmAbiV2.getRewardsPerBlockRaw(address),
             this.farmAbiV2.getRewardPerShareRaw(address),
             this.farmAbiV2.getRewardReserveRaw(address),
             this.farmAbiV2.getProduceRewardsEnabledRaw(address),
@@ -141,6 +143,7 @@ export class FarmsSyncService {
         const farm: Partial<FarmModelV2> = {
             farmTokenSupply,
             lastRewardBlockNonce,
+            perBlockRewards,
             rewardPerShare,
             rewardReserve,
             produceRewardsEnabled,
