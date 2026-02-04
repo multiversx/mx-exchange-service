@@ -74,6 +74,7 @@ import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.s
 import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
+import { StakingStateServiceProvider } from 'src/modules/state/mocks/staking.state.service.mock';
 
 describe('UserEnergyTransactionService', () => {
     let module: TestingModule;
@@ -135,6 +136,7 @@ describe('UserEnergyTransactionService', () => {
                 SimpleLockService,
                 StakingAbiServiceProvider,
                 StakingServiceProvider,
+                StakingStateServiceProvider,
                 StakingComputeService,
                 PriceDiscoveryServiceProvider,
                 PriceDiscoveryAbiServiceProvider,

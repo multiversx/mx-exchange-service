@@ -8,7 +8,6 @@ import { constantsConfig } from '../../../../config';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { PairService } from '../../../pair/services/pair.service';
 import { ContextGetterService } from '../../../../services/context/context.getter.service';
-import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { FarmServiceV2 } from './farm.v2.service';
@@ -21,6 +20,8 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { IFarmComputeServiceV2 } from './interfaces';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { FarmModelV2 } from '../../models/farm.v2.model';
+import { EnergyType } from '@multiversx/sdk-exchange';
 
 @Injectable()
 export class FarmComputeServiceV2
@@ -39,7 +40,6 @@ export class FarmComputeServiceV2
         protected readonly tokenCompute: TokenComputeService,
         protected readonly cachingService: CacheService,
         private readonly weekTimeKeepingAbi: WeekTimekeepingAbiService,
-        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
@@ -110,6 +110,66 @@ export class FarmComputeServiceV2
             toBeMinted,
             boostedYieldsRewardsPercenatage,
         );
+    }
+
+    computeRewardsIncrease(farm: FarmModelV2, currentNonce: number): BigNumber {
+        const currentBlockBig = new BigNumber(currentNonce);
+        const lastRewardBlockNonceBig = new BigNumber(
+            farm.lastRewardBlockNonce,
+        );
+        const perBlockRewardAmountBig = new BigNumber(farm.perBlockRewards);
+
+        let toBeMinted = new BigNumber(0);
+
+        if (
+            currentNonce > farm.lastRewardBlockNonce &&
+            farm.produceRewardsEnabled
+        ) {
+            toBeMinted = perBlockRewardAmountBig.times(
+                currentBlockBig.minus(lastRewardBlockNonceBig),
+            );
+        }
+
+        return this.computeBaseRewards(
+            toBeMinted,
+            farm.boostedYieldsRewardsPercenatage,
+        );
+    }
+
+    computeRewardsForPosition(
+        farm: FarmModelV2,
+        positon: CalculateRewardsArgs,
+        rewardPerShare: string,
+        currentNonce: number,
+    ): BigNumber {
+        const rewardIncrease = this.computeRewardsIncrease(farm, currentNonce);
+
+        const amountBig = new BigNumber(positon.liquidity);
+        const divisionSafetyConstantBig = new BigNumber(
+            farm.divisionSafetyConstant,
+        );
+        const farmTokenSupplyBig = new BigNumber(farm.farmTokenSupply);
+        const farmRewardPerShareBig = new BigNumber(farm.rewardPerShare);
+        const rewardPerShareBig = new BigNumber(rewardPerShare);
+
+        const rewardPerShareIncrease = rewardIncrease
+            .times(divisionSafetyConstantBig)
+            .dividedBy(farmTokenSupplyBig)
+            .integerValue();
+        const futureRewardPerShare = farmRewardPerShareBig.plus(
+            rewardPerShareIncrease,
+        );
+
+        if (futureRewardPerShare.isGreaterThan(rewardPerShare)) {
+            const rewardPerShareDiff =
+                futureRewardPerShare.minus(rewardPerShareBig);
+
+            return amountBig
+                .times(rewardPerShareDiff)
+                .dividedBy(divisionSafetyConstantBig)
+                .integerValue();
+        }
+        return new BigNumber(0);
     }
 
     async computeFarmRewardsForPosition(
@@ -191,6 +251,108 @@ export class FarmComputeServiceV2
                 amount: rewards,
             }),
         ];
+    }
+
+    computeUserRewardsForWeekFromState(
+        farm: FarmModelV2,
+        userEnergyForWeek: EnergyType,
+        liquidity: string,
+        week: number,
+        additionalUserFarmAmount = '0',
+        additionalUserEnergyAmount = '0',
+        rewardsPerWeek?: string,
+    ): string {
+        let rewardsForWeek: string;
+        const boostedRewardsForWeek = farm.boosterRewards.find(
+            (rewards) => rewards.week === week,
+        );
+
+        if (week === farm.time.currentWeek) {
+            rewardsForWeek = farm.accumulatedRewards;
+        } else {
+            const totalRewards = boostedRewardsForWeek.totalRewardsForWeek;
+
+            rewardsForWeek = totalRewards[0]?.amount ?? '0';
+        }
+
+        rewardsForWeek = rewardsPerWeek ?? rewardsForWeek;
+
+        if (rewardsForWeek === undefined) {
+            return '0';
+        }
+
+        let farmTokenSupply =
+            week === farm.time.currentWeek
+                ? farm.farmTokenSupply
+                : farm.farmTokenSupplyCurrentWeek;
+
+        userEnergyForWeek.amount = new BigNumber(userEnergyForWeek.amount)
+            .plus(additionalUserEnergyAmount)
+            .toFixed();
+        const totalEnergyForWeek = new BigNumber(
+            boostedRewardsForWeek.totalEnergyForWeek,
+        )
+            .plus(additionalUserEnergyAmount)
+            .toFixed();
+        const liquidityBn = new BigNumber(liquidity).plus(
+            additionalUserFarmAmount,
+        );
+        farmTokenSupply = new BigNumber(farmTokenSupply)
+            .plus(additionalUserFarmAmount)
+            .toFixed();
+
+        const userHasMinEnergy = new BigNumber(
+            userEnergyForWeek.amount,
+        ).isGreaterThan(farm.boostedYieldsFactors.minEnergyAmount);
+        if (!userHasMinEnergy) {
+            return '0';
+        }
+
+        const userMinFarmAmount = liquidityBn.isGreaterThan(
+            farm.boostedYieldsFactors.minFarmAmount,
+        );
+        if (!userMinFarmAmount) {
+            return '0';
+        }
+
+        const weeklyRewardsAmount = new BigNumber(rewardsForWeek);
+        if (weeklyRewardsAmount.isZero()) {
+            return '0';
+        }
+
+        const userMaxRewards = weeklyRewardsAmount
+            .multipliedBy(liquidityBn)
+            .multipliedBy(farm.boostedYieldsFactors.maxRewardsFactor)
+            .dividedBy(farmTokenSupply)
+            .integerValue();
+
+        const boostedRewardsByEnergy = weeklyRewardsAmount
+            .multipliedBy(farm.boostedYieldsFactors.userRewardsEnergy)
+            .multipliedBy(userEnergyForWeek.amount)
+            .dividedBy(totalEnergyForWeek)
+            .integerValue();
+
+        const boostedRewardsByTokens = weeklyRewardsAmount
+            .multipliedBy(farm.boostedYieldsFactors.userRewardsFarm)
+            .multipliedBy(liquidityBn)
+            .dividedBy(farmTokenSupply)
+            .integerValue();
+
+        const constantsBase = new BigNumber(
+            farm.boostedYieldsFactors.userRewardsEnergy,
+        ).plus(farm.boostedYieldsFactors.userRewardsFarm);
+
+        const boostedRewardAmount = boostedRewardsByEnergy
+            .plus(boostedRewardsByTokens)
+            .dividedBy(constantsBase)
+            .integerValue();
+
+        const userRewardForWeek =
+            boostedRewardAmount.comparedTo(userMaxRewards) < 1
+                ? boostedRewardAmount
+                : userMaxRewards;
+
+        return userRewardForWeek.toFixed();
     }
 
     async computeUserRewardsForWeek(
@@ -566,34 +728,6 @@ export class FarmComputeServiceV2
         const remainingRewards = await Promise.all(promises);
         return remainingRewards.reduce((acc, curr) => {
             return new BigNumber(acc).plus(curr);
-        });
-    }
-
-    async computeBlocksInWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<number> {
-        const [startEpochForCurrentWeek, currentEpoch, shardID] =
-            await Promise.all([
-                this.weekTimekeepingCompute.startEpochForWeek(scAddress, week),
-                this.contextGetter.getCurrentEpoch(),
-                this.farmAbi.farmShard(scAddress),
-            ]);
-
-        const promises = [];
-        for (
-            let epoch = startEpochForCurrentWeek;
-            epoch <= currentEpoch;
-            epoch++
-        ) {
-            promises.push(
-                this.contextGetter.getBlocksCountInEpoch(epoch, shardID),
-            );
-        }
-
-        const blocksInEpoch = await Promise.all(promises);
-        return blocksInEpoch.reduce((total, current) => {
-            return total + current;
         });
     }
 

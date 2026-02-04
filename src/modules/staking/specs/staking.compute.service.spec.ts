@@ -24,6 +24,8 @@ import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/s
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { StakingStateServiceProvider } from 'src/modules/state/mocks/staking.state.service.mock';
+import { StakingStateService } from 'src/modules/state/services/staking.state.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -68,18 +70,27 @@ describe('StakingComputeService', () => {
         const service = module.get<StakingComputeService>(
             StakingComputeService,
         );
+        const stateService =
+            module.get<StakingStateService>(StakingStateService);
+        const contextGetter =
+            module.get<ContextGetterService>(ContextGetterService);
 
-        const stakeRewardsForPosition =
-            await service.computeStakeRewardsForPosition(
-                Address.Zero().bech32(),
-                '10000000000',
-                new StakingTokenAttributesModel({
-                    type: StakingFarmTokenType.STAKING_FARM_TOKEN,
-                    rewardPerShare: '1000',
-                    compoundedReward: '1000000',
-                    currentFarmAmount: '1000000000',
-                }),
-            );
+        const [currentNonce, [stakingFarm]] = await Promise.all([
+            contextGetter.getShardCurrentBlockNonce(1),
+            stateService.getAllStakingFarms(),
+        ]);
+
+        const stakeRewardsForPosition = service.computeStakeRewardsForPosition(
+            stakingFarm,
+            '10000000000',
+            new StakingTokenAttributesModel({
+                type: StakingFarmTokenType.STAKING_FARM_TOKEN,
+                rewardPerShare: '1000',
+                compoundedReward: '1000000',
+                currentFarmAmount: '1000000000',
+            }),
+            currentNonce,
+        );
         expect(stakeRewardsForPosition.toFixed()).toEqual(
             '1500000000000000000.46423135464231354642',
         );
@@ -89,9 +100,20 @@ describe('StakingComputeService', () => {
         const service = module.get<StakingComputeService>(
             StakingComputeService,
         );
+        const stateService =
+            module.get<StakingStateService>(StakingStateService);
+        const contextGetter =
+            module.get<ContextGetterService>(ContextGetterService);
 
-        const futureRewardsPerShare =
-            await service.computeFutureRewardsPerShare(Address.Zero().bech32());
+        const [currentNonce, [stakingFarm]] = await Promise.all([
+            contextGetter.getShardCurrentBlockNonce(1),
+            stateService.getAllStakingFarms(),
+        ]);
+
+        const futureRewardsPerShare = service.computeFutureRewardsPerShare(
+            stakingFarm,
+            currentNonce,
+        );
         expect(futureRewardsPerShare.toFixed()).toEqual(
             '150000000000000001046.42313546423135464231',
         );
@@ -101,10 +123,20 @@ describe('StakingComputeService', () => {
         const service = module.get<StakingComputeService>(
             StakingComputeService,
         );
+        const stateService =
+            module.get<StakingStateService>(StakingStateService);
+        const contextGetter =
+            module.get<ContextGetterService>(ContextGetterService);
+
+        const [currentNonce, [stakingFarm]] = await Promise.all([
+            contextGetter.getShardCurrentBlockNonce(1),
+            stateService.getAllStakingFarms(),
+        ]);
 
         const extraRewardsSinceLastAllocation =
-            await service.computeExtraRewardsSinceLastAllocation(
-                Address.Zero().bech32(),
+            service.computeExtraRewardsSinceLastAllocation(
+                stakingFarm,
+                currentNonce,
             );
         expect(extraRewardsSinceLastAllocation).toEqual(
             new BigNumber(5500000000),

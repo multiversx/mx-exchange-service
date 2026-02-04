@@ -21,6 +21,8 @@ import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/s
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { StakingStateServiceProvider } from 'src/modules/state/mocks/staking.state.service.mock';
+import { StakingStateService } from 'src/modules/state/services/staking.state.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 describe('StakingService', () => {
     let module: TestingModule;
@@ -72,16 +74,30 @@ describe('StakingService', () => {
     it('should get rewards for position', async () => {
         const service: StakingService =
             module.get<StakingService>(StakingService);
-        const rewards = await service.getRewardsForPosition({
-            farmAddress:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
-            liquidity: '1000000000000000',
-            identifier: 'MEXFARML-772223-14',
-            attributes:
-                'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
-            vmQuery: false,
-            user: Address.Zero().bech32(),
-        });
+        const stateService =
+            module.get<StakingStateService>(StakingStateService);
+        const contextGetter =
+            module.get<ContextGetterService>(ContextGetterService);
+
+        const [currentNonce, [stakingFarm]] = await Promise.all([
+            contextGetter.getShardCurrentBlockNonce(1),
+            stateService.getAllStakingFarms(),
+        ]);
+
+        const rewards = await service.getRewardsForPosition(
+            stakingFarm,
+            {
+                farmAddress:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
+                liquidity: '1000000000000000',
+                identifier: 'MEXFARML-772223-14',
+                attributes:
+                    'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
+                vmQuery: false,
+                user: Address.Zero().bech32(),
+            },
+            currentNonce,
+        );
         expect(rewards).toEqual({
             decodedAttributes: {
                 attributes:
