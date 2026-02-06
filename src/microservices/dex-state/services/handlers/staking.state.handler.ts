@@ -34,6 +34,10 @@ export class StakingStateHandler {
             stakingFarms: [],
         };
 
+        if (!addresses || addresses.length === 0) {
+            return result;
+        }
+
         for (const address of addresses) {
             const stateStakingFarm = this.stateStore.stakingFarms.get(address);
 
@@ -251,6 +255,10 @@ export class StakingStateHandler {
         const result: StakingProxies = {
             stakingProxies: [],
         };
+
+        if (!addresses || addresses.length === 0) {
+            return result;
+        }
 
         for (const address of addresses) {
             const stateStakingProxy =

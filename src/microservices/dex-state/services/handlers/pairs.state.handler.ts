@@ -45,6 +45,10 @@ export class PairsStateHandler {
             pairs: [],
         };
 
+        if (!addresses || addresses.length === 0) {
+            return result;
+        }
+
         for (const address of addresses) {
             const statePair = this.stateStore.pairs.get(address);
 
