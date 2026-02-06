@@ -31,6 +31,7 @@ import { StakingModel } from 'src/modules/staking/models/staking.model';
 
 export const STATE_TASKS_CACHE_KEY = 'dexService.stateTasks';
 const INDEX_LP_MAX_ATTEMPTS = 60;
+const PAIR_REFRESH_CONCURRENCY = 50;
 
 @Injectable()
 export class StateTasksService {
@@ -149,18 +150,7 @@ export class StateTasksService {
                 StateTaskPriority[task.name],
             );
         } finally {
-            profiler.stop();
-
-            this.logger.info(
-                `Finished processing task "${task.name}" in ${profiler.duration}ms`,
-                {
-                    context: StateTasksService.name,
-                },
-            );
-            this.logger.debug(`Processed task`, {
-                context: StateTasksService.name,
-                task,
-            });
+            profiler.stop(`Finished processing task "${task.name}" in`, true);
         }
     }
 
@@ -341,15 +331,25 @@ export class StateTasksService {
         const pairs = await this.pairsState.getAllPairs(['address']);
 
         const pairUpdates = new Map<string, Partial<PairModel>>();
-        for (const pair of pairs) {
-            const updates = await this.syncService.getPairReservesAndState(
-                pair,
-            );
 
-            pairUpdates.set(pair.address, {
-                ...updates,
+        const profiler = new PerformanceProfiler();
+
+        // Process pairs in chunks to parallelize blockchain queries
+        for (let i = 0; i < pairs.length; i += PAIR_REFRESH_CONCURRENCY) {
+            const chunk = pairs.slice(i, i + PAIR_REFRESH_CONCURRENCY);
+            const results = await Promise.all(
+                chunk.map((pair) =>
+                    this.syncService.getPairReservesAndState(pair),
+                ),
+            );
+            results.forEach((updates, idx) => {
+                pairUpdates.set(chunk[idx].address, {
+                    ...updates,
+                });
             });
         }
+
+        profiler.stop('Finished syncing pairs reserves in', true);
 
         const updateResult = await this.pairsState.updatePairs(pairUpdates);
 
