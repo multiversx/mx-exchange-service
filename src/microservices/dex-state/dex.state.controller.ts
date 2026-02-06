@@ -1,5 +1,6 @@
-import { Controller, ServiceUnavailableException } from '@nestjs/common';
-import { GrpcMethod } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { GrpcMethod, RpcException } from '@nestjs/microservices';
+import { status } from '@grpc/grpc-js';
 import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 import { WeekTimekeepingModel } from 'src/submodules/week-timekeeping/models/week-timekeeping.model';
 import {
@@ -230,9 +231,10 @@ export class DexStateController implements IDexStateService {
 
     private ensureReady() {
         if (!this.dexStateService.isReady()) {
-            throw new ServiceUnavailableException(
-                'DEX snapshot is initializing',
-            );
+            throw new RpcException({
+                code: status.UNAVAILABLE,
+                message: 'DEX snapshot is initializing',
+            });
         }
     }
 }
