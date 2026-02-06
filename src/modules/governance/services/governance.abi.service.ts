@@ -27,6 +27,7 @@ import { GovernanceDescriptionService } from './governance.description.service';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { decimalToHex } from '../../../utils/token.converters';
+import { ResultsParser } from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class GovernanceTokenSnapshotAbiService extends GenericAbiService {
@@ -191,7 +192,19 @@ export class GovernanceTokenSnapshotAbiService extends GenericAbiService {
             this.type,
         );
         const interaction = contract.methodsExplicit.getProposals();
-        const response = await this.getGenericData(interaction);
+        const query = interaction.check().buildQuery();
+        const queryResponse = await this.mxProxy
+            .getService()
+            .queryContract(query);
+        const endpointDefinition = interaction.getEndpoint();
+        queryResponse.returnData = queryResponse.returnData.filter(
+            (data) => data.length > 0,
+        );
+
+        const response = new ResultsParser().parseQueryResponse(
+            queryResponse,
+            endpointDefinition,
+        );
 
         return response.firstValue.valueOf().map((proposal: any) => {
             const actions = proposal.actions?.map((action: any) => {
