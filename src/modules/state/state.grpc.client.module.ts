@@ -22,6 +22,9 @@ export const DEX_STATE_CLIENT = 'DEX_STATE_CLIENT';
                             '../../proto/dex_state.proto',
                         ),
                         url: configService.getStateMicroserviceClientUrl(),
+                        loader: {
+                            arrays: true,
+                        },
                     },
                 });
             },

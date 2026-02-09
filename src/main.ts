@@ -99,7 +99,9 @@ async function bootstrap() {
     }
 
     if (apiConfigService.isNotificationsModuleActive()) {
-        const pushNotificationsApp = await NestFactory.create(PushNotificationsCronModule);
+        const pushNotificationsApp = await NestFactory.create(
+            PushNotificationsCronModule,
+        );
         await pushNotificationsApp.listen(5674, '0.0.0.0');
     }
 
@@ -136,6 +138,9 @@ async function bootstrap() {
                         package: DEX_STATE_PACKAGE_NAME,
                         protoPath: join(__dirname, 'proto/dex_state.proto'),
                         url: apiConfigService.getStateMicroserviceServerUrl(),
+                        loader: {
+                            arrays: true,
+                        },
                         onLoadPackageDefinition: (pkg, server) => {
                             new ReflectionService(pkg).addToServer(server);
                         },

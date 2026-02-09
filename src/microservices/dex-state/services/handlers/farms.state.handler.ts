@@ -20,10 +20,6 @@ export class FarmsStateHandler {
             farms: [],
         };
 
-        if (!addresses || addresses.length === 0) {
-            return result;
-        }
-
         for (const address of addresses) {
             const stateFarm = this.stateStore.farms.get(address);
 

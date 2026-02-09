@@ -45,10 +45,6 @@ export class PairsStateHandler {
             pairs: [],
         };
 
-        if (!addresses || addresses.length === 0) {
-            return result;
-        }
-
         for (const address of addresses) {
             const statePair = this.stateStore.pairs.get(address);
 
@@ -117,12 +113,12 @@ export class PairsStateHandler {
                 return;
             }
 
-            if (addresses && !addresses.includes(pair.address)) {
+            if (addresses.length > 0 && !addresses.includes(pair.address)) {
                 return;
             }
 
             if (
-                lpTokenIds &&
+                lpTokenIds.length > 0 &&
                 pair.liquidityPoolTokenId &&
                 !lpTokenIds.includes(pair.liquidityPoolTokenId)
             ) {
@@ -144,7 +140,7 @@ export class PairsStateHandler {
                 return;
             }
 
-            if (state && !state.includes(pair.state)) {
+            if (state.length > 0 && !state.includes(pair.state)) {
                 return;
             }
 
