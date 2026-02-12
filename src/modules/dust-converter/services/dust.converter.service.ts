@@ -4,7 +4,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { TransactionModel } from 'src/models/transaction.model';
-import { mxConfig } from 'src/config';
 import { DustConvertArgs } from '../models/dust.converter.args';
 import {
     DustConvertQuoteModel,
@@ -40,6 +39,7 @@ export class DustConverterService {
                 to: args.to,
                 slippage: args.slippage,
                 dust_mode: args.dustMode,
+                sender,
             };
 
             const response = await axios.post(
@@ -48,7 +48,7 @@ export class DustConverterService {
                 { timeout: 10000 },
             );
 
-            return this.mapResponse(response.data, sender);
+            return this.mapResponse(response.data);
         } catch (error: any) {
             const errorDetails = {
                 method: 'POST',
@@ -67,7 +67,7 @@ export class DustConverterService {
         }
     }
 
-    private mapResponse(data: any, sender: string): DustConvertQuoteModel {
+    private mapResponse(data: any): DustConvertQuoteModel {
         if (!data.batches) {
             data.batches = [
                 {
@@ -78,7 +78,7 @@ export class DustConverterService {
                     amountOutMin: data.amountOutMin,
                     amountOutMinShort: data.amountOutMinShort,
                     routes: data.routes,
-                    txData: data.txData,
+                    transaction: data.transaction,
                 },
             ];
         }
@@ -93,15 +93,12 @@ export class DustConverterService {
             feeBps: data.feeBps,
             feeAmount: data.feeAmount,
             feeAmountShort: data.feeAmountShort,
-            batches: this.mapBatches(data.batches, sender),
+            batches: this.mapBatches(data.batches),
             failedTokens: this.mapFailedTokens(data.failedTokens),
         });
     }
 
-    private mapBatches(
-        batches: any[],
-        sender: string,
-    ): DustConvertBatchModel[] {
+    private mapBatches(batches: any[]): DustConvertBatchModel[] {
         if (!batches) {
             return [];
         }
@@ -116,7 +113,10 @@ export class DustConverterService {
                     amountOutMin: batch.amountOutMin,
                     amountOutMinShort: batch.amountOutMinShort,
                     routes: this.mapRoutes(batch.routes),
-                    transactions: this.parseTxData(batch.txData, sender),
+                    transaction: new TransactionModel({
+                        ...batch.transaction,
+                        chainID: batch.transaction.chainId,
+                    }),
                 }),
         );
     }
@@ -209,27 +209,5 @@ export class DustConverterService {
                     reason: token.reason,
                 }),
         );
-    }
-
-    parseTxData(txData: string, sender: string): TransactionModel[] {
-        if (!txData) {
-            return [];
-        }
-
-        const chainID = mxConfig.get('chainID') as string;
-
-        return [
-            new TransactionModel({
-                nonce: 0,
-                value: '0',
-                sender: sender,
-                receiver: sender,
-                gasPrice: 1000000000,
-                gasLimit: 600000000,
-                data: Buffer.from(txData).toString('base64'),
-                chainID: chainID,
-                version: 2,
-            }),
-        ];
     }
 }

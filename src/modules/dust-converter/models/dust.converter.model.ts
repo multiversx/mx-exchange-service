@@ -124,8 +124,8 @@ export class DustConvertBatchModel {
     @Field(() => [DustConvertRouteModel])
     routes: DustConvertRouteModel[];
 
-    @Field(() => [TransactionModel])
-    transactions: TransactionModel[];
+    @Field(() => TransactionModel)
+    transaction: TransactionModel;
 
     constructor(init?: Partial<DustConvertBatchModel>) {
         Object.assign(this, init);
