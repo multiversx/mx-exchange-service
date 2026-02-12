@@ -40,10 +40,6 @@ export class TokensStateHandler {
             tokens: [],
         };
 
-        if (!tokenIDs) {
-            return result;
-        }
-
         for (const tokenID of tokenIDs) {
             if (tokenID === undefined) {
                 result.tokens.push(undefined);
@@ -96,7 +92,7 @@ export class TokensStateHandler {
             EsdtTokenType.FungibleToken,
         );
 
-        if (!tokensByType) {
+        if (tokensByType.length === 0) {
             return { count: 0, tokens: [] };
         }
 
@@ -105,7 +101,7 @@ export class TokensStateHandler {
                 return false;
             }
 
-            if (identifiers && !identifiers.includes(token)) {
+            if (identifiers.length > 0 && !identifiers.includes(token)) {
                 return false;
             }
 

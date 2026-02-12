@@ -26,7 +26,7 @@ export class FarmsStateService {
             }),
         );
 
-        return result.farms?.map((farm) => formatFarm(farm, fields)) ?? [];
+        return result.farms.map((farm) => formatFarm(farm));
     }
 
     @StateRpcMetrics()
@@ -39,7 +39,7 @@ export class FarmsStateService {
             }),
         );
 
-        return result.farms?.map((farm) => formatFarm(farm, fields)) ?? [];
+        return result.farms.map((farm) => formatFarm(farm));
     }
 
     @StateRpcMetrics()

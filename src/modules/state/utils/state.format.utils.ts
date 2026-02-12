@@ -41,132 +41,47 @@ export function formatToken(
     });
 }
 
-export function formatPair(
-    pair: PairModel,
-    fields: (keyof PairModel)[],
-): PairModel {
-    if (fields.length === 0) {
-        return new PairModel({
-            ...pair,
-            trustedSwapPairs: pair.trustedSwapPairs ?? [],
-            feeDestinations: pair.feeDestinations ?? [],
-            whitelistedManagedAddresses: pair.whitelistedManagedAddresses ?? [],
-        });
-    }
-
+export function formatPair(pair: PairModel): PairModel {
     return new PairModel({
         ...pair,
-        ...(fields.includes('trustedSwapPairs') && {
-            trustedSwapPairs: pair.trustedSwapPairs ?? [],
-        }),
-        ...(fields.includes('feeDestinations') && {
-            feeDestinations: pair.feeDestinations ?? [],
-        }),
-        ...(fields.includes('whitelistedManagedAddresses') && {
-            whitelistedManagedAddresses: pair.whitelistedManagedAddresses ?? [],
-        }),
     });
 }
 
-export function formatFarm(
-    farm: FarmModelV2,
-    fields: (keyof FarmModelV2)[],
-): FarmModelV2 {
-    if (fields.length === 0) {
-        return new FarmModelV2({
-            ...farm,
-            boosterRewards:
-                farm.boosterRewards?.map((globalInfo) =>
-                    formatGlobalInfoModel(globalInfo),
-                ) ?? [],
-            version: FarmVersion.V2,
-        });
-    }
-
+export function formatFarm(farm: FarmModelV2): FarmModelV2 {
     return new FarmModelV2({
         ...farm,
-        ...(fields.includes('boosterRewards') && {
-            boosterRewards:
-                farm.boosterRewards?.map((globalInfo) =>
-                    formatGlobalInfoModel(globalInfo),
-                ) ?? [],
-        }),
+        boosterRewards: farm.boosterRewards?.map(
+            (globalInfo) =>
+                new GlobalInfoByWeekModel({
+                    ...globalInfo,
+                }),
+        ),
         version: FarmVersion.V2,
     });
 }
 
-export function formatStakingFarm(
-    stakingFarm: StakingModel,
-    fields: (keyof StakingModel)[],
-): StakingModel {
-    if (fields.length === 0) {
-        return new StakingModel({
-            ...stakingFarm,
-            boosterRewards:
-                stakingFarm.boosterRewards?.map((globalInfo) =>
-                    formatGlobalInfoModel(globalInfo),
-                ) ?? [],
-        });
-    }
-
+export function formatStakingFarm(stakingFarm: StakingModel): StakingModel {
     return new StakingModel({
         ...stakingFarm,
-        ...(fields.includes('boosterRewards') && {
-            boosterRewards:
-                stakingFarm.boosterRewards?.map((globalInfo) =>
-                    formatGlobalInfoModel(globalInfo),
-                ) ?? [],
-        }),
+        boosterRewards: stakingFarm.boosterRewards.map(
+            (globalInfo) =>
+                new GlobalInfoByWeekModel({
+                    ...globalInfo,
+                }),
+        ),
     });
 }
 
 export function formatFeesCollector(
     feesCollector: FeesCollectorModel,
-    fields: (keyof FeesCollectorModel)[],
 ): FeesCollectorModel {
-    if (fields.length === 0) {
-        return new FeesCollectorModel({
-            ...feesCollector,
-            undistributedRewards:
-                feesCollector.undistributedRewards?.map((globalInfo) =>
-                    formatGlobalInfoModel(globalInfo),
-                ) ?? [],
-            allTokens: feesCollector.allTokens ?? [],
-            knownContracts: feesCollector.knownContracts ?? [],
-            accumulatedFees: feesCollector.accumulatedFees ?? [],
-            rewardsClaimed: feesCollector.rewardsClaimed ?? [],
-        });
-    }
-
     return new FeesCollectorModel({
         ...feesCollector,
-        ...(fields.includes('undistributedRewards') && {
-            undistributedRewards:
-                feesCollector.undistributedRewards?.map((globalInfo) =>
-                    formatGlobalInfoModel(globalInfo),
-                ) ?? [],
-            ...(fields.includes('allTokens') && {
-                allTokens: feesCollector.allTokens ?? [],
-            }),
-            ...(fields.includes('knownContracts') && {
-                knownContracts: feesCollector.knownContracts ?? [],
-            }),
-            ...(fields.includes('accumulatedFees') && {
-                accumulatedFees: feesCollector.accumulatedFees ?? [],
-            }),
-            ...(fields.includes('rewardsClaimed') && {
-                rewardsClaimed: feesCollector.rewardsClaimed ?? [],
-            }),
-        }),
-    });
-}
-
-export function formatGlobalInfoModel(
-    globalInfo: GlobalInfoByWeekModel,
-): GlobalInfoByWeekModel {
-    return new GlobalInfoByWeekModel({
-        ...globalInfo,
-        totalRewardsForWeek: globalInfo.totalRewardsForWeek ?? [],
-        rewardsDistributionForWeek: globalInfo.rewardsDistributionForWeek ?? [],
+        undistributedRewards: feesCollector.undistributedRewards.map(
+            (globalInfo) =>
+                new GlobalInfoByWeekModel({
+                    ...globalInfo,
+                }),
+        ),
     });
 }

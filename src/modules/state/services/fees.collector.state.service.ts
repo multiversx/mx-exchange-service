@@ -19,7 +19,7 @@ export class FeesCollectorStateService {
             }),
         );
 
-        return formatFeesCollector(result, fields);
+        return formatFeesCollector(result);
     }
 
     async updateFeesCollector(

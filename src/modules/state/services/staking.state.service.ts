@@ -42,10 +42,8 @@ export class StakingStateService {
             }),
         );
 
-        return (
-            result.stakingFarms?.map((stakingFarm) =>
-                formatStakingFarm(stakingFarm, fields),
-            ) ?? []
+        return result.stakingFarms.map((stakingFarm) =>
+            formatStakingFarm(stakingFarm),
         );
     }
 
@@ -59,10 +57,8 @@ export class StakingStateService {
             }),
         );
 
-        return (
-            result.stakingFarms?.map((stakingFarm) =>
-                formatStakingFarm(stakingFarm, fields),
-            ) ?? []
+        return result.stakingFarms.map((stakingFarm) =>
+            formatStakingFarm(stakingFarm),
         );
     }
 
@@ -97,10 +93,9 @@ export class StakingStateService {
         );
 
         return {
-            stakingFarms:
-                result.stakingFarms?.map((stakingFarm) =>
-                    formatStakingFarm(stakingFarm, fields),
-                ) ?? [],
+            stakingFarms: result.stakingFarms.map((stakingFarm) =>
+                formatStakingFarm(stakingFarm),
+            ),
             count: result.count,
         };
     }

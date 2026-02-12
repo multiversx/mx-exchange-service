@@ -66,7 +66,7 @@ export class PairsStateService {
             }),
         );
 
-        return result.pairs?.map((pair) => formatPair(pair, fields)) ?? [];
+        return result.pairs.map((pair) => formatPair(pair));
     }
 
     @StateRpcMetrics()
@@ -86,7 +86,7 @@ export class PairsStateService {
             }),
         );
 
-        return result.pairs?.map((pair) => formatPair(pair, fields)) ?? [];
+        return result.pairs.map((pair) => formatPair(pair));
     }
 
     @StateRpcMetrics()
@@ -120,7 +120,7 @@ export class PairsStateService {
         );
 
         return {
-            pairs: result.pairs?.map((pair) => formatPair(pair, fields)) ?? [],
+            pairs: result.pairs.map((pair) => formatPair(pair)),
             count: result.count,
         };
     }
@@ -143,23 +143,21 @@ export class PairsStateService {
             }),
         );
 
-        return pairsWithTokens && pairsWithTokens.length > 0
-            ? pairsWithTokens.map((item) => {
-                  const pair = formatPair(item.pair, pairFields);
+        return pairsWithTokens.map((item) => {
+            const pair = formatPair(item.pair);
 
-                  pair.firstToken = formatToken(item.firstToken, tokenFields);
-                  pair.secondToken = formatToken(item.secondToken, tokenFields);
+            pair.firstToken = formatToken(item.firstToken, tokenFields);
+            pair.secondToken = formatToken(item.secondToken, tokenFields);
 
-                  if (item.lpToken) {
-                      pair.liquidityPoolToken = formatToken(
-                          item.lpToken,
-                          tokenFields,
-                      );
-                  }
+            if (item.lpToken) {
+                pair.liquidityPoolToken = formatToken(
+                    item.lpToken,
+                    tokenFields,
+                );
+            }
 
-                  return pair;
-              })
-            : [];
+            return pair;
+        });
     }
 
     @StateRpcMetrics()
