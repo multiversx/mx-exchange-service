@@ -49,7 +49,7 @@ export class DustConvertPathModel {
     @Field(() => Float)
     amountOutShort: number;
 
-    @Field(() => Int)
+    @Field(() => Float)
     splitPpm: number;
 
     @Field(() => [DustConvertSwapModel])

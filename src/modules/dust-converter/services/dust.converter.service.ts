@@ -68,6 +68,21 @@ export class DustConverterService {
     }
 
     private mapResponse(data: any, sender: string): DustConvertQuoteModel {
+        if (!data.batches) {
+            data.batches = [
+                {
+                    batchIndex: 0,
+                    inputs: data.inputs,
+                    amountOut: data.amountOut,
+                    amountOutShort: data.amountOutShort,
+                    amountOutMin: data.amountOutMin,
+                    amountOutMinShort: data.amountOutMinShort,
+                    routes: data.routes,
+                    txData: data.txData,
+                },
+            ];
+        }
+
         return new DustConvertQuoteModel({
             to: data.to,
             amountOut: data.amountOut,
@@ -83,7 +98,10 @@ export class DustConverterService {
         });
     }
 
-    private mapBatches(batches: any[], sender: string): DustConvertBatchModel[] {
+    private mapBatches(
+        batches: any[],
+        sender: string,
+    ): DustConvertBatchModel[] {
         if (!batches) {
             return [];
         }
