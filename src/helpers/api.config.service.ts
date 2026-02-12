@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiConfigService {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(private readonly configService: ConfigService) { }
 
     getPublicAppPort(): number {
         const port = this.configService.get<number>('PORT');
@@ -465,5 +465,13 @@ export class ApiConfigService {
             throw new Error('No TASK_RUNNER_WALLET_PASSWORD present');
         }
         return walletPassword;
+    }
+
+    getXoxnoApiUrl(): string {
+        const url = this.configService.get<string>('XOXNO_API_URL');
+        if (!url) {
+            throw new Error('No XOXNO API url present');
+        }
+        return url;
     }
 }
