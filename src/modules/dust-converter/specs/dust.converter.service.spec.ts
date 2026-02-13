@@ -18,87 +18,72 @@ describe('DustConverterService', () => {
         'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu';
 
     const mockXoxnoResponse = {
-        to: 'EGLD',
-        amountOut: '840300683095773710',
-        amountOutShort: 0.8403006830957737,
-        amountOutMin: '420150341547886855',
-        amountOutMinShort: 0.42015034154788683,
-        slippage: 0.5,
-        perBatchSlippage: true,
-        batches: [
+        inputs: [
             {
-                batchIndex: 0,
-                inputs: [
+                token: 'USDC-350c4e',
+                amount: '100000',
+                amountShort: 0.1,
+            },
+        ],
+        to: 'WEGLD-a28c59',
+        amountOut: '71737661321609976',
+        amountOutShort: 0.07173766132160998,
+        amountOutMin: '35868830660804988',
+        amountOutMinShort: 0.03586883066080499,
+        slippage: 0.5,
+        routes: [
+            {
+                from: 'USDC-350c4e',
+                amountIn: '100000',
+                amountInShort: 0.1,
+                amountOut: '71737661321609976',
+                amountOutShort: 0.07173766132160998,
+                paths: [
                     {
-                        token: 'USDC-c76f1f',
-                        amount: '3923874',
-                        amountShort: 3.923874,
-                    },
-                    {
-                        token: 'AIX-a00870',
-                        amount: '461415943600867678958',
-                        amountShort: 461.4159436008677,
-                    },
-                ],
-                amountOut: '840300683095773710',
-                amountOutShort: 0.8403006830957737,
-                amountOutMin: '420150341547886855',
-                amountOutMinShort: 0.42015034154788683,
-                routes: [
-                    {
-                        from: 'USDC-c76f1f',
-                        amountIn: '3923874',
-                        amountInShort: 3.923874,
-                        amountOut: '839780470948933724',
-                        amountOutShort: 0.8397804709489337,
-                        paths: [
+                        amountIn: '100000',
+                        amountOut: '71737661321609976',
+                        amountInShort: 0.1,
+                        amountOutShort: 0.07173766132160998,
+                        splitPpm: 1000000,
+                        swaps: [
                             {
-                                amountIn: '3923874',
-                                amountOut: '839780470948933724',
-                                amountInShort: 3.923874,
-                                amountOutShort: 0.8397804709489337,
-                                splitPpm: 1000000,
-                                swaps: [
-                                    {
-                                        dex: 'OneDex',
-                                        pairId: 30,
-                                        address:
-                                            'erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc',
-                                        from: 'USDC-c76f1f',
-                                        to: 'WEGLD-bd4d79',
-                                        amountIn: '3923874',
-                                        amountOut: '839780470948933724',
-                                        amountInShort: 3.923874,
-                                        amountOutShort: 0.8397804709489337,
-                                    },
-                                    {
-                                        dex: 'wrapper',
-                                        address:
-                                            'erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3',
-                                        from: 'WEGLD-bd4d79',
-                                        to: 'EGLD',
-                                        amountIn: '839780470948933724',
-                                        amountOut: '839780470948933724',
-                                        amountInShort: 0.8397804709489337,
-                                        amountOutShort: 0.8397804709489337,
-                                    },
-                                ],
+                                dex: 'XExchange',
+                                address:
+                                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                                from: 'USDC-350c4e',
+                                to: 'WEGLD-a28c59',
+                                amountIn: '100000',
+                                amountOut: '71737661321609976',
+                                amountInShort: 0.1,
+                                amountOutShort: 0.07173766132160998,
                             },
                         ],
                     },
                 ],
-                txData: 'xo@05d4ac8274388907@fe',
             },
         ],
+        txData: 'xo@7f6e82ee0bc17c@00@@04@5745474c442d613238633539@564943544f522d376363363636@555344432d333530633465@4d45582d613635396430@01@00000000000000000500bf109714ea8610a04e2574aaa7c6e626dd60945cd759@01@0186a0@00@01@02@02@00@ff@00@03@ff@01@00@ff@0c@ff@01@ff@00@',
+        transaction: {
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            value: '0',
+            nonce: 3133,
+            data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMzM1MzA2MzM0NjVAMDE4NmEwQDc4NmZAN2Y2ZTgyZWUwYmMxN2NAMDBAQDA0QDU3NDU0NzRjNDQyZDYxMzIzODYzMzUzOUA1NjQ5NDM1NDRmNTIyZDM3NjM2MzM2MzYzNkA1NTUzNDQ0MzJkMzMzNTMwNjMzNDY1QDRkNDU1ODJkNjEzNjM1Mzk2NDMwQDAxQDAwMDAwMDAwMDAwMDAwMDAwNTAwYmYxMDk3MTRlYTg2MTBhMDRlMjU3NGFhYTdjNmU2MjZkZDYwOTQ1Y2Q3NTlAMDFAMDE4NmEwQDAwQDAxQDAyQDAyQDAwQGZmQDAwQDAzQGZmQDAxQDAwQGZmQDBjQGZmQDAxQGZmQDAwQA==',
+            gasLimit: 115050000,
+            gasPrice: 1000000000,
+            chainId: 'D',
+            version: 2,
+        },
         feeBps: 0,
         feeAmount: '0',
-        feeAmountShort: 0.0,
+        feeAmountShort: 0,
         failedTokens: [
             {
                 token: 'TROGE-3a87b6',
                 amount: '5000000000000000000000',
-                amountShort: 5000.0,
-                reason: 'zero_liquidity',
+                amountShort: 5000,
+                reason: 'unknown_token',
             },
         ],
     };
@@ -117,7 +102,7 @@ describe('DustConverterService', () => {
                     provide: ApiConfigService,
                     useValue: {
                         getXoxnoApiUrl: () =>
-                            'https://swap.xoxno.com/api/v1',
+                            'https://devnet-swap.xoxno.com/api/v1',
                     },
                 },
             ],
@@ -134,14 +119,8 @@ describe('DustConverterService', () => {
         mockedAxios.post.mockResolvedValueOnce({ data: mockXoxnoResponse });
 
         const args: DustConvertArgs = {
-            inputs: [
-                { token: 'USDC-c76f1f', amount: '3923874' },
-                {
-                    token: 'AIX-a00870',
-                    amount: '461415943600867678958',
-                },
-            ],
-            to: 'EGLD',
+            inputs: [{ token: 'USDC-350c4e', amount: '100000' }],
+            to: 'WEGLD-a28c59',
             slippage: 0.5,
             dustMode: true,
         };
@@ -149,10 +128,10 @@ describe('DustConverterService', () => {
         const result = await service.getQuote(args, senderAddress);
 
         expect(result).toBeInstanceOf(DustConvertQuoteModel);
-        expect(result.to).toBe('EGLD');
-        expect(result.amountOut).toBe('840300683095773710');
-        expect(result.amountOutShort).toBe(0.8403006830957737);
-        expect(result.amountOutMin).toBe('420150341547886855');
+        expect(result.to).toBe('WEGLD-a28c59');
+        expect(result.amountOut).toBe('71737661321609976');
+        expect(result.amountOutShort).toBe(0.07173766132160998);
+        expect(result.amountOutMin).toBe('35868830660804988');
         expect(result.slippage).toBe(0.5);
         expect(result.feeBps).toBe(0);
         expect(result.feeAmount).toBe('0');
@@ -162,8 +141,8 @@ describe('DustConverterService', () => {
         mockedAxios.post.mockResolvedValueOnce({ data: mockXoxnoResponse });
 
         const args: DustConvertArgs = {
-            inputs: [{ token: 'USDC-c76f1f', amount: '3923874' }],
-            to: 'EGLD',
+            inputs: [{ token: 'USDC-350c4e', amount: '100000' }],
+            to: 'WEGLD-a28c59',
             slippage: 0.5,
             dustMode: true,
         };
@@ -172,18 +151,18 @@ describe('DustConverterService', () => {
 
         expect(result.batches).toHaveLength(1);
         expect(result.batches[0].batchIndex).toBe(0);
-        expect(result.batches[0].inputs).toHaveLength(2);
-        expect(result.batches[0].inputs[0].token).toBe('USDC-c76f1f');
-        expect(result.batches[0].inputs[0].amount).toBe('3923874');
-        expect(result.batches[0].amountOut).toBe('840300683095773710');
+        expect(result.batches[0].inputs).toHaveLength(1);
+        expect(result.batches[0].inputs[0].token).toBe('USDC-350c4e');
+        expect(result.batches[0].inputs[0].amount).toBe('100000');
+        expect(result.batches[0].amountOut).toBe('71737661321609976');
     });
 
     it('should map routes and paths correctly', async () => {
         mockedAxios.post.mockResolvedValueOnce({ data: mockXoxnoResponse });
 
         const args: DustConvertArgs = {
-            inputs: [{ token: 'USDC-c76f1f', amount: '3923874' }],
-            to: 'EGLD',
+            inputs: [{ token: 'USDC-350c4e', amount: '100000' }],
+            to: 'WEGLD-a28c59',
             slippage: 0.5,
             dustMode: true,
         };
@@ -191,41 +170,39 @@ describe('DustConverterService', () => {
         const result = await service.getQuote(args, senderAddress);
 
         const route = result.batches[0].routes[0];
-        expect(route.from).toBe('USDC-c76f1f');
+        expect(route.from).toBe('USDC-350c4e');
         expect(route.paths).toHaveLength(1);
-        expect(route.paths[0].swaps).toHaveLength(2);
-        expect(route.paths[0].swaps[0].dex).toBe('OneDex');
-        expect(route.paths[0].swaps[0].pairId).toBe(30);
-        expect(route.paths[0].swaps[1].dex).toBe('wrapper');
-        expect(route.paths[0].swaps[1].pairId).toBeUndefined();
+        expect(route.paths[0].swaps).toHaveLength(1);
+        expect(route.paths[0].swaps[0].dex).toBe('XExchange');
     });
 
-    it('should parse txData into TransactionModel', async () => {
+    it('should parse transaction into TransactionModel', async () => {
         mockedAxios.post.mockResolvedValueOnce({ data: mockXoxnoResponse });
 
         const args: DustConvertArgs = {
-            inputs: [{ token: 'USDC-c76f1f', amount: '3923874' }],
-            to: 'EGLD',
+            inputs: [{ token: 'USDC-350c4e', amount: '100000' }],
+            to: 'WEGLD-a28c59',
             slippage: 0.5,
             dustMode: true,
         };
 
         const result = await service.getQuote(args, senderAddress);
 
-        const transactions = result.batches[0].transactions;
-        expect(transactions).toHaveLength(1);
-        expect(transactions[0].sender).toBe(senderAddress);
-        expect(transactions[0].receiver).toBe(senderAddress);
-        expect(transactions[0].gasPrice).toBe(1000000000);
-        expect(transactions[0].version).toBe(2);
-        expect(transactions[0].data).toBeDefined();
+        const transaction = result.batches[0].transaction;
+        expect(transaction.sender).toBe(senderAddress);
+        expect(transaction.receiver).toBe(senderAddress);
+        expect(transaction.gasPrice).toBe(1000000000);
+        expect(transaction.version).toBe(2);
+        expect(transaction.data).toBeDefined();
     });
 
     it('should map failed tokens correctly', async () => {
         mockedAxios.post.mockResolvedValueOnce({ data: mockXoxnoResponse });
 
         const args: DustConvertArgs = {
-            inputs: [{ token: 'TROGE-3a87b6', amount: '5000000000000000000000' }],
+            inputs: [
+                { token: 'TROGE-3a87b6', amount: '5000000000000000000000' },
+            ],
             to: 'EGLD',
             slippage: 0.5,
             dustMode: true,
@@ -235,7 +212,7 @@ describe('DustConverterService', () => {
 
         expect(result.failedTokens).toHaveLength(1);
         expect(result.failedTokens[0].token).toBe('TROGE-3a87b6');
-        expect(result.failedTokens[0].reason).toBe('zero_liquidity');
+        expect(result.failedTokens[0].reason).toBe('unknown_token');
         expect(result.failedTokens[0].amountShort).toBe(5000.0);
     });
 
@@ -255,7 +232,9 @@ describe('DustConverterService', () => {
             dustMode: true,
         };
 
-        await expect(service.getQuote(args, senderAddress)).rejects.toMatchObject({
+        await expect(
+            service.getQuote(args, senderAddress),
+        ).rejects.toMatchObject({
             response: { status: 400 },
         });
     });
@@ -269,8 +248,8 @@ describe('DustConverterService', () => {
         mockedAxios.post.mockResolvedValueOnce({ data: emptyBatchesResponse });
 
         const args: DustConvertArgs = {
-            inputs: [{ token: 'USDC-c76f1f', amount: '1' }],
-            to: 'EGLD',
+            inputs: [{ token: 'USDC-350c4e', amount: '100000' }],
+            to: 'WEGLD-a28c59',
             slippage: 0.5,
             dustMode: true,
         };
@@ -279,15 +258,5 @@ describe('DustConverterService', () => {
 
         expect(result.batches).toHaveLength(0);
         expect(result.failedTokens).toHaveLength(0);
-    });
-
-    it('should handle null txData gracefully', () => {
-        const transactions = service.parseTxData(null, senderAddress);
-        expect(transactions).toHaveLength(0);
-    });
-
-    it('should handle empty txData gracefully', () => {
-        const transactions = service.parseTxData('', senderAddress);
-        expect(transactions).toHaveLength(0);
     });
 });
