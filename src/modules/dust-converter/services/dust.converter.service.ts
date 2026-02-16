@@ -17,7 +17,7 @@ import {
 
 @Injectable()
 export class DustConverterService {
-    private readonly baseUrl: string;
+    private readonly baseUrl: string | undefined;
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
@@ -30,6 +30,10 @@ export class DustConverterService {
         args: DustConvertArgs,
         sender: string,
     ): Promise<DustConvertQuoteModel> {
+        if (!this.baseUrl) {
+            throw new Error('No XOXNO API URL configured');
+        }
+
         try {
             const requestBody = {
                 inputs: args.inputs.map((input) => ({

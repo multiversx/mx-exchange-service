@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiConfigService {
-    constructor(private readonly configService: ConfigService) { }
+    constructor(private readonly configService: ConfigService) {}
 
     getPublicAppPort(): number {
         const port = this.configService.get<number>('PORT');
@@ -236,7 +236,9 @@ export class ApiConfigService {
     }
 
     getNotificationsApiUrl(): string {
-        const apiUrl = this.configService.get<string>('PUSH_NOTIFICATIONS_API_URL');
+        const apiUrl = this.configService.get<string>(
+            'PUSH_NOTIFICATIONS_API_URL',
+        );
         if (!apiUrl) {
             throw new Error('No push notifications API url present');
         }
@@ -244,7 +246,9 @@ export class ApiConfigService {
     }
 
     getNotificationsApiKey(): string {
-        const apiKey = this.configService.get<string>('PUSH_NOTIFICATIONS_API_KEY');
+        const apiKey = this.configService.get<string>(
+            'PUSH_NOTIFICATIONS_API_KEY',
+        );
         if (!apiKey) {
             throw new Error('No push notifications API key present');
         }
@@ -467,10 +471,10 @@ export class ApiConfigService {
         return walletPassword;
     }
 
-    getXoxnoApiUrl(): string {
+    getXoxnoApiUrl(): string | undefined {
         const url = this.configService.get<string>('XOXNO_API_URL');
         if (!url) {
-            throw new Error('No XOXNO API url present');
+            return undefined;
         }
         return url;
     }
