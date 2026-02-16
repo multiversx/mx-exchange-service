@@ -236,7 +236,9 @@ export class ApiConfigService {
     }
 
     getNotificationsApiUrl(): string {
-        const apiUrl = this.configService.get<string>('PUSH_NOTIFICATIONS_API_URL');
+        const apiUrl = this.configService.get<string>(
+            'PUSH_NOTIFICATIONS_API_URL',
+        );
         if (!apiUrl) {
             throw new Error('No push notifications API url present');
         }
@@ -244,7 +246,9 @@ export class ApiConfigService {
     }
 
     getNotificationsApiKey(): string {
-        const apiKey = this.configService.get<string>('PUSH_NOTIFICATIONS_API_KEY');
+        const apiKey = this.configService.get<string>(
+            'PUSH_NOTIFICATIONS_API_KEY',
+        );
         if (!apiKey) {
             throw new Error('No push notifications API key present');
         }
@@ -465,5 +469,13 @@ export class ApiConfigService {
             throw new Error('No TASK_RUNNER_WALLET_PASSWORD present');
         }
         return walletPassword;
+    }
+
+    getXoxnoApiUrl(): string | undefined {
+        const url = this.configService.get<string>('XOXNO_API_URL');
+        if (!url) {
+            return undefined;
+        }
+        return url;
     }
 }
