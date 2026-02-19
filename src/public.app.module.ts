@@ -43,6 +43,7 @@ import { CurrencyConverterModule } from './modules/currency-converter/currency.c
 import { ConditionalModule } from '@nestjs/config';
 import { ComplexityModule } from './complexity.module';
 import { TradingContestModule } from './modules/trading-contest/trading.contest.module';
+import { DustConverterModule } from './modules/dust-converter/dust.converter.module';
 import { ApiConfigService } from './helpers/api.config.service';
 
 @Module({
@@ -117,6 +118,7 @@ import { ApiConfigService } from './helpers/api.config.service';
             (env: NodeJS.ProcessEnv) => env['ENABLE_COMPLEXITY'] === 'true',
         ),
         TradingContestModule,
+        DustConverterModule,
     ],
     providers: [QueryMetricsPlugin],
 })
