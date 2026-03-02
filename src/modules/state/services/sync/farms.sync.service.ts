@@ -18,7 +18,7 @@ export class FarmsSyncService {
         private readonly apiService: MXApiService,
         private readonly weeklyRewardsUtils: WeeklyRewardsSyncService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     async populateFarm(address: string): Promise<FarmModelV2> {
         const profiler = new PerformanceProfiler();
@@ -27,7 +27,7 @@ export class FarmsSyncService {
             farmingTokenId,
             farmedTokenId,
             farmTokenCollection,
-            perBlockRewards,
+            perSecondRewards,
             penaltyPercent,
             minimumFarmingEpochs,
             divisionSafetyConstant,
@@ -44,7 +44,7 @@ export class FarmsSyncService {
             this.farmAbiV2.getFarmingTokenIDRaw(address),
             this.farmAbiV2.getFarmedTokenIDRaw(address),
             this.farmAbiV2.getFarmTokenIDRaw(address),
-            this.farmAbiV2.getRewardsPerBlockRaw(address),
+            this.farmAbiV2.getRewardsPerSecondRaw(address),
             this.farmAbiV2.getPenaltyPercentRaw(address),
             this.farmAbiV2.getMinimumFarmingEpochsRaw(address),
             this.farmAbiV2.getDivisionSafetyConstantRaw(address),
@@ -71,7 +71,7 @@ export class FarmsSyncService {
             farmTokenCollection,
             farmTokenDecimals: farmTokenMetadata.decimals,
             pairAddress,
-            perBlockRewards,
+            perSecondRewards,
             penaltyPercent,
             minimumFarmingEpochs,
             divisionSafetyConstant,
@@ -106,8 +106,8 @@ export class FarmsSyncService {
     ): Promise<Partial<FarmModelV2>> {
         const [
             farmTokenSupply,
-            lastRewardBlockNonce,
-            perBlockRewards,
+            lastRewardTimestamp,
+            perSecondRewards,
             rewardPerShare,
             rewardReserve,
             produceRewardsEnabled,
@@ -118,8 +118,8 @@ export class FarmsSyncService {
             boosterRewards,
         ] = await Promise.all([
             this.farmAbiV2.getFarmTokenSupplyRaw(address),
-            this.farmAbiV2.getLastRewardBlockNonceRaw(address),
-            this.farmAbiV2.getRewardsPerBlockRaw(address),
+            this.farmAbiV2.getLastRewardTimestampRaw(address),
+            this.farmAbiV2.getRewardsPerSecondRaw(address),
             this.farmAbiV2.getRewardPerShareRaw(address),
             this.farmAbiV2.getRewardReserveRaw(address),
             this.farmAbiV2.getProduceRewardsEnabledRaw(address),
@@ -142,8 +142,8 @@ export class FarmsSyncService {
 
         const farm: Partial<FarmModelV2> = {
             farmTokenSupply,
-            lastRewardBlockNonce,
-            perBlockRewards,
+            lastRewardTimestamp,
+            perSecondRewards,
             rewardPerShare,
             rewardReserve,
             produceRewardsEnabled,

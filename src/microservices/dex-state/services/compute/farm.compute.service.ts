@@ -12,7 +12,7 @@ import { StateStore } from '../state.store';
 
 @Injectable()
 export class FarmComputeService {
-    constructor(private readonly stateStore: StateStore) {}
+    constructor(private readonly stateStore: StateStore) { }
 
     computeMissingFarmFields(farm: FarmModelV2): FarmModelV2 {
         refreshWeekStartAndEndEpochs(farm.time);
@@ -41,8 +41,8 @@ export class FarmComputeService {
             farm.farmTokenPriceUSD,
         ).toFixed();
 
-        const totalRewardsPerYear = new BigNumber(farm.perBlockRewards)
-            .multipliedBy(constantsConfig.BLOCKS_IN_YEAR)
+        const totalRewardsPerYear = new BigNumber(farm.perSecondRewards)
+            .multipliedBy(constantsConfig.SECONDS_IN_YEAR)
             .toFixed();
 
         const totalRewardsPerYearUSD = computeValueUSD(
@@ -62,7 +62,7 @@ export class FarmComputeService {
             .multipliedBy(farm.boostedYieldsRewardsPercenatage)
             .dividedBy(
                 constantsConfig.MAX_PERCENT -
-                    farm.boostedYieldsRewardsPercenatage,
+                farm.boostedYieldsRewardsPercenatage,
             )
             .toFixed();
 
@@ -73,10 +73,9 @@ export class FarmComputeService {
     }
 
     calculateBoostedRewardsPerWeek(farm: FarmModelV2): string {
-        const blocksInWeek = 14440 * 7;
         const totalRewardsPerWeek = new BigNumber(
-            farm.perBlockRewards,
-        ).multipliedBy(blocksInWeek);
+            farm.perSecondRewards,
+        ).multipliedBy(constantsConfig.SECONDS_IN_WEEK);
 
         return totalRewardsPerWeek
             .multipliedBy(farm.boostedYieldsRewardsPercenatage)
