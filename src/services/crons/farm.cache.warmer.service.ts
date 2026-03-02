@@ -11,6 +11,8 @@ import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmSetterFactory } from 'src/modules/farm/farm.setter.factory';
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { FarmSetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.setter.service';
 import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/services/week-timekeeping.abi.service';
 
 @Injectable()
@@ -27,7 +29,7 @@ export class FarmCacheWarmerService {
         private readonly farmSetterFactory: FarmSetterFactory,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    ) {}
+    ) { }
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheFarmsTokens(): Promise<void> {
@@ -143,10 +145,12 @@ export class FarmCacheWarmerService {
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheFarmInfo(): Promise<void> {
         for (const farmAddress of farmsAddresses()) {
+            const isV2 = farmVersion(farmAddress) === FarmVersion.V2;
+
             const [
                 minimumFarmingEpochs,
                 penaltyPercent,
-                rewardsPerBlock,
+                rewardsAmount,
                 state,
                 produceRewardsEnabled,
             ] = await Promise.all([
@@ -156,9 +160,12 @@ export class FarmCacheWarmerService {
                 this.farmAbiFactory
                     .useAbi(farmAddress)
                     .getPenaltyPercentRaw(farmAddress),
-                this.farmAbiFactory
-                    .useAbi(farmAddress)
-                    .getRewardsPerBlockRaw(farmAddress),
+                isV2
+                    ? (this.farmAbiFactory.useAbi(farmAddress) as FarmAbiServiceV2)
+                        .getRewardsPerSecondRaw(farmAddress)
+                    : this.farmAbiFactory
+                        .useAbi(farmAddress)
+                        .getRewardsPerBlockRaw(farmAddress),
                 this.farmAbiFactory
                     .useAbi(farmAddress)
                     .getStateRaw(farmAddress),
@@ -174,9 +181,12 @@ export class FarmCacheWarmerService {
                 this.farmSetterFactory
                     .useSetter(farmAddress)
                     .setPenaltyPercent(farmAddress, penaltyPercent),
-                this.farmSetterFactory
-                    .useSetter(farmAddress)
-                    .setRewardsPerBlock(farmAddress, rewardsPerBlock),
+                isV2
+                    ? (this.farmSetterFactory.useSetter(farmAddress) as FarmSetterServiceV2)
+                        .setRewardsPerSecond(farmAddress, rewardsAmount)
+                    : this.farmSetterFactory
+                        .useSetter(farmAddress)
+                        .setRewardsPerBlock(farmAddress, rewardsAmount),
                 this.farmSetterFactory
                     .useSetter(farmAddress)
                     .setState(farmAddress, state),
@@ -195,18 +205,23 @@ export class FarmCacheWarmerService {
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmReserves(): Promise<void> {
         for (const farmAddress of farmsAddresses()) {
+            const isV2 = farmVersion(farmAddress) === FarmVersion.V2;
+
             const [
                 farmTokenSupply,
-                lastRewardBlockNonce,
+                lastRewardPoint,
                 farmRewardPerShare,
                 rewardReserve,
             ] = await Promise.all([
                 this.farmAbiFactory
                     .useAbi(farmAddress)
                     .getFarmTokenSupplyRaw(farmAddress),
-                this.farmAbiFactory
-                    .useAbi(farmAddress)
-                    .getLastRewardBlockNonceRaw(farmAddress),
+                isV2
+                    ? (this.farmAbiFactory.useAbi(farmAddress) as FarmAbiServiceV2)
+                        .getLastRewardTimestampRaw(farmAddress)
+                    : this.farmAbiFactory
+                        .useAbi(farmAddress)
+                        .getLastRewardBlockNonceRaw(farmAddress),
                 this.farmAbiFactory
                     .useAbi(farmAddress)
                     .getRewardPerShareRaw(farmAddress),
@@ -218,9 +233,12 @@ export class FarmCacheWarmerService {
                 this.farmSetterFactory
                     .useSetter(farmAddress)
                     .setFarmTokenSupply(farmAddress, farmTokenSupply),
-                this.farmSetterFactory
-                    .useSetter(farmAddress)
-                    .setLastRewardBlockNonce(farmAddress, lastRewardBlockNonce),
+                isV2
+                    ? (this.farmSetterFactory.useSetter(farmAddress) as FarmSetterServiceV2)
+                        .setLastRewardTimestamp(farmAddress, lastRewardPoint)
+                    : this.farmSetterFactory
+                        .useSetter(farmAddress)
+                        .setLastRewardBlockNonce(farmAddress, lastRewardPoint),
                 this.farmSetterFactory
                     .useSetter(farmAddress)
                     .setRewardPerShare(farmAddress, farmRewardPerShare),
