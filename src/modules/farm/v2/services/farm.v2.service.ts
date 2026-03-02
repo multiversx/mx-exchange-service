@@ -66,7 +66,7 @@ export class FarmServiceV2 extends FarmServiceBase {
             boostedPositions.set(position.farmAddress, boostedPosition);
         });
 
-        const [farms, currentEpoch, currentNonce] = await Promise.all([
+        const [farms, currentEpoch, currentTimestamp] = await Promise.all([
             this.farmsState.getFarms(
                 positions.map((position) => position.farmAddress),
                 [
@@ -78,8 +78,8 @@ export class FarmServiceV2 extends FarmServiceBase {
                     'boosterRewards',
                     'boostedYieldsFactors',
                     'boostedYieldsRewardsPercenatage',
-                    'lastRewardBlockNonce',
-                    'perBlockRewards',
+                    'lastRewardTimestamp',
+                    'perSecondRewards',
                     'rewardPerShare',
                     'produceRewardsEnabled',
                     'farmTokenSupply',
@@ -87,7 +87,7 @@ export class FarmServiceV2 extends FarmServiceBase {
                 ],
             ),
             this.contextGetter.getCurrentEpoch(),
-            this.contextGetter.getShardCurrentBlockNonce(1),
+            Promise.resolve(Math.floor(Date.now() / 1000)),
         ]);
 
         return Promise.all(
@@ -95,7 +95,7 @@ export class FarmServiceV2 extends FarmServiceBase {
                 this.computeRewardsForPosition(
                     farms[index],
                     currentEpoch,
-                    currentNonce,
+                    currentTimestamp,
                     position,
                     boostedPositions.get(position.farmAddress) === position,
                 ),
@@ -106,7 +106,7 @@ export class FarmServiceV2 extends FarmServiceBase {
     async computeRewardsForPosition(
         farm: FarmModelV2,
         currentEpoch: number,
-        currentNonce: number,
+        currentTimestamp: number,
         position: CalculateRewardsArgs,
         computeBoosted = false,
     ): Promise<RewardsModel> {
@@ -123,7 +123,7 @@ export class FarmServiceV2 extends FarmServiceBase {
                 farm,
                 position,
                 farmTokenAttributes.rewardPerShare,
-                currentNonce,
+                currentTimestamp,
             );
         }
 
@@ -193,7 +193,7 @@ export class FarmServiceV2 extends FarmServiceBase {
         const remainingFarmingEpochs = Math.max(
             0,
             farm.minimumFarmingEpochs -
-                (currentEpoch - farmTokenAttributes.enteringEpoch),
+            (currentEpoch - farmTokenAttributes.enteringEpoch),
         );
 
         return new RewardsModel({

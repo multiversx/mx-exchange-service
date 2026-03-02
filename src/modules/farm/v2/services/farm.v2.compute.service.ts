@@ -26,8 +26,7 @@ import { EnergyType } from '@multiversx/sdk-exchange';
 @Injectable()
 export class FarmComputeServiceV2
     extends FarmComputeService
-    implements IFarmComputeServiceV2
-{
+    implements IFarmComputeServiceV2 {
     constructor(
         protected readonly farmAbi: FarmAbiServiceV2,
         @Inject(forwardRef(() => FarmServiceV2))
@@ -98,13 +97,45 @@ export class FarmComputeServiceV2
             .toFixed();
     }
 
-    async computeMintedRewards(farmAddress: string): Promise<BigNumber> {
-        const [toBeMinted, boostedYieldsRewardsPercenatage] = await Promise.all(
-            [
-                super.computeMintedRewards(farmAddress),
-                this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
-            ],
+    async computeAnualRewardsUSD(farmAddress: string): Promise<string> {
+        const farmedToken = await this.farmService.getFarmedToken(farmAddress);
+
+        const [farmedTokenPriceUSD, rewardsPerSecond] = await Promise.all([
+            this.tokenCompute.computeTokenPriceDerivedUSD(
+                farmedToken.identifier,
+            ),
+            this.farmAbi.rewardsPerSecond(farmAddress),
+        ]);
+
+        const totalRewardsPerYear = new BigNumber(rewardsPerSecond).multipliedBy(
+            constantsConfig.SECONDS_IN_YEAR,
         );
+
+        return computeValueUSD(
+            totalRewardsPerYear.toFixed(),
+            farmedToken.decimals,
+            farmedTokenPriceUSD,
+        ).toFixed();
+    }
+
+    async computeMintedRewards(farmAddress: string): Promise<BigNumber> {
+        const [rewardsPerSecond, lastRewardTimestamp, produceRewardsEnabled, boostedYieldsRewardsPercenatage] =
+            await Promise.all([
+                this.farmAbi.rewardsPerSecond(farmAddress),
+                this.farmAbi.lastRewardTimestamp(farmAddress),
+                this.farmAbi.produceRewardsEnabled(farmAddress),
+                this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
+            ]);
+
+        const currentTimestamp = Math.floor(Date.now() / 1000);
+        const rewardsPerSecondBig = new BigNumber(rewardsPerSecond);
+        let toBeMinted = new BigNumber(0);
+
+        if (currentTimestamp > lastRewardTimestamp && produceRewardsEnabled) {
+            toBeMinted = rewardsPerSecondBig.times(
+                currentTimestamp - lastRewardTimestamp,
+            );
+        }
 
         return this.computeBaseRewards(
             toBeMinted,
@@ -112,21 +143,21 @@ export class FarmComputeServiceV2
         );
     }
 
-    computeRewardsIncrease(farm: FarmModelV2, currentNonce: number): BigNumber {
-        const currentBlockBig = new BigNumber(currentNonce);
-        const lastRewardBlockNonceBig = new BigNumber(
-            farm.lastRewardBlockNonce,
+    computeRewardsIncrease(farm: FarmModelV2, currentTimestamp: number): BigNumber {
+        const currentTimestampBig = new BigNumber(currentTimestamp);
+        const lastRewardTimestampBig = new BigNumber(
+            farm.lastRewardTimestamp,
         );
-        const perBlockRewardAmountBig = new BigNumber(farm.perBlockRewards);
+        const perSecondRewardAmountBig = new BigNumber(farm.perSecondRewards);
 
         let toBeMinted = new BigNumber(0);
 
         if (
-            currentNonce > farm.lastRewardBlockNonce &&
+            currentTimestamp > farm.lastRewardTimestamp &&
             farm.produceRewardsEnabled
         ) {
-            toBeMinted = perBlockRewardAmountBig.times(
-                currentBlockBig.minus(lastRewardBlockNonceBig),
+            toBeMinted = perSecondRewardAmountBig.times(
+                currentTimestampBig.minus(lastRewardTimestampBig),
             );
         }
 
@@ -140,9 +171,9 @@ export class FarmComputeServiceV2
         farm: FarmModelV2,
         positon: CalculateRewardsArgs,
         rewardPerShare: string,
-        currentNonce: number,
+        currentTimestamp: number,
     ): BigNumber {
-        const rewardIncrease = this.computeRewardsIncrease(farm, currentNonce);
+        const rewardIncrease = this.computeRewardsIncrease(farm, currentTimestamp);
 
         const amountBig = new BigNumber(positon.liquidity);
         const divisionSafetyConstantBig = new BigNumber(
@@ -612,15 +643,14 @@ export class FarmComputeServiceV2
     }
 
     async computeBoostedRewardsPerWeek(scAddress: string): Promise<string> {
-        const [rewardsPerBlock, boostedYieldsRewardsPercentage] =
+        const [rewardsPerSecond, boostedYieldsRewardsPercentage] =
             await Promise.all([
-                this.farmAbi.rewardsPerBlock(scAddress),
+                this.farmAbi.rewardsPerSecond(scAddress),
                 this.farmAbi.boostedYieldsRewardsPercenatage(scAddress),
             ]);
 
-        const blocksInWeek = 14440 * 7;
-        const totalRewardsPerWeek = new BigNumber(rewardsPerBlock).multipliedBy(
-            blocksInWeek,
+        const totalRewardsPerWeek = new BigNumber(rewardsPerSecond).multipliedBy(
+            constantsConfig.SECONDS_IN_WEEK,
         );
 
         return totalRewardsPerWeek

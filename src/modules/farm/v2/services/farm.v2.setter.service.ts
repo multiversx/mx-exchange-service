@@ -46,4 +46,28 @@ export class FarmSetterServiceV2 extends FarmSetterService {
             CacheTtlInfo.ContractInfo.localTtl,
         );
     }
+
+    async setRewardsPerSecond(
+        farmAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setDataOrUpdateTtl(
+            this.getCacheKey('rewardsPerSecond', farmAddress),
+            value,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async setLastRewardTimestamp(
+        farmAddress: string,
+        value: number,
+    ): Promise<string> {
+        return await this.setData(
+            this.getCacheKey('lastRewardTimestamp', farmAddress),
+            value,
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
+        );
+    }
 }

@@ -34,8 +34,7 @@ import { CacheService } from 'src/services/caching/cache.service';
 @Injectable()
 export class FarmAbiServiceV2
     extends FarmAbiService
-    implements IFarmAbiServiceV2
-{
+    implements IFarmAbiServiceV2 {
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,
@@ -43,6 +42,58 @@ export class FarmAbiServiceV2
         protected readonly cacheService: CacheService,
     ) {
         super(mxProxy, gatewayService, mxApi, cacheService);
+    }
+
+    async rewardsPerBlock(farmAddress: string): Promise<string> {
+        throw new Error(
+            `rewardsPerBlock() is not supported on V2 farms. Use rewardsPerSecond() instead. Farm: ${farmAddress}`,
+        );
+    }
+
+    async lastRewardBlockNonce(farmAddress: string): Promise<number> {
+        throw new Error(
+            `lastRewardBlockNonce() is not supported on V2 farms. Use lastRewardTimestamp() instead. Farm: ${farmAddress}`,
+        );
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async rewardsPerSecond(farmAddress: string): Promise<string> {
+        return this.getRewardsPerSecondRaw(farmAddress);
+    }
+
+    async getRewardsPerSecondRaw(farmAddress: string): Promise<string> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getPerSecondRewardAmount();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async lastRewardTimestamp(farmAddress: string): Promise<number> {
+        return this.getLastRewardTimestampRaw(farmAddress);
+    }
+
+    async getLastRewardTimestampRaw(farmAddress: string): Promise<number> {
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getLastRewardTimestamp();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toNumber();
     }
 
     async getLastErrorMessageRaw(farmAddress: string): Promise<string> {

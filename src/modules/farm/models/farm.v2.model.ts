@@ -44,7 +44,7 @@ export class FarmModelV2 {
     @Field()
     produceRewardsEnabled: boolean;
     @Field()
-    perBlockRewards: string;
+    perSecondRewards: string;
     @Field()
     farmTokenSupply: string;
     @Field(() => Int)
@@ -56,7 +56,7 @@ export class FarmModelV2 {
     @Field()
     rewardReserve: string;
     @Field(() => Int)
-    lastRewardBlockNonce: number;
+    lastRewardTimestamp: number;
     @Field()
     divisionSafetyConstant: string;
     @Field()
