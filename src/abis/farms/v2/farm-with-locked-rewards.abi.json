@@ -1,20 +1,13 @@
 {
     "buildInfo": {
-        "rustc": {
-            "version": "1.80.0-nightly",
-            "commitHash": "84b40fc908c3adc7e0e470b3fbaa264df0e122b8",
-            "commitDate": "2024-05-27",
-            "channel": "Nightly",
-            "short": "rustc 1.80.0-nightly (84b40fc90 2024-05-27)"
-        },
         "contractCrate": {
             "name": "farm-with-locked-rewards",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-1831-g81b6253f"
+            "gitVersion": "v1.6.0-2122-g457d1532"
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.50.5"
+            "version": "0.64.1"
         }
     },
     "name": "Farm",
@@ -170,11 +163,11 @@
             "outputs": []
         },
         {
-            "name": "setPerBlockRewardAmount",
+            "name": "setPerSecondRewardAmount",
             "mutability": "mutable",
             "inputs": [
                 {
-                    "name": "per_block_amount",
+                    "name": "per_second_amount",
                     "type": "BigUint"
                 }
             ],
@@ -235,17 +228,6 @@
             ]
         },
         {
-            "name": "setAllowExternalClaimBoostedRewards",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "allow_external_claim",
-                    "type": "bool"
-                }
-            ],
-            "outputs": []
-        },
-        {
             "name": "getFarmingTokenId",
             "mutability": "readonly",
             "inputs": [],
@@ -266,7 +248,7 @@
             ]
         },
         {
-            "name": "getPerBlockRewardAmount",
+            "name": "getPerSecondRewardAmount",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -276,7 +258,7 @@
             ]
         },
         {
-            "name": "getLastRewardBlockNonce",
+            "name": "getLastRewardTimestamp",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -517,6 +499,18 @@
             ]
         },
         {
+            "name": "setPermissionsHubAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "addSCAddressToWhitelist",
             "onlyOwner": true,
             "mutability": "mutable",
@@ -631,10 +625,41 @@
             ]
         },
         {
-            "name": "collectUndistributedBoostedRewards",
+            "name": "enterFarmOnBehalf",
             "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "claimRewardsOnBehalf",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
             "inputs": [],
-            "outputs": []
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
         },
         {
             "name": "getBoostedYieldsRewardsPercentage",
@@ -677,31 +702,6 @@
             ]
         },
         {
-            "name": "getRemainingBoostedRewardsToDistribute",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "week",
-                    "type": "u32"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getUndistributedBoostedRewards",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
             "name": "setBoostedYieldsFactors",
             "mutability": "mutable",
             "inputs": [
@@ -735,6 +735,32 @@
             "outputs": [
                 {
                     "type": "BoostedYieldsFactors"
+                }
+            ]
+        },
+        {
+            "name": "collectUndistributedBoostedRewards",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getRemainingBoostedRewardsToDistribute",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },
