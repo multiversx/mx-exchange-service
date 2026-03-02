@@ -12,8 +12,8 @@ export interface IStakingAbiService {
     annualPercentageRewards(stakeAddress: string): Promise<string>;
 
     minUnbondEpochs(stakeAddress: string): Promise<number>;
-    perBlockRewardsAmount(stakeAddress: string): Promise<string>;
-    lastRewardBlockNonce(stakeAddress: string): Promise<number>;
+    perSecondRewardsAmount(stakeAddress: string): Promise<string>;
+    lastRewardTimestamp(stakeAddress: string): Promise<number>;
     divisionSafetyConstant(stakeAddress: string): Promise<number>;
     produceRewardsEnabled(stakeAddress: string): Promise<boolean>;
     state(stakeAddress: string): Promise<string>;

@@ -45,13 +45,13 @@ export class StakingModel {
     boostedApr: string;
     baseApr: string;
     maxBoostedApr: string;
-    rewardsPerBlockAPRBound: string;
+    rewardsPerSecondAPRBound: string;
     @Field(() => Int)
     minUnboundEpochs: number;
     @Field()
-    perBlockRewards: string;
+    perSecondRewards: string;
     @Field(() => Int)
-    lastRewardBlockNonce: number;
+    lastRewardTimestamp: number;
     @Field()
     rewardsRemainingDays: number;
     @Field()

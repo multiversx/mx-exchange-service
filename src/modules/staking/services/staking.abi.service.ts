@@ -26,8 +26,7 @@ import { getAllKeys } from 'src/utils/get.many.utils';
 @Injectable()
 export class StakingAbiService
     extends GenericAbiService
-    implements IStakingAbiService
-{
+    implements IStakingAbiService {
     constructor(
         protected readonly mxProxy: MXProxyService,
         private readonly gatewayService: MXGatewayService,
@@ -285,16 +284,16 @@ export class StakingAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async perBlockRewardsAmount(stakeAddress: string): Promise<string> {
-        return this.getPerBlockRewardsAmountRaw(stakeAddress);
+    async perSecondRewardsAmount(stakeAddress: string): Promise<string> {
+        return this.getPerSecondRewardsAmountRaw(stakeAddress);
     }
 
-    async getPerBlockRewardsAmountRaw(stakeAddress: string): Promise<string> {
+    async getPerSecondRewardsAmountRaw(stakeAddress: string): Promise<string> {
         const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
-            contract.methodsExplicit.getPerBlockRewardAmount();
+            contract.methodsExplicit.getPerSecondRewardAmount();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
@@ -307,18 +306,18 @@ export class StakingAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async lastRewardBlockNonce(stakeAddress: string): Promise<number> {
-        return this.getLastRewardBlockNonceRaw(stakeAddress);
+    async lastRewardTimestamp(stakeAddress: string): Promise<number> {
+        return this.getLastRewardTimestampRaw(stakeAddress);
     }
 
-    async getLastRewardBlockNonceRaw(stakeAddress: string): Promise<number> {
+    async getLastRewardTimestampRaw(stakeAddress: string): Promise<number> {
         const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
-            contract.methodsExplicit.getLastRewardBlockNonce();
+            contract.methodsExplicit.getLastRewardTimestamp();
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().toNumber();
     }
 
     @ErrorLoggerAsync({

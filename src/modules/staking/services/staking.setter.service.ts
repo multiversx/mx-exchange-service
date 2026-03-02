@@ -134,24 +134,24 @@ export class StakingSetterService extends GenericSetterService {
         );
     }
 
-    async setPerBlockRewardAmount(
+    async setPerSecondRewardAmount(
         stakeAddress: string,
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getCacheKey('perBlockRewards', stakeAddress),
+            this.getCacheKey('perSecondRewardsAmount', stakeAddress),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
     }
 
-    async setLastRewardBlockNonce(
+    async setLastRewardTimestamp(
         stakeAddress: string,
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getCacheKey('lastRewardBlockNonce', stakeAddress),
+            this.getCacheKey('lastRewardTimestamp', stakeAddress),
             value,
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,

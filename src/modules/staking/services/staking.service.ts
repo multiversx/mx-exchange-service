@@ -51,7 +51,7 @@ export class StakingService {
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly stakingState: StakingStateService,
-    ) {}
+    ) { }
 
     async getFarmsStaking(
         fields: (keyof StakingModel)[] = [],
@@ -130,7 +130,7 @@ export class StakingService {
         positions: CalculateRewardsArgs[],
         computeBoosted = false,
     ): Promise<StakingRewardsModel[]> {
-        const [stakingFarms, currentNonce] = await Promise.all([
+        const [stakingFarms, currentTimestamp] = await Promise.all([
             this.stakingState.getStakingFarms(
                 positions.map((position) => position.farmAddress),
                 [
@@ -141,13 +141,13 @@ export class StakingService {
                     'divisionSafetyConstant',
                     'accumulatedRewards',
                     'rewardCapacity',
-                    'lastRewardBlockNonce',
-                    'perBlockRewards',
+                    'lastRewardTimestamp',
+                    'perSecondRewards',
                     'produceRewardsEnabled',
-                    'rewardsPerBlockAPRBound',
+                    'rewardsPerSecondAPRBound',
                 ],
             ),
-            this.contextGetter.getShardCurrentBlockNonce(1),
+            Promise.resolve(Math.floor(Date.now() / 1000)),
         ]);
 
         return Promise.all(
@@ -155,7 +155,7 @@ export class StakingService {
                 this.getRewardsForPosition(
                     stakingFarms[index],
                     position,
-                    currentNonce,
+                    currentTimestamp,
                     computeBoosted,
                 ),
             ),
@@ -165,7 +165,7 @@ export class StakingService {
     async getRewardsForPosition(
         stakingFarm: StakingModel,
         position: CalculateRewardsArgs,
-        currentNonce: number,
+        currentTimestamp: number,
         computeBoosted = false,
     ): Promise<StakingRewardsModel> {
         const stakeTokenAttributes = this.decodeStakingTokenAttributes({
@@ -188,7 +188,7 @@ export class StakingService {
                 stakingFarm,
                 position.liquidity,
                 stakeTokenAttributes[0],
-                currentNonce,
+                currentTimestamp,
             );
         }
 

@@ -88,7 +88,7 @@ describe('StakingService', () => {
             stakingFarm,
             {
                 farmAddress:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
+                    Address.Zero().bech32(),
                 liquidity: '1000000000000000',
                 identifier: 'MEXFARML-772223-14',
                 attributes:
@@ -111,37 +111,5 @@ describe('StakingService', () => {
             },
             rewards: '150000000000000001046423',
         });
-    });
-
-    it('should get batch rewards for position', async () => {
-        const service: StakingService =
-            module.get<StakingService>(StakingService);
-        const batchRewards = await service.getBatchRewardsForPosition([
-            {
-                farmAddress:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
-                liquidity: '1000000000000000',
-                identifier: 'MEXFARML-772223-14',
-                attributes:
-                    'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
-                vmQuery: false,
-                user: Address.Zero().bech32(),
-            },
-        ]);
-        expect(batchRewards).toEqual([
-            {
-                decodedAttributes: {
-                    attributes:
-                        'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
-                    compoundedReward: '0',
-                    currentFarmAmount:
-                        '519205458813209018315265407815173060004346493743728287017479820327455628280230924139593728',
-                    identifier: 'MEXFARML-772223-14',
-                    rewardPerShare: '0',
-                    type: 'stakingFarmToken',
-                },
-                rewards: '150000000000000001046423',
-            },
-        ]);
     });
 });

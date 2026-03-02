@@ -41,7 +41,7 @@ import { StateDataLoader } from '../state/services/state.dataloader';
 
 @Resolver(() => StakingBoostedRewardsModel)
 export class StakingBoostedRewardsResolver {
-    constructor(private readonly stakingCompute: StakingComputeService) {}
+    constructor(private readonly stakingCompute: StakingComputeService) { }
 
     @ResolveField()
     async estimatedWeeklyRewards(
@@ -117,7 +117,7 @@ export class StakingResolver {
         private readonly stakingCompute: StakingComputeService,
         private readonly stakingTransactionService: StakingTransactionService,
         private readonly stateDataLoader: StateDataLoader,
-    ) {}
+    ) { }
 
     @ResolveField()
     async farmToken(parent: StakingModel) {
@@ -331,16 +331,16 @@ export class StakingResolver {
 
     @UseGuards(JwtOrNativeAdminGuard)
     @Query(() => TransactionModel)
-    async setPerBlockRewardAmount(
+    async setPerSecondRewardAmount(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('perBlockAmount') perBlockAmount: string,
+        @Args('perSecondAmount') perSecondAmount: string,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         await this.stakingService.requireOwner(farmStakeAddress, user.address);
-        return this.stakingTransactionService.setPerBlockRewardAmount(
+        return this.stakingTransactionService.setPerSecondRewardAmount(
             user.address,
             farmStakeAddress,
-            perBlockAmount,
+            perSecondAmount,
         );
     }
 

@@ -26,7 +26,7 @@ export class StakingTransactionService {
         private readonly mxProxy: MXProxyService,
         private readonly mxApi: MXApiService,
         private readonly contextGetter: ContextGetterService,
-    ) {}
+    ) { }
 
     @ErrorLoggerAsync()
     async stakeFarm(
@@ -226,7 +226,7 @@ export class StakingTransactionService {
             if (
                 nft.nonce < migrationNonce &&
                 nft.attributes.length >
-                    constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
+                constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
             ) {
                 promises.push(
                     this.claimRewards(userAddress, stakingAddress, {
@@ -361,18 +361,18 @@ export class StakingTransactionService {
         );
     }
 
-    async setPerBlockRewardAmount(
+    async setPerSecondRewardAmount(
         sender: string,
         stakeAddress: string,
-        perBlockAmount: string,
+        perSecondAmount: string,
     ): Promise<TransactionModel> {
         return this.mxProxy.getStakingSmartContractTransaction(
             stakeAddress,
             new TransactionOptions({
                 sender: sender,
-                gasLimit: gasConfig.stake.admin.setPerBlockRewardAmount,
-                function: 'setPerBlockRewardAmount',
-                arguments: [new BigUIntValue(new BigNumber(perBlockAmount))],
+                gasLimit: gasConfig.stake.admin.setPerSecondRewardAmount,
+                function: 'setPerSecondRewardAmount',
+                arguments: [new BigUIntValue(new BigNumber(perSecondAmount))],
             }),
         );
     }
