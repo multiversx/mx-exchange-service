@@ -31,10 +31,10 @@ export class StakingAbiServiceMock implements IStakingAbiService {
     minUnbondEpochs(stakeAddress: string): Promise<number> {
         throw new Error('Method not implemented.');
     }
-    async perBlockRewardsAmount(stakeAddress: string): Promise<string> {
+    async perSecondRewardsAmount(stakeAddress: string): Promise<string> {
         return new BigNumber(500000000).toFixed();
     }
-    async lastRewardBlockNonce(stakeAddress: string): Promise<number> {
+    async lastRewardTimestamp(stakeAddress: string): Promise<number> {
         return new BigNumber(100).toNumber();
     }
     async divisionSafetyConstant(stakeAddress: string): Promise<number> {

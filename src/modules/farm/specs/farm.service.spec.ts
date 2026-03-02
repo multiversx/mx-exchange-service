@@ -176,7 +176,7 @@ describe('FarmService', () => {
                 farmTokenCollection: 'EGLDMEXFL-ghijkl',
                 farmingTokenId: 'EGLDMEXLP-abcdef',
                 farmTokenSupply: '1000000000000000000',
-                perBlockRewards: '2000000000000000000',
+                perSecondRewards: '2000000000000000000',
                 rewardPerShare: '0',
             },
         ]);

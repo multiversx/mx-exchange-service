@@ -22,9 +22,9 @@ message StakingFarm {
   string baseApr                            = 15;
   string maxBoostedApr                      = 16;
   uint32 minUnboundEpochs                   = 17;
-  string perBlockRewards                    = 18;
-  uint32 lastRewardBlockNonce               = 19;
-  string rewardsPerBlockAPRBound            = 20;
+  string perSecondRewards                   = 18;
+  uint32 lastRewardTimestamp                = 19;
+  string rewardsPerSecondAPRBound           = 20;
   bool isProducingRewards                   = 21;
   uint32 rewardsRemainingDays               = 22;
   uint32 rewardsRemainingDaysUncapped       = 23;

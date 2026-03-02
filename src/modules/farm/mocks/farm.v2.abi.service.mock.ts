@@ -1,13 +1,13 @@
 import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
 import { FarmAbiServiceMock } from './farm.abi.service.mock';
+import { farms } from './farm.constants';
 import { IFarmAbiServiceV2 } from '../v2/services/interfaces';
 import { BoostedYieldsFactors } from '../models/farm.v2.model';
 import BigNumber from 'bignumber.js';
 
 export class FarmAbiServiceMockV2
     extends FarmAbiServiceMock
-    implements IFarmAbiServiceV2
-{
+    implements IFarmAbiServiceV2 {
     async lastUndistributedBoostedRewardsCollectWeek(
         farmAddress: string,
     ): Promise<number> {
@@ -79,6 +79,14 @@ export class FarmAbiServiceMockV2
         week: number,
     ): Promise<string> {
         return '2';
+    }
+
+    async rewardsPerSecond(farmAddress: string): Promise<string> {
+        return farms.find((f) => f.address === farmAddress).rewardsPerSecond;
+    }
+
+    async lastRewardTimestamp(farmAddress: string): Promise<number> {
+        return 1;
     }
 }
 

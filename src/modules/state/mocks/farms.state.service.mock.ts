@@ -27,7 +27,7 @@ export class FarmsStateServiceMock {
                         farmTokenCollection: farm.farmTokenID,
                         farmingTokenId: farm.farmingTokenID,
                         farmTokenSupply: farm.farmTotalSupply,
-                        perBlockRewards: farm.rewardsPerBlock,
+                        perSecondRewards: farm.rewardsPerSecond,
                         rewardPerShare: farm.rewardPerShare,
                         rewardType: FarmRewardType.LOCKED_REWARDS,
                         version: FarmVersion.V2,

@@ -59,6 +59,7 @@ export const farms = [
         farmTotalSupply: '1000000000000000000',
         farmingTokenReserve: '1000000000000000000',
         rewardsPerBlock: '2000000000000000000',
+        rewardsPerSecond: '2000000000000000000',
         rewardPerShare: '0',
     },
 ];
