@@ -32,7 +32,7 @@ export class StakingComputeService {
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
         private readonly apiService: MXApiService,
-    ) { }
+    ) {}
 
     computeStakeRewardsForPosition(
         stakingFarm: StakingModel,
@@ -113,8 +113,9 @@ export class StakingComputeService {
             currentTimestamp > stakingFarm.lastRewardTimestamp &&
             stakingFarm.produceRewardsEnabled
         ) {
-            const extraRewardsUnbounded =
-                perSecondRewardAmountBig.times(timestampDifferenceBig);
+            const extraRewardsUnbounded = perSecondRewardAmountBig.times(
+                timestampDifferenceBig,
+            );
             const extraRewardsBounded = timestampDifferenceBig.multipliedBy(
                 stakingFarm.rewardsPerSecondAPRBound,
             );
@@ -134,7 +135,9 @@ export class StakingComputeService {
         const extraRewardsAPRBoundedPerSecond =
             await this.computeExtraRewardsAPRBoundedPerSecond(stakeAddress);
 
-        return extraRewardsAPRBoundedPerSecond.multipliedBy(secondsDifferenceBig);
+        return extraRewardsAPRBoundedPerSecond.multipliedBy(
+            secondsDifferenceBig,
+        );
     }
 
     async computeExtraRewardsAPRBoundedPerSecond(
@@ -229,8 +232,8 @@ export class StakingComputeService {
         )
             ? rewardsUnboundedBig.dividedBy(stakedValueBig).toFixed()
             : new BigNumber(annualPercentageRewards)
-                .dividedBy(constantsConfig.MAX_PERCENT)
-                .toFixed();
+                  .dividedBy(constantsConfig.MAX_PERCENT)
+                  .toFixed();
     }
 
     @ErrorLoggerAsync({
@@ -362,9 +365,9 @@ export class StakingComputeService {
 
         const perSecondRewards = extraRewardsAPRBoundedPerSecond
             ? BigNumber.min(
-                extraRewardsAPRBoundedPerSecond,
-                perSecondRewardAmount,
-            )
+                  extraRewardsAPRBoundedPerSecond,
+                  perSecondRewardAmount,
+              )
             : new BigNumber(perSecondRewardAmount);
 
         return parseFloat(
@@ -500,9 +503,11 @@ export class StakingComputeService {
             );
         }
         const remainingRewards = await Promise.all(promises);
-        return remainingRewards.reduce((acc, curr) => {
-            return new BigNumber(acc).plus(curr);
-        });
+        return remainingRewards.length > 0
+            ? remainingRewards.reduce((acc, curr) => {
+                  return new BigNumber(acc).plus(curr);
+              })
+            : new BigNumber(0);
     }
 
     async computeUserRewardsDistributionForWeek(
@@ -825,13 +830,14 @@ export class StakingComputeService {
             .dividedBy(constantsConfig.MAX_PERCENT)
             .dividedBy(constantsConfig.SECONDS_IN_YEAR);
 
-        const actualRewardsPerSecond = new BigNumber(rewardsPerSecond).isLessThan(
-            rewardsPerSecondAPRBound,
-        )
+        const actualRewardsPerSecond = new BigNumber(
+            rewardsPerSecond,
+        ).isLessThan(rewardsPerSecondAPRBound)
             ? new BigNumber(rewardsPerSecond)
             : rewardsPerSecondAPRBound;
-        const totalRewardsPerWeek =
-            actualRewardsPerSecond.multipliedBy(constantsConfig.SECONDS_IN_WEEK);
+        const totalRewardsPerWeek = actualRewardsPerSecond.multipliedBy(
+            constantsConfig.SECONDS_IN_WEEK,
+        );
 
         return totalRewardsPerWeek
             .multipliedBy(boostedYieldsRewardsPercentage)
