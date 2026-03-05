@@ -73,6 +73,8 @@ export class SmartRouterEvaluationService {
             ),
             outputDelta: diff.toFixed(),
             outputDeltaPercentage: percentage.toNumber(),
+            smartSwapSource: autoRouteModel.smartSwap?.source ?? null,
+            xoxnoAmountOut: autoRouteModel.xoxnoAmountOut ?? null,
         };
 
         try {
