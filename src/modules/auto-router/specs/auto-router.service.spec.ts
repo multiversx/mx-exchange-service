@@ -606,7 +606,7 @@ describe('AutoRouterService', () => {
             expect(swap.smartSwap?.source).toBe('xoxno');
             expect(swap.smartSwap?.amountOut).toBe('300000000000000000');
             expect(swap.smartSwap?.routes).toHaveLength(1);
-            expect(swap.smartSwap?.routes[0].dexes).toEqual(['XExchange']);
+            expect(swap.smartSwap?.routes[0].pairs[0].dex).toBe('XExchange');
             expect(swap.xoxnoAmountOut).toBe('300000000000000000');
         });
 

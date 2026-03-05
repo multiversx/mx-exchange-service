@@ -16,6 +16,7 @@ import { AutoRouterArgs } from '../models/auto-router.args';
 import {
     AutoRouteModel,
     SmartSwapModel,
+    SmartSwapPairModel,
     SmartSwapRoute,
     SmartSwapSource,
     SWAP_TYPE,
@@ -323,7 +324,7 @@ export class AutoRouterService {
 
             xoxnoAmountOut = xoxnoQuote?.amountOut;
 
-            smartSwap = this.pickBestSmartSwap(
+            smartSwap = await this.pickBestSmartSwap(
                 internalSmartSwap,
                 xoxnoQuote,
                 swapRoute.bestResult,
@@ -942,7 +943,16 @@ export class AutoRouterService {
                         allocation.tokenRoute,
                         routePairs,
                     ),
-                    pairs: routePairs,
+                    pairs: routePairs.map((pair, i) => new SmartSwapPairModel({
+                        address: pair.address,
+                        dex: 'XExchange',
+                        firstToken: pair.firstToken.identifier === allocation.tokenRoute[i]
+                            ? pair.firstToken
+                            : pair.secondToken,
+                        secondToken: pair.firstToken.identifier === allocation.tokenRoute[i]
+                            ? pair.secondToken
+                            : pair.firstToken,
+                    })),
                 });
             }),
             feePercentage,
@@ -975,13 +985,13 @@ export class AutoRouterService {
         }
     }
 
-    private pickBestSmartSwap(
+    private async pickBestSmartSwap(
         internalSmartSwap: SmartSwapModel | undefined,
         xoxnoQuote: XoxnoQuoteModel | undefined,
         autoRouterAmountOut: string,
         tokenInMetadata: BaseEsdtToken,
         tokenOutMetadata: BaseEsdtToken,
-    ): SmartSwapModel | undefined {
+    ): Promise<SmartSwapModel | undefined> {
         const internalOutput = internalSmartSwap
             ? new BigNumber(internalSmartSwap.amountOut)
             : new BigNumber(0);
@@ -995,7 +1005,7 @@ export class AutoRouterService {
             xoxnoOutput.gt(internalOutput) &&
             xoxnoOutput.gt(autoRouterOutput)
         ) {
-            return this.mapXoxnoToSmartSwapModel(
+            return await this.mapXoxnoToSmartSwapModel(
                 xoxnoQuote,
                 tokenInMetadata,
                 tokenOutMetadata,
@@ -1009,11 +1019,11 @@ export class AutoRouterService {
         return undefined; // auto-router wins, no smart swap
     }
 
-    private mapXoxnoToSmartSwapModel(
+    private async mapXoxnoToSmartSwapModel(
         quote: XoxnoQuoteModel,
         tokenInMetadata: BaseEsdtToken,
         tokenOutMetadata: BaseEsdtToken,
-    ): SmartSwapModel {
+    ): Promise<SmartSwapModel> {
         const [tokenInExchangeRate, tokenOutExchangeRate] =
             this.calculateExchangeRate(
                 tokenInMetadata.decimals,
@@ -1038,16 +1048,25 @@ export class AutoRouterService {
                 tokenInMetadata.decimals,
             ).toString(),
             tokensPriceDeviationPercent: quote.priceImpact / 100,
-            routes: this.mapXoxnoPathsToRoutes(quote.paths),
+            routes: await this.mapXoxnoPathsToRoutes(quote.paths),
         });
     }
 
-    private mapXoxnoPathsToRoutes(
+    private async mapXoxnoPathsToRoutes(
         paths: XoxnoPathModel[],
-    ): SmartSwapRoute[] {
+    ): Promise<SmartSwapRoute[]> {
         if (!paths || paths.length === 0) {
             return [];
         }
+
+        // Collect all unique token IDs across all paths
+        const tokenIDs = [...new Set(
+            paths.flatMap(p => p.swaps.flatMap(s => [s.from, s.to])),
+        )];
+
+        // Batch fetch all token metadata (cached)
+        const tokensMetadata = await this.tokenService.getAllTokensMetadata(tokenIDs);
+        const tokenMap = new Map(tokenIDs.map((id, i) => [id, tokensMetadata[i]]));
 
         return paths.map((path) => {
             const swaps = path.swaps;
@@ -1064,9 +1083,6 @@ export class AutoRouterService {
                 ...swaps.map((s) => s.amountOut),
             ];
 
-            // DEX names per hop
-            const dexes = swaps.map((s) => s.dex);
-
             // Per-hop fees and price impact not available from XOXNO
             const fees = swaps.map(() => '0');
             const pricesImpact = swaps.map(() => '0');
@@ -1076,8 +1092,12 @@ export class AutoRouterService {
                 tokenRoute,
                 fees,
                 pricesImpact,
-                pairs: null,
-                dexes,
+                pairs: swaps.map((swap) => new SmartSwapPairModel({
+                    address: swap.address,
+                    dex: swap.dex,
+                    firstToken: tokenMap.get(swap.from),
+                    secondToken: tokenMap.get(swap.to),
+                })),
             });
         });
     }

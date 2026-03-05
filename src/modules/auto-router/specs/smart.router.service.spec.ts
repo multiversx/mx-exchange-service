@@ -15,6 +15,7 @@ import { RouterService } from 'src/modules/router/services/router.service';
 import {
     AutoRouteModel,
     SmartSwapModel,
+    SmartSwapPairModel,
     SmartSwapRoute,
 } from '../models/auto-route.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
@@ -200,7 +201,14 @@ describe('SmartRouterService', () => {
                         '24108414923882484173',
                         '2347191658708309820865',
                     ],
-                    pairs: [availablePairs['WEGLD-TOK5']],
+                    pairs: [
+                        new SmartSwapPairModel({
+                            address: availablePairs['WEGLD-TOK5'].address,
+                            dex: 'XExchange',
+                            firstToken: availablePairs['WEGLD-TOK5'].firstToken,
+                            secondToken: availablePairs['WEGLD-TOK5'].secondToken,
+                        }),
+                    ],
                     pricesImpact: ['2.34719165870830982'],
                     tokenRoute: ['WEGLD-123456', 'TOK5-123456'],
                 }),
@@ -212,8 +220,18 @@ describe('SmartRouterService', () => {
                         '1536845271387162676128',
                     ],
                     pairs: [
-                        availablePairs['WEGLD-USDT'],
-                        availablePairs['TOK5-USDT'],
+                        new SmartSwapPairModel({
+                            address: availablePairs['WEGLD-USDT'].address,
+                            dex: 'XExchange',
+                            firstToken: availablePairs['WEGLD-USDT'].firstToken,
+                            secondToken: availablePairs['WEGLD-USDT'].secondToken,
+                        }),
+                        new SmartSwapPairModel({
+                            address: availablePairs['TOK5-USDT'].address,
+                            dex: 'XExchange',
+                            firstToken: availablePairs['TOK5-USDT'].secondToken,
+                            secondToken: availablePairs['TOK5-USDT'].firstToken,
+                        }),
                     ],
                     pricesImpact: ['1.55946094', '0.155236896099713401'],
                     tokenRoute: ['WEGLD-123456', 'USDT-123456', 'TOK5-123456'],
@@ -226,8 +244,18 @@ describe('SmartRouterService', () => {
                         '220013586591845180',
                     ],
                     pairs: [
-                        availablePairs['WEGLD-USDC'],
-                        availablePairs['TOK5-USDC'],
+                        new SmartSwapPairModel({
+                            address: availablePairs['WEGLD-USDC'].address,
+                            dex: 'XExchange',
+                            firstToken: availablePairs['WEGLD-USDC'].firstToken,
+                            secondToken: availablePairs['WEGLD-USDC'].secondToken,
+                        }),
+                        new SmartSwapPairModel({
+                            address: availablePairs['TOK5-USDC'].address,
+                            dex: 'XExchange',
+                            firstToken: availablePairs['TOK5-USDC'].secondToken,
+                            secondToken: availablePairs['TOK5-USDC'].firstToken,
+                        }),
                     ],
                     pricesImpact: ['0.00022564', '2.2001358659184518'],
                     tokenRoute: ['WEGLD-123456', 'USDC-123456', 'TOK5-123456'],
