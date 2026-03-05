@@ -41,6 +41,7 @@ import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-e
 import { SmartRouterService } from '../services/smart.router.service';
 import { BinaryUtils } from '@multiversx/sdk-nestjs-common';
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
+import { XoxnoAggregatorServiceProvider } from '../mocks/xoxno-aggregator.service.mock';
 
 describe('SmartRouterService', () => {
     let autoRouterService: AutoRouterService;
@@ -146,6 +147,7 @@ describe('SmartRouterService', () => {
         tolerance: 0.01,
         maxPriceDeviationPercent: 1,
         tokensPriceDeviationPercent: 0.04123552717621264,
+        xoxnoAmountOut: undefined,
         parallelRouteSwap: {
             allocations: [
                 {
@@ -238,6 +240,7 @@ describe('SmartRouterService', () => {
             tokensPriceDeviationPercent: 0.02640150083732185,
             feeAmount: '19421284718410321710',
             feePercentage: 0.005,
+            source: 'internal' as any,
         }),
     });
 
@@ -291,6 +294,7 @@ describe('SmartRouterService', () => {
                 SmartRouterService,
                 SmartRouterEvaluationServiceProvider,
                 ComposableTasksAbiServiceProvider,
+                XoxnoAggregatorServiceProvider,
             ],
             exports: [],
         }).compile();

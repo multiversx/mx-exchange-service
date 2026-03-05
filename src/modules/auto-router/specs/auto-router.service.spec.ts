@@ -38,6 +38,8 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { SmartRouterServiceProvider } from '../mocks/smart.router.service.mock';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
+import { XoxnoAggregatorServiceProvider } from '../mocks/xoxno-aggregator.service.mock';
+import BigNumber from 'bignumber.js';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -95,6 +97,7 @@ describe('AutoRouterService', () => {
                 SmartRouterServiceProvider,
                 SmartRouterEvaluationServiceProvider,
                 ComposableTasksAbiServiceProvider,
+                XoxnoAggregatorServiceProvider,
             ],
             exports: [],
         }).compile();
@@ -548,5 +551,143 @@ describe('AutoRouterService', () => {
                 guardianSignature: undefined,
             },
         ]);
+    });
+
+    describe('XOXNO Aggregator Integration', () => {
+        let xoxnoService: any;
+        let remoteConfigService: any;
+
+        beforeEach(() => {
+            jest.clearAllMocks();
+            xoxnoService = service['xoxnoAggregatorService'];
+            remoteConfigService = service['remoteConfigGetterService'];
+
+            jest.spyOn(remoteConfigService, 'getSmartSwapFlagValue').mockResolvedValue(true);
+            jest.spyOn(remoteConfigService, 'getMinSmartSwapDeltaPercentage').mockResolvedValue(new BigNumber(0));
+            jest.spyOn(remoteConfigService, 'getXoxnoAggregatorEnabled').mockResolvedValue(true);
+        });
+
+        it('should set smartSwap.source = XOXNO when XOXNO provides best output', async () => {
+            // Mock internal smart swap to be worse than XOXNO
+            jest.spyOn(service as any, 'computeSmartSwap').mockResolvedValue(
+                new AutoRouteModel({ amountOut: '200000000000000000', source: 'internal' } as any)
+            );
+            jest.spyOn(xoxnoService, 'getAmountOut').mockResolvedValue('300000000000000000'); // XOXNO wins
+
+            const swap = await service.swap({
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'WEGLD-123456',
+                amountIn: '2000000', // Valid size for mock pairs
+                tolerance: 0.01,
+            });
+
+            expect(swap.smartSwap).toBeDefined();
+            expect(swap.smartSwap?.source).toBe('xoxno');
+            expect(swap.smartSwap?.amountOut).toBe('300000000000000000');
+            expect(swap.xoxnoAmountOut).toBe('300000000000000000');
+        });
+
+        it('should set smartSwap.source = INTERNAL when internal smart-swap is better', async () => {
+            jest.spyOn(service as any, 'computeSmartSwap').mockResolvedValue(
+                new AutoRouteModel({ amountOut: '300000000000000000', source: 'internal' } as any)
+            );
+            jest.spyOn(xoxnoService, 'getAmountOut').mockResolvedValue('200000000000000000'); // Internal wins
+
+            const swap = await service.swap({
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'WEGLD-123456',
+                amountIn: '2000000', // Valid size
+                tolerance: 0.01,
+            });
+
+            expect(swap.smartSwap).toBeDefined();
+            expect(swap.smartSwap?.source).toBe('internal');
+            expect(swap.xoxnoAmountOut).toBe('200000000000000000');
+        });
+
+        it('should skip XOXNO when feature flag is disabled', async () => {
+            jest.spyOn(remoteConfigService, 'getXoxnoAggregatorEnabled').mockResolvedValue(false);
+            jest.spyOn(xoxnoService, 'getAmountOut').mockResolvedValue('5000000000');
+
+            const swap = await service.swap({
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'WEGLD-123456',
+                amountIn: '2000000',
+                tolerance: 0.01,
+            });
+
+            // Even if xoxno service would return 5000, it's not called because flag is disabled
+            expect(xoxnoService.getAmountOut).not.toHaveBeenCalled();
+            expect(swap.smartSwap?.source).not.toBe('xoxno');
+            expect(swap.xoxnoAmountOut).toBeUndefined();
+        });
+
+        it('should skip XOXNO for fixedOutput swaps', async () => {
+            jest.spyOn(xoxnoService, 'getAmountOut');
+
+            await service.swap({
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'WEGLD-123456',
+                amountOut: '1000000000000000000', // Valid fixedOutput size
+                tolerance: 0.01,
+            });
+
+            expect(xoxnoService.getAmountOut).not.toHaveBeenCalled();
+        });
+
+        it('should return XOXNO transaction when source is XOXNO', async () => {
+            const mockTx = {
+                receiver: 'erd1xoxno', data: 'swap', value: '0',
+                sender: senderAddress, gasLimit: 100000, gasPrice: 1000000000,
+                chainId: '1', version: 1, nonce: 0
+            };
+
+            jest.spyOn(xoxnoService, 'getQuote').mockResolvedValue({
+                transaction: mockTx
+            });
+
+            const parentModel = new AutoRouteModel({
+                tokenInID: 'WEGLD-123456',
+                tokenOutID: 'USDC-123456',
+                amountIn: '2000000',
+                tolerance: 0.01,
+                smartSwap: {
+                    source: 'xoxno',
+                    amountOut: '300000000000000000'
+                } as any
+            });
+
+            const txs = await service.getTransactions(senderAddress, parentModel);
+
+            expect(txs).toBeDefined();
+            expect(txs[0]).toEqual(mockTx);
+            expect(xoxnoService.getQuote).toHaveBeenCalledWith('WEGLD-123456', 'USDC-123456', '2000000', 0.01, senderAddress);
+        });
+
+        it('should fall back to internal smart-swap when XOXNO tx fetch fails', async () => {
+            jest.spyOn(xoxnoService, 'getQuote').mockRejectedValue(new Error('API failed'));
+
+            // Should fallback to internal tx generation which calls ComposableTasksTransactionService
+            const composableTxService = service['autoRouterTransactionService'];
+            jest.spyOn(composableTxService, 'smartSwap').mockResolvedValue([{ receiver: 'erd1internal' } as any]);
+
+            const parentModel = new AutoRouteModel({
+                tokenInID: 'WEGLD-123456',
+                tokenOutID: 'USDC-123456',
+                amountIn: '2000000',
+                tolerance: 0.01,
+                parallelRouteSwap: { allocations: [{ addressRoute: [], intermediaryAmounts: [] }] } as any,
+                smartSwap: {
+                    source: 'xoxno',
+                    amountOut: '300000000000000000'
+                } as any
+            });
+
+            const txs = await service.getTransactions(senderAddress, parentModel);
+
+            expect(txs).toBeDefined();
+            expect(txs[0].receiver).toBe('erd1internal'); // Fell back successfully
+            expect(composableTxService.smartSwap).toHaveBeenCalled();
+        });
     });
 });
