@@ -572,7 +572,28 @@ describe('AutoRouterService', () => {
             jest.spyOn(service as any, 'computeSmartSwap').mockResolvedValue(
                 new AutoRouteModel({ amountOut: '200000000000000000', source: 'internal' } as any)
             );
-            jest.spyOn(xoxnoService, 'getAmountOut').mockResolvedValue('300000000000000000'); // XOXNO wins
+            jest.spyOn(xoxnoService, 'getQuote').mockResolvedValue({
+                from: 'USDC-123456',
+                to: 'WEGLD-123456',
+                amountIn: '2000000',
+                amountOut: '300000000000000000',
+                amountOutMin: '297000000000000000',
+                slippage: 0.01,
+                priceImpact: 1.5,
+                rate: 150000000,
+                paths: [{
+                    amountIn: '2000000',
+                    amountOut: '300000000000000000',
+                    swaps: [{
+                        dex: 'XExchange',
+                        address: 'erd1qqq',
+                        from: 'USDC-123456',
+                        to: 'WEGLD-123456',
+                        amountIn: '2000000',
+                        amountOut: '300000000000000000',
+                    }],
+                }],
+            }); // XOXNO wins
 
             const swap = await service.swap({
                 tokenInID: 'USDC-123456',
@@ -584,6 +605,8 @@ describe('AutoRouterService', () => {
             expect(swap.smartSwap).toBeDefined();
             expect(swap.smartSwap?.source).toBe('xoxno');
             expect(swap.smartSwap?.amountOut).toBe('300000000000000000');
+            expect(swap.smartSwap?.routes).toHaveLength(1);
+            expect(swap.smartSwap?.routes[0].dexes).toEqual(['XExchange']);
             expect(swap.xoxnoAmountOut).toBe('300000000000000000');
         });
 
@@ -591,7 +614,17 @@ describe('AutoRouterService', () => {
             jest.spyOn(service as any, 'computeSmartSwap').mockResolvedValue(
                 new AutoRouteModel({ amountOut: '300000000000000000', source: 'internal' } as any)
             );
-            jest.spyOn(xoxnoService, 'getAmountOut').mockResolvedValue('200000000000000000'); // Internal wins
+            jest.spyOn(xoxnoService, 'getQuote').mockResolvedValue({
+                from: 'USDC-123456',
+                to: 'WEGLD-123456',
+                amountIn: '2000000',
+                amountOut: '200000000000000000',
+                amountOutMin: '198000000000000000',
+                slippage: 0.01,
+                priceImpact: 1.0,
+                rate: 100000000,
+                paths: [],
+            }); // Internal wins
 
             const swap = await service.swap({
                 tokenInID: 'USDC-123456',
@@ -607,7 +640,7 @@ describe('AutoRouterService', () => {
 
         it('should skip XOXNO when feature flag is disabled', async () => {
             jest.spyOn(remoteConfigService, 'getXoxnoAggregatorEnabled').mockResolvedValue(false);
-            jest.spyOn(xoxnoService, 'getAmountOut').mockResolvedValue('5000000000');
+            jest.spyOn(xoxnoService, 'getQuote');
 
             const swap = await service.swap({
                 tokenInID: 'USDC-123456',
@@ -616,14 +649,14 @@ describe('AutoRouterService', () => {
                 tolerance: 0.01,
             });
 
-            // Even if xoxno service would return 5000, it's not called because flag is disabled
-            expect(xoxnoService.getAmountOut).not.toHaveBeenCalled();
+            // XOXNO getQuote is not called because flag is disabled
+            expect(xoxnoService.getQuote).not.toHaveBeenCalled();
             expect(swap.smartSwap?.source).not.toBe('xoxno');
             expect(swap.xoxnoAmountOut).toBeUndefined();
         });
 
         it('should skip XOXNO for fixedOutput swaps', async () => {
-            jest.spyOn(xoxnoService, 'getAmountOut');
+            jest.spyOn(xoxnoService, 'getQuote');
 
             await service.swap({
                 tokenInID: 'USDC-123456',
@@ -632,7 +665,7 @@ describe('AutoRouterService', () => {
                 tolerance: 0.01,
             });
 
-            expect(xoxnoService.getAmountOut).not.toHaveBeenCalled();
+            expect(xoxnoService.getQuote).not.toHaveBeenCalled();
         });
 
         it('should return XOXNO transaction when source is XOXNO', async () => {
