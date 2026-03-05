@@ -17,6 +17,7 @@ import {
     AutoRouteModel,
     SmartSwapModel,
     SmartSwapRoute,
+    SmartSwapSource,
     SWAP_TYPE,
 } from '../models/auto-route.model';
 import { AutoRouterTransactionService } from './auto-router.transactions.service';
@@ -42,6 +43,8 @@ import {
 } from '../models/smart.router.types';
 import { SmartRouterEvaluationService } from 'src/modules/smart-router-evaluation/services/smart.router.evaluation.service';
 import { ComposableTasksAbiService } from 'src/modules/composable-tasks/services/composable.tasks.abi.service';
+import { XoxnoAggregatorService } from './xoxno-aggregator.service';
+import { XoxnoPathModel } from '../models/xoxno-aggregator.model';
 
 @Injectable()
 export class AutoRouterService {
@@ -61,8 +64,9 @@ export class AutoRouterService {
         private readonly smartRouterService: SmartRouterService,
         private readonly smartRouterEvaluationService: SmartRouterEvaluationService,
         private readonly composeTasksAbi: ComposableTasksAbiService,
+        private readonly xoxnoAggregatorService: XoxnoAggregatorService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     private async getAllPaths(
         pairs: PairModel[],
@@ -84,7 +88,7 @@ export class AutoRouterService {
                     ),
                 Constants.oneMinute() * 10,
             );
-        } catch (error) {}
+        } catch (error) { }
     }
 
     async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
@@ -154,15 +158,15 @@ export class AutoRouterService {
         const [result, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
             this.isFixedInput(swapType)
                 ? this.pairService.getAmountOut(
-                      pair.address,
-                      tokenInID,
-                      args.amountIn,
-                  )
+                    pair.address,
+                    tokenInID,
+                    args.amountIn,
+                )
                 : this.pairService.getAmountIn(
-                      pair.address,
-                      tokenOutID,
-                      args.amountOut,
-                  ),
+                    pair.address,
+                    tokenOutID,
+                    args.amountOut,
+                ),
             this.pairCompute.tokenPriceUSD(tokenInID),
             this.pairCompute.tokenPriceUSD(tokenOutID),
         ]);
@@ -236,17 +240,17 @@ export class AutoRouterService {
         try {
             swapRoute = this.isFixedInput(swapType)
                 ? this.autoRouterComputeService.computeBestSwapRoute(
-                      paths,
-                      pairs,
-                      args.amountIn,
-                      swapType,
-                  )
+                    paths,
+                    pairs,
+                    args.amountIn,
+                    swapType,
+                )
                 : this.autoRouterComputeService.computeBestSwapRoute(
-                      paths,
-                      pairs,
-                      args.amountOut,
-                      swapType,
-                  );
+                    paths,
+                    pairs,
+                    args.amountOut,
+                    swapType,
+                );
 
             [tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
                 this.pairCompute.tokenPriceUSD(tokenInID),
@@ -291,6 +295,7 @@ export class AutoRouterService {
 
         let parallelRouteSwap: ParallelRouteSwap;
         let smartSwap: SmartSwapModel;
+        let xoxnoAmountOut: string | undefined;
 
         if (this.isFixedInput(swapType)) {
             parallelRouteSwap = this.getSmartRouterSwap(
@@ -299,13 +304,32 @@ export class AutoRouterService {
                 args.amountIn,
             );
 
-            smartSwap = await this.computeSmartSwap(
-                args.amountIn,
+            const [internalSmartSwap, fetchedXoxnoAmountOut] = await Promise.all([
+                this.computeSmartSwap(
+                    args.amountIn,
+                    swapRoute.bestResult,
+                    parallelRouteSwap,
+                    tokenInMetadata,
+                    tokenOutMetadata,
+                    pairs,
+                ),
+                this.getXoxnoAmountOut(
+                    tokenInID,
+                    tokenOutID,
+                    args.amountIn,
+                    args.tolerance,
+                ),
+            ]);
+
+            xoxnoAmountOut = fetchedXoxnoAmountOut;
+
+            smartSwap = this.pickBestSmartSwap(
+                internalSmartSwap,
+                xoxnoAmountOut,
                 swapRoute.bestResult,
-                parallelRouteSwap,
+                args,
                 tokenInMetadata,
                 tokenOutMetadata,
-                pairs,
             );
         }
 
@@ -337,6 +361,7 @@ export class AutoRouterService {
             tokensPriceDeviationPercent: priceDeviationPercent,
             parallelRouteSwap: parallelRouteSwap ?? undefined,
             smartSwap: smartSwap ?? undefined,
+            xoxnoAmountOut,
         });
     }
 
@@ -520,7 +545,39 @@ export class AutoRouterService {
         parent: AutoRouteModel,
     ): Promise<TransactionModel[]> {
         if (parent.smartSwap !== undefined) {
+            if (parent.smartSwap.source === SmartSwapSource.XOXNO) {
+                try {
+                    const xoxnoQuote =
+                        await this.xoxnoAggregatorService.getQuote(
+                            parent.tokenInID,
+                            parent.tokenOutID,
+                            parent.amountIn,
+                            parent.tolerance,
+                            sender,
+                        );
+
+                    if (xoxnoQuote?.transaction) {
+                        await this.smartRouterEvaluationService.addFixedInputSwapComparison(
+                            parent,
+                            xoxnoQuote.transaction,
+                        );
+
+                        return [xoxnoQuote.transaction];
+                    }
+
+                    this.logger.warn(
+                        'XOXNO transaction fetch failed, falling back to internal routing',
+                    );
+                } catch (error) {
+                    this.logger.error(
+                        'Error when fetching XOXNO transaction, falling back to internal routing.',
+                        error,
+                    );
+                }
+            }
+
             if (
+                parent.smartSwap.source === SmartSwapSource.INTERNAL &&
                 parent.smartSwap.tokensPriceDeviationPercent >
                 parent.maxPriceDeviationPercent
             ) {
@@ -655,11 +712,11 @@ export class AutoRouterService {
                 intermediaryTokenOut,
                 intermediaryTokenOutPriceUSD,
             ] = [
-                tokensMetadata[index],
-                tokensPriceUSD[index],
-                tokensMetadata[index + 1],
-                tokensPriceUSD[index + 1],
-            ];
+                    tokensMetadata[index],
+                    tokensPriceUSD[index],
+                    tokensMetadata[index + 1],
+                    tokensPriceUSD[index + 1],
+                ];
 
             const amountInUSD = computeValueUSD(
                 amountIn,
@@ -730,11 +787,11 @@ export class AutoRouterService {
                     intermediaryTokenOut,
                     intermediaryTokenOutPriceUSD,
                 ] = [
-                    tokensMetadata.get(tokenInID),
-                    tokensPriceUSD.get(tokenInID),
-                    tokensMetadata.get(tokenOutID),
-                    tokensPriceUSD.get(tokenOutID),
-                ];
+                        tokensMetadata.get(tokenInID),
+                        tokensPriceUSD.get(tokenInID),
+                        tokensMetadata.get(tokenOutID),
+                        tokensPriceUSD.get(tokenOutID),
+                    ];
 
                 const amountInUSD = computeValueUSD(
                     amountIn,
@@ -751,11 +808,11 @@ export class AutoRouterService {
                     amountOutUSD,
                 )
                     ? new BigNumber(1).minus(
-                          amountInUSD.dividedBy(amountOutUSD),
-                      )
+                        amountInUSD.dividedBy(amountOutUSD),
+                    )
                     : new BigNumber(1).minus(
-                          amountOutUSD.dividedBy(amountInUSD),
-                      );
+                        amountOutUSD.dividedBy(amountInUSD),
+                    );
 
                 if (
                     priceDeviationPercent.toNumber() >
@@ -855,6 +912,7 @@ export class AutoRouterService {
                 .minus(feeAmount)
                 .integerValue()
                 .toFixed(),
+            source: SmartSwapSource.INTERNAL,
             tokenInExchangeRate: tokenInExchangeRate,
             tokenOutExchangeRate: tokenOutExchangeRate,
             tokenInExchangeRateDenom: denominateAmount(
@@ -890,6 +948,101 @@ export class AutoRouterService {
             }),
             feePercentage,
             feeAmount: feeAmount.integerValue().toFixed(),
+        });
+    }
+
+    private async getXoxnoAmountOut(
+        tokenInID: string,
+        tokenOutID: string,
+        amountIn: string,
+        tolerance: number,
+    ): Promise<string | undefined> {
+        const isEnabled =
+            await this.remoteConfigGetterService.getXoxnoAggregatorEnabled();
+        if (!isEnabled) {
+            return undefined;
+        }
+
+        try {
+            return await this.xoxnoAggregatorService.getAmountOut(
+                tokenInID,
+                tokenOutID,
+                amountIn,
+                tolerance,
+            );
+        } catch (error) {
+            this.logger.error('Error fetching XOXNO amount out', error);
+            return undefined;
+        }
+    }
+
+    private pickBestSmartSwap(
+        internalSmartSwap: SmartSwapModel | undefined,
+        xoxnoAmountOut: string | undefined,
+        autoRouterAmountOut: string,
+        args: AutoRouterArgs,
+        tokenInMetadata: BaseEsdtToken,
+        tokenOutMetadata: BaseEsdtToken,
+    ): SmartSwapModel | undefined {
+        const internalOutput = internalSmartSwap
+            ? new BigNumber(internalSmartSwap.amountOut)
+            : new BigNumber(0);
+        const xoxnoOutput = xoxnoAmountOut
+            ? new BigNumber(xoxnoAmountOut)
+            : new BigNumber(0);
+        const autoRouterOutput = new BigNumber(autoRouterAmountOut);
+
+        if (
+            xoxnoOutput.gt(0) &&
+            xoxnoOutput.gt(internalOutput) &&
+            xoxnoOutput.gt(autoRouterOutput)
+        ) {
+            return this.mapXoxnoToSmartSwapModel(
+                args.amountIn,
+                xoxnoAmountOut,
+                tokenInMetadata,
+                tokenOutMetadata,
+            );
+        }
+
+        if (internalOutput.gt(0) && internalOutput.gt(autoRouterOutput)) {
+            return internalSmartSwap;
+        }
+
+        return undefined; // auto-router wins, no smart swap
+    }
+
+    private mapXoxnoToSmartSwapModel(
+        amountIn: string,
+        amountOut: string,
+        tokenInMetadata: BaseEsdtToken,
+        tokenOutMetadata: BaseEsdtToken,
+    ): SmartSwapModel {
+        // Exchange rates computed from input/output since XOXNO doesn't provide them per-token
+        const tokenInExchangeRate = new BigNumber(amountOut)
+            .dividedBy(amountIn)
+            .toString();
+        const tokenOutExchangeRate = new BigNumber(amountIn)
+            .dividedBy(amountOut)
+            .toString();
+
+        return new SmartSwapModel({
+            amountOut,
+            source: SmartSwapSource.XOXNO,
+            feePercentage: 0, // Fees are internal to XOXNO
+            feeAmount: '0',
+            tokenInExchangeRate,
+            tokenOutExchangeRate,
+            tokenInExchangeRateDenom: denominateAmount(
+                tokenInExchangeRate,
+                tokenOutMetadata.decimals,
+            ).toString(),
+            tokenOutExchangeRateDenom: denominateAmount(
+                tokenOutExchangeRate,
+                tokenInMetadata.decimals,
+            ).toString(),
+            tokensPriceDeviationPercent: 0, // Assuming 0 for now unless XOXNO priceImpact is needed here
+            routes: [], // Routes are fetched in getTransactions when sender is available or not needed if quote only
         });
     }
 }
