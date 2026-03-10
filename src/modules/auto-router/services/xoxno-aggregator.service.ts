@@ -21,7 +21,7 @@ export class XoxnoAggregatorService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.baseUrl = this.apiConfigService.getXoxnoApiUrl();
-        this.referralID = this.apiConfigService.getXoxnoRefferalID();
+        this.referralID = this.apiConfigService.getXoxnoReferralID();
     }
 
     async getQuote(

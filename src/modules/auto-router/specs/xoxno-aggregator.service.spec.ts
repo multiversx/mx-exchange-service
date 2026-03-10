@@ -14,10 +14,12 @@ describe('XoxnoAggregatorService', () => {
     let loggerMock: any;
 
     const mockBaseUrl = 'https://mock.xoxno.api';
+    const mockReferralID = 0;
 
     beforeEach(async () => {
         apiConfigServiceMock = {
             getXoxnoApiUrl: jest.fn().mockReturnValue(mockBaseUrl),
+            getXoxnoReferralID: jest.fn().mockReturnValue(mockReferralID),
         } as unknown as jest.Mocked<ApiConfigService>;
 
         loggerMock = {
@@ -50,15 +52,27 @@ describe('XoxnoAggregatorService', () => {
         const slippage = 0.01;
 
         it('should return undefined if base URL is not configured', async () => {
-            apiConfigServiceMock.getXoxnoApiUrl.mockReturnValue(undefined as any);
-            const emptyService = new XoxnoAggregatorService(apiConfigServiceMock, loggerMock);
+            apiConfigServiceMock.getXoxnoApiUrl.mockReturnValue(
+                undefined as any,
+            );
+            const emptyService = new XoxnoAggregatorService(
+                apiConfigServiceMock,
+                loggerMock,
+            );
 
-            const result = await emptyService.getQuote(tokenIn, tokenOut, amountIn, slippage);
+            const result = await emptyService.getQuote(
+                tokenIn,
+                tokenOut,
+                amountIn,
+                slippage,
+            );
             expect(result).toBeUndefined();
         });
 
         it('should correctly build query parameters with sender', async () => {
-            mockedAxios.get.mockResolvedValueOnce({ data: { amountOut: '2000' } });
+            mockedAxios.get.mockResolvedValueOnce({
+                data: { amountOut: '2000' },
+            });
 
             await service.getQuote(tokenIn, tokenOut, amountIn, slippage);
 
@@ -72,6 +86,7 @@ describe('XoxnoAggregatorService', () => {
                         slippage,
                         includePaths: true,
                         sender: Address.Zero().toBech32(),
+                        referralId: mockReferralID,
                     },
                     timeout: 10000,
                 },
@@ -121,7 +136,12 @@ describe('XoxnoAggregatorService', () => {
 
             mockedAxios.get.mockResolvedValueOnce({ data: apiResponse });
 
-            const result = await service.getQuote(tokenIn, tokenOut, amountIn, slippage);
+            const result = await service.getQuote(
+                tokenIn,
+                tokenOut,
+                amountIn,
+                slippage,
+            );
 
             expect(result).toBeDefined();
             expect(result?.amountOut).toBe('2000');
@@ -136,7 +156,12 @@ describe('XoxnoAggregatorService', () => {
         it('should log error and return undefined on API failure', async () => {
             mockedAxios.get.mockRejectedValueOnce(new Error('Network error'));
 
-            const result = await service.getQuote(tokenIn, tokenOut, amountIn, slippage);
+            const result = await service.getQuote(
+                tokenIn,
+                tokenOut,
+                amountIn,
+                slippage,
+            );
 
             expect(result).toBeUndefined();
             expect(loggerMock.error).toHaveBeenCalled();
