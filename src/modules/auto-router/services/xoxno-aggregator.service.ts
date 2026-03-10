@@ -14,12 +14,14 @@ import { Address } from '@multiversx/sdk-core/out';
 @Injectable()
 export class XoxnoAggregatorService {
     private readonly baseUrl: string | undefined;
+    private readonly referralID: number | undefined;
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.baseUrl = this.apiConfigService.getXoxnoApiUrl();
+        this.referralID = this.apiConfigService.getXoxnoRefferalID();
     }
 
     async getQuote(
@@ -40,6 +42,7 @@ export class XoxnoAggregatorService {
                 slippage,
                 includePaths: true,
                 sender: Address.Zero().toBech32(),
+                referralId: this.referralID,
             };
 
             const response = await axios.get(`${this.baseUrl}/quote`, {

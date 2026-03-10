@@ -478,4 +478,12 @@ export class ApiConfigService {
         }
         return url;
     }
+
+    getXoxnoRefferalID(): number | undefined {
+        const id = this.configService.get<number>('XOXNO_REFERRAL_ID');
+        if (!id) {
+            return undefined;
+        }
+        return id;
+    }
 }
