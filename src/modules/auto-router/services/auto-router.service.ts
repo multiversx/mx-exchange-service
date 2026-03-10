@@ -298,8 +298,8 @@ export class AutoRouterService {
         );
 
         let parallelRouteSwap: ParallelRouteSwap;
-        let smartSwap: SmartSwapModel;
-        let xoxnoAmountOut: string | undefined;
+        let smartSwap: SmartSwapModel | undefined;
+        let xoxnoQuote: XoxnoQuoteModel | undefined;
 
         if (this.isFixedInput(swapType)) {
             parallelRouteSwap = this.getSmartRouterSwap(
@@ -308,7 +308,7 @@ export class AutoRouterService {
                 args.amountIn,
             );
 
-            const [internalSmartSwap, xoxnoQuote] = await Promise.all([
+            [smartSwap, xoxnoQuote] = await Promise.all([
                 this.computeSmartSwap(
                     args.amountIn,
                     swapRoute.bestResult,
@@ -325,10 +325,8 @@ export class AutoRouterService {
                 ),
             ]);
 
-            xoxnoAmountOut = xoxnoQuote?.amountOut;
-
             smartSwap = await this.pickBestSmartSwap(
-                internalSmartSwap,
+                smartSwap,
                 xoxnoQuote,
                 swapRoute.bestResult,
                 tokenInMetadata,
@@ -364,7 +362,10 @@ export class AutoRouterService {
             tokensPriceDeviationPercent: priceDeviationPercent,
             parallelRouteSwap: parallelRouteSwap ?? undefined,
             smartSwap: smartSwap ?? undefined,
-            xoxnoAmountOut,
+            transactions:
+                smartSwap.source === SmartSwapSource.XOXNO
+                    ? [xoxnoQuote.transaction]
+                    : undefined,
         });
     }
 
@@ -549,34 +550,12 @@ export class AutoRouterService {
     ): Promise<TransactionModel[]> {
         if (parent.smartSwap !== undefined) {
             if (parent.smartSwap.source === SmartSwapSource.XOXNO) {
-                try {
-                    const xoxnoQuote =
-                        await this.xoxnoAggregatorService.getQuote(
-                            parent.tokenInID,
-                            parent.tokenOutID,
-                            parent.amountIn,
-                            parent.tolerance,
-                            sender,
-                        );
-
-                    if (xoxnoQuote?.transaction) {
-                        await this.smartRouterEvaluationService.addFixedInputSwapComparison(
-                            parent,
-                            xoxnoQuote.transaction,
-                        );
-
-                        return [xoxnoQuote.transaction];
-                    }
-
-                    this.logger.warn(
-                        'XOXNO transaction fetch failed, falling back to internal routing',
-                    );
-                } catch (error) {
-                    this.logger.error(
-                        'Error when fetching XOXNO transaction, falling back to internal routing.',
-                        error,
-                    );
-                }
+                return [
+                    new TransactionModel({
+                        ...parent.transactions[0],
+                        sender,
+                    }),
+                ];
             }
 
             if (

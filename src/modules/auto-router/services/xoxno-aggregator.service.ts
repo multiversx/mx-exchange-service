@@ -9,6 +9,7 @@ import {
     XoxnoPathModel,
     XoxnoSwapModel,
 } from '../models/xoxno-aggregator.model';
+import { Address } from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class XoxnoAggregatorService {
@@ -26,7 +27,6 @@ export class XoxnoAggregatorService {
         tokenOut: string,
         amountIn: string,
         slippage: number,
-        sender?: string,
     ): Promise<XoxnoQuoteModel | undefined> {
         if (!this.baseUrl) {
             return undefined;
@@ -39,11 +39,8 @@ export class XoxnoAggregatorService {
                 amountIn,
                 slippage,
                 includePaths: true,
+                sender: Address.Zero().toBech32(),
             };
-
-            if (sender) {
-                params.sender = sender;
-            }
 
             const response = await axios.get(`${this.baseUrl}/quote`, {
                 params,
