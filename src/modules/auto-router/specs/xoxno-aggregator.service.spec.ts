@@ -141,7 +141,7 @@ describe('XoxnoAggregatorService', () => {
 
             mockedAxios.get.mockResolvedValueOnce({ data: apiResponse });
 
-            const result = await service.getQuote(tokenIn, tokenOut, amountIn, slippage, 'erd1sender');
+            const result = await service.getQuote(tokenIn, tokenOut, amountIn, slippage);
 
             expect(result).toBeDefined();
             expect(result?.amountOut).toBe('2000');
@@ -160,26 +160,6 @@ describe('XoxnoAggregatorService', () => {
 
             expect(result).toBeUndefined();
             expect(loggerMock.error).toHaveBeenCalled();
-        });
-    });
-
-    describe('getAmountOut', () => {
-        it('should return only the amount string when successful', async () => {
-            mockedAxios.get.mockResolvedValueOnce({
-                data: { amountOut: '5555' }
-            });
-
-            const result = await service.getAmountOut('WEGLD', 'USDC', '100', 0.01);
-
-            expect(result).toBe('5555');
-        });
-
-        it('should return undefined when quote fails', async () => {
-            mockedAxios.get.mockRejectedValueOnce(new Error('Timeout'));
-
-            const result = await service.getAmountOut('WEGLD', 'USDC', '100', 0.01);
-
-            expect(result).toBeUndefined();
         });
     });
 });

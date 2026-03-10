@@ -64,22 +64,6 @@ export class XoxnoAggregatorService {
         }
     }
 
-    async getAmountOut(
-        tokenIn: string,
-        tokenOut: string,
-        amountIn: string,
-        slippage: number,
-    ): Promise<string | undefined> {
-        const quote = await this.getQuote(
-            tokenIn,
-            tokenOut,
-            amountIn,
-            slippage,
-        );
-
-        return quote?.amountOut;
-    }
-
     private mapResponse(data: any): XoxnoQuoteModel {
         return {
             from: data.from,
