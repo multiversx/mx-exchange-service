@@ -3,6 +3,7 @@ import { XoxnoAggregatorService } from '../services/xoxno-aggregator.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import axios from 'axios';
+import { Address } from '@multiversx/sdk-core/out';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -56,7 +57,7 @@ describe('XoxnoAggregatorService', () => {
             expect(result).toBeUndefined();
         });
 
-        it('should correctly build query parameters without sender', async () => {
+        it('should correctly build query parameters with sender', async () => {
             mockedAxios.get.mockResolvedValueOnce({ data: { amountOut: '2000' } });
 
             await service.getQuote(tokenIn, tokenOut, amountIn, slippage);
@@ -70,28 +71,7 @@ describe('XoxnoAggregatorService', () => {
                         amountIn,
                         slippage,
                         includePaths: true,
-                    },
-                    timeout: 10000,
-                },
-            );
-        });
-
-        it('should correctly build query parameters with sender', async () => {
-            mockedAxios.get.mockResolvedValueOnce({ data: { amountOut: '2000' } });
-            const sender = 'erd1sender';
-
-            await service.getQuote(tokenIn, tokenOut, amountIn, slippage, sender);
-
-            expect(mockedAxios.get).toHaveBeenCalledWith(
-                `${mockBaseUrl}/quote`,
-                {
-                    params: {
-                        from: tokenIn,
-                        to: tokenOut,
-                        amountIn,
-                        slippage,
-                        includePaths: true,
-                        sender,
+                        sender: Address.Zero().toBech32(),
                     },
                     timeout: 10000,
                 },
@@ -126,9 +106,9 @@ describe('XoxnoAggregatorService', () => {
                     },
                 ],
                 transaction: {
-                    nonce: 10,
+                    nonce: 0,
                     value: '0',
-                    sender: 'erd1sender',
+                    sender: Address.Zero().bech32(),
                     receiver: 'erd1router',
                     gasPrice: 1000000000,
                     gasLimit: 8000000,

@@ -40,6 +40,7 @@ import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-e
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
 import { XoxnoAggregatorServiceProvider } from '../mocks/xoxno-aggregator.service.mock';
 import BigNumber from 'bignumber.js';
+import { TransactionModel } from 'src/models/transaction.model';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -607,7 +608,6 @@ describe('AutoRouterService', () => {
             expect(swap.smartSwap?.amountOut).toBe('300000000000000000');
             expect(swap.smartSwap?.routes).toHaveLength(1);
             expect(swap.smartSwap?.routes[0].pairs[0].dex).toBe('XExchange');
-            expect(swap.xoxnoAmountOut).toBe('300000000000000000');
         });
 
         it('should set smartSwap.source = INTERNAL when internal smart-swap is better', async () => {
@@ -635,7 +635,6 @@ describe('AutoRouterService', () => {
 
             expect(swap.smartSwap).toBeDefined();
             expect(swap.smartSwap?.source).toBe('internal');
-            expect(swap.xoxnoAmountOut).toBe('200000000000000000');
         });
 
         it('should skip XOXNO when feature flag is disabled', async () => {
@@ -675,10 +674,6 @@ describe('AutoRouterService', () => {
                 chainId: '1', version: 1, nonce: 0
             };
 
-            jest.spyOn(xoxnoService, 'getQuote').mockResolvedValue({
-                transaction: mockTx
-            });
-
             const parentModel = new AutoRouteModel({
                 tokenInID: 'WEGLD-123456',
                 tokenOutID: 'USDC-123456',
@@ -687,14 +682,16 @@ describe('AutoRouterService', () => {
                 smartSwap: {
                     source: 'xoxno',
                     amountOut: '300000000000000000'
-                } as any
+                } as any,
+                transactions: [
+                    new TransactionModel(mockTx)
+                ]
             });
 
             const txs = await service.getTransactions(senderAddress, parentModel);
 
             expect(txs).toBeDefined();
             expect(txs[0]).toEqual(mockTx);
-            expect(xoxnoService.getQuote).toHaveBeenCalledWith('WEGLD-123456', 'USDC-123456', '2000000', 0.01, senderAddress);
         });
 
         it('should fall back to internal smart-swap when XOXNO tx fetch fails', async () => {
@@ -711,7 +708,7 @@ describe('AutoRouterService', () => {
                 tolerance: 0.01,
                 parallelRouteSwap: { allocations: [{ addressRoute: [], intermediaryAmounts: [] }] } as any,
                 smartSwap: {
-                    source: 'xoxno',
+                    source: 'internal',
                     amountOut: '300000000000000000'
                 } as any
             });

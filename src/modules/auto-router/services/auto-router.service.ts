@@ -363,7 +363,7 @@ export class AutoRouterService {
             parallelRouteSwap: parallelRouteSwap ?? undefined,
             smartSwap: smartSwap ?? undefined,
             transactions:
-                smartSwap.source === SmartSwapSource.XOXNO
+                smartSwap?.source === SmartSwapSource.XOXNO
                     ? [xoxnoQuote.transaction]
                     : undefined,
         });
@@ -550,12 +550,15 @@ export class AutoRouterService {
     ): Promise<TransactionModel[]> {
         if (parent.smartSwap !== undefined) {
             if (parent.smartSwap.source === SmartSwapSource.XOXNO) {
-                return [
-                    new TransactionModel({
-                        ...parent.transactions[0],
-                        sender,
-                    }),
-                ];
+                const transaction = new TransactionModel({
+                    ...parent.transactions[0],
+                    sender,
+                });
+                await this.smartRouterEvaluationService.addFixedInputSwapComparison(
+                    parent,
+                    transaction,
+                );
+                return [transaction];
             }
 
             if (
