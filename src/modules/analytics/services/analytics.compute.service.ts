@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { constantsConfig, scAddress } from 'src/config';
-import {
-    FarmRewardType,
-    FarmVersion,
-} from 'src/modules/farm/models/farm.model';
-import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { farmsAddresses } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
@@ -17,7 +14,6 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import { StakingComputeService } from 'src/modules/staking/services/staking.compute.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
@@ -29,12 +25,13 @@ import { SwapEvent } from '@multiversx/sdk-exchange';
 import { convertEventTopicsAndDataToBase64 } from 'src/utils/elastic.search.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
         private readonly routerAbi: RouterAbiService,
-        private readonly farmAbi: FarmAbiFactory,
+        private readonly farmAbiV2: FarmAbiServiceV2,
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairAbi: PairAbiService,
         private readonly pairCompute: PairComputeService,
@@ -172,29 +169,22 @@ export class AnalyticsComputeService {
     }
 
     async computeTotalAggregatedRewards(days: number): Promise<string> {
-        const addresses: string[] = farmsAddresses();
+        const addresses: string[] = farmsAddresses([FarmVersion.V2]);
         const promises = addresses.map(async (farmAddress) => {
-            if (
-                farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS ||
-                farmVersion(farmAddress) === FarmVersion.V1_2
-            ) {
-                return '0';
-            }
-            return this.farmAbi
-                .useAbi(farmAddress)
-                .rewardsPerBlock(farmAddress);
+            return this.farmAbiV2.rewardsPerSecond(farmAddress);
         });
-        const farmsRewardsPerBlock = await Promise.all(promises);
-        const blocksNumber = (days * 24 * 60 * 60) / 6;
+        const farmsRewardsPerSecond = await Promise.all(promises);
+        const seconds = days * 24 * 60 * 60;
 
         let totalAggregatedRewards = new BigNumber(0);
-        for (const rewardsPerBlock of farmsRewardsPerBlock) {
+        for (const rewardsPerSecond of farmsRewardsPerSecond) {
             const aggregatedRewards = new BigNumber(
-                rewardsPerBlock,
-            ).multipliedBy(blocksNumber);
+                rewardsPerSecond,
+            ).multipliedBy(seconds);
             totalAggregatedRewards =
                 totalAggregatedRewards.plus(aggregatedRewards);
         }
+
         return totalAggregatedRewards.toFixed();
     }
 
