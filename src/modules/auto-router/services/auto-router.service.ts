@@ -882,12 +882,14 @@ export class AutoRouterService {
                 parallelRouteSwap.totalResult,
             );
 
-        const [priceDeviationPercent, feePercentage] = await Promise.all([
-            this.getSmartRouterAllocationsPriceDeviationPercent(
-                parallelRouteSwap.allocations,
-            ),
-            this.composeTasksAbi.smartSwapFeePercentage(),
-        ]);
+        const [priceDeviationPercent, feePercentage, tokenOut] =
+            await Promise.all([
+                this.getSmartRouterAllocationsPriceDeviationPercent(
+                    parallelRouteSwap.allocations,
+                ),
+                this.composeTasksAbi.smartSwapFeePercentage(),
+                this.tokenService.tokenMetadata(tokenOutMetadata.identifier),
+            ]);
 
         const smartSwapAmountOut = new BigNumber(parallelRouteSwap.totalResult);
         const feeAmount = smartSwapAmountOut.multipliedBy(feePercentage);
@@ -949,7 +951,7 @@ export class AutoRouterService {
             }),
             feePercentage,
             feeAmount: feeAmount.integerValue().toFixed(),
-            feeToken: tokenOutMetadata.identifier,
+            feeToken: tokenOut,
         });
     }
 
@@ -1024,13 +1026,14 @@ export class AutoRouterService {
                 quote.amountIn,
                 quote.amountOut,
             );
+        const feeToken = await this.tokenService.tokenMetadata(quote.feeToken);
 
         return new SmartSwapModel({
             amountOut: quote.amountOut,
             source: SmartSwapSource.XOXNO,
             feePercentage: quote.feePercentage,
             feeAmount: quote.feeAmount,
-            feeToken: quote.feeToken,
+            feeToken,
             tokenInExchangeRate,
             tokenOutExchangeRate,
             tokenInExchangeRateDenom: denominateAmount(

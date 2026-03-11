@@ -270,7 +270,7 @@ describe('SmartRouterService', () => {
             tokenOutExchangeRateDenom: '0.010297979917384707',
             tokensPriceDeviationPercent: 0.02640150083732185,
             feeAmount: '19421284718410321710',
-            feeToken: 'TOK5-123456',
+            feeToken: Tokens('TOK5-123456'),
             feePercentage: 0.005,
             source: 'internal' as any,
         }),
