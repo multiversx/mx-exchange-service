@@ -25,6 +25,10 @@ export interface XoxnoQuoteModel {
     slippage: number;
     priceImpact: number;
     rate: number;
+    feePercentage: number;
+    feeAmount: string;
+    feeAmountShort: number;
+    feeToken: string;
     paths: XoxnoPathModel[];
     transaction?: TransactionModel;
 }

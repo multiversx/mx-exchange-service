@@ -206,7 +206,8 @@ describe('SmartRouterService', () => {
                             address: availablePairs['WEGLD-TOK5'].address,
                             dex: 'XExchange',
                             firstToken: availablePairs['WEGLD-TOK5'].firstToken,
-                            secondToken: availablePairs['WEGLD-TOK5'].secondToken,
+                            secondToken:
+                                availablePairs['WEGLD-TOK5'].secondToken,
                         }),
                     ],
                     pricesImpact: ['2.34719165870830982'],
@@ -224,7 +225,8 @@ describe('SmartRouterService', () => {
                             address: availablePairs['WEGLD-USDT'].address,
                             dex: 'XExchange',
                             firstToken: availablePairs['WEGLD-USDT'].firstToken,
-                            secondToken: availablePairs['WEGLD-USDT'].secondToken,
+                            secondToken:
+                                availablePairs['WEGLD-USDT'].secondToken,
                         }),
                         new SmartSwapPairModel({
                             address: availablePairs['TOK5-USDT'].address,
@@ -248,7 +250,8 @@ describe('SmartRouterService', () => {
                             address: availablePairs['WEGLD-USDC'].address,
                             dex: 'XExchange',
                             firstToken: availablePairs['WEGLD-USDC'].firstToken,
-                            secondToken: availablePairs['WEGLD-USDC'].secondToken,
+                            secondToken:
+                                availablePairs['WEGLD-USDC'].secondToken,
                         }),
                         new SmartSwapPairModel({
                             address: availablePairs['TOK5-USDC'].address,
@@ -267,6 +270,7 @@ describe('SmartRouterService', () => {
             tokenOutExchangeRateDenom: '0.010297979917384707',
             tokensPriceDeviationPercent: 0.02640150083732185,
             feeAmount: '19421284718410321710',
+            feeToken: 'TOK5-123456',
             feePercentage: 0.005,
             source: 'internal' as any,
         }),

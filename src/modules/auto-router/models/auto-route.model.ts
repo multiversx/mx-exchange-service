@@ -108,6 +108,9 @@ export class SmartSwapModel {
     @Field()
     feeAmount: string;
 
+    @Field()
+    feeToken: string;
+
     @Field(() => SmartSwapSource)
     source: SmartSwapSource;
 

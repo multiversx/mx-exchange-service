@@ -949,6 +949,7 @@ export class AutoRouterService {
             }),
             feePercentage,
             feeAmount: feeAmount.integerValue().toFixed(),
+            feeToken: tokenOutMetadata.identifier,
         });
     }
 
@@ -1027,8 +1028,9 @@ export class AutoRouterService {
         return new SmartSwapModel({
             amountOut: quote.amountOut,
             source: SmartSwapSource.XOXNO,
-            feePercentage: 0, // Fees are internal to XOXNO
-            feeAmount: '0',
+            feePercentage: quote.feePercentage,
+            feeAmount: quote.feeAmount,
+            feeToken: quote.feeToken,
             tokenInExchangeRate,
             tokenOutExchangeRate,
             tokenInExchangeRateDenom: denominateAmount(

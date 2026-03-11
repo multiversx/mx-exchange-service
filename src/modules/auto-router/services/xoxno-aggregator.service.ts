@@ -77,6 +77,10 @@ export class XoxnoAggregatorService {
             slippage: data.slippage,
             priceImpact: data.priceImpact,
             rate: data.rate,
+            feePercentage: data.feeBps / 100,
+            feeAmount: data.feeAmount,
+            feeAmountShort: data.feeAmountShort,
+            feeToken: data.feeToken,
             paths: this.mapPaths(data.paths),
             transaction: data.transaction
                 ? this.mapTransaction(data.transaction)
