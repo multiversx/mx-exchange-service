@@ -453,14 +453,8 @@ export class AutoRouterService {
             const secondToken = tokenMap.get(pair.secondTokenID);
             return new PairModel({
                 address: pair.address,
-                firstToken: new EsdtToken({
-                    identifier: firstToken.identifier,
-                    decimals: firstToken.decimals,
-                }),
-                secondToken: new EsdtToken({
-                    identifier: secondToken.identifier,
-                    decimals: secondToken.decimals,
-                }),
+                firstToken,
+                secondToken,
                 info: allInfo[index],
                 totalFeePercent: allTotalFeePercent[index],
             });
