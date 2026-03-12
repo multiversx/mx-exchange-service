@@ -70,7 +70,7 @@ export class AutoRouterService {
         private readonly composeTasksAbi: ComposableTasksAbiService,
         private readonly xoxnoAggregatorService: XoxnoAggregatorService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     private async getAllPaths(
         pairs: PairModel[],
@@ -92,7 +92,7 @@ export class AutoRouterService {
                     ),
                 Constants.oneMinute() * 10,
             );
-        } catch (error) {}
+        } catch (error) { }
     }
 
     async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
@@ -162,15 +162,15 @@ export class AutoRouterService {
         const [result, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
             this.isFixedInput(swapType)
                 ? this.pairService.getAmountOut(
-                      pair.address,
-                      tokenInID,
-                      args.amountIn,
-                  )
+                    pair.address,
+                    tokenInID,
+                    args.amountIn,
+                )
                 : this.pairService.getAmountIn(
-                      pair.address,
-                      tokenOutID,
-                      args.amountOut,
-                  ),
+                    pair.address,
+                    tokenOutID,
+                    args.amountOut,
+                ),
             this.pairCompute.tokenPriceUSD(tokenInID),
             this.pairCompute.tokenPriceUSD(tokenOutID),
         ]);
@@ -244,17 +244,17 @@ export class AutoRouterService {
         try {
             swapRoute = this.isFixedInput(swapType)
                 ? this.autoRouterComputeService.computeBestSwapRoute(
-                      paths,
-                      pairs,
-                      args.amountIn,
-                      swapType,
-                  )
+                    paths,
+                    pairs,
+                    args.amountIn,
+                    swapType,
+                )
                 : this.autoRouterComputeService.computeBestSwapRoute(
-                      paths,
-                      pairs,
-                      args.amountOut,
-                      swapType,
-                  );
+                    paths,
+                    pairs,
+                    args.amountOut,
+                    swapType,
+                );
 
             [tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
                 this.pairCompute.tokenPriceUSD(tokenInID),
@@ -363,7 +363,8 @@ export class AutoRouterService {
             parallelRouteSwap: parallelRouteSwap ?? undefined,
             smartSwap: smartSwap ?? undefined,
             transactions:
-                smartSwap?.source === SmartSwapSource.XOXNO
+                smartSwap?.source === SmartSwapSource.XOXNO &&
+                    xoxnoQuote?.transaction
                     ? [xoxnoQuote.transaction]
                     : undefined,
         });
@@ -550,6 +551,11 @@ export class AutoRouterService {
     ): Promise<TransactionModel[]> {
         if (parent.smartSwap !== undefined) {
             if (parent.smartSwap.source === SmartSwapSource.XOXNO) {
+                if (!parent.transactions?.[0]) {
+                    throw new Error(
+                        'XOXNO smart swap selected but transaction is missing',
+                    );
+                }
                 const transaction = new TransactionModel({
                     ...parent.transactions[0],
                     sender,
@@ -564,7 +570,7 @@ export class AutoRouterService {
             if (
                 parent.smartSwap.source === SmartSwapSource.INTERNAL &&
                 parent.smartSwap.tokensPriceDeviationPercent >
-                    parent.maxPriceDeviationPercent
+                parent.maxPriceDeviationPercent
             ) {
                 throw new Error('Spread too big!');
             }
@@ -697,11 +703,11 @@ export class AutoRouterService {
                 intermediaryTokenOut,
                 intermediaryTokenOutPriceUSD,
             ] = [
-                tokensMetadata[index],
-                tokensPriceUSD[index],
-                tokensMetadata[index + 1],
-                tokensPriceUSD[index + 1],
-            ];
+                    tokensMetadata[index],
+                    tokensPriceUSD[index],
+                    tokensMetadata[index + 1],
+                    tokensPriceUSD[index + 1],
+                ];
 
             const amountInUSD = computeValueUSD(
                 amountIn,
@@ -772,11 +778,11 @@ export class AutoRouterService {
                     intermediaryTokenOut,
                     intermediaryTokenOutPriceUSD,
                 ] = [
-                    tokensMetadata.get(tokenInID),
-                    tokensPriceUSD.get(tokenInID),
-                    tokensMetadata.get(tokenOutID),
-                    tokensPriceUSD.get(tokenOutID),
-                ];
+                        tokensMetadata.get(tokenInID),
+                        tokensPriceUSD.get(tokenInID),
+                        tokensMetadata.get(tokenOutID),
+                        tokensPriceUSD.get(tokenOutID),
+                    ];
 
                 const amountInUSD = computeValueUSD(
                     amountIn,
@@ -793,11 +799,11 @@ export class AutoRouterService {
                     amountOutUSD,
                 )
                     ? new BigNumber(1).minus(
-                          amountInUSD.dividedBy(amountOutUSD),
-                      )
+                        amountInUSD.dividedBy(amountOutUSD),
+                    )
                     : new BigNumber(1).minus(
-                          amountOutUSD.dividedBy(amountInUSD),
-                      );
+                        amountOutUSD.dividedBy(amountInUSD),
+                    );
 
                 if (
                     priceDeviationPercent.toNumber() >
@@ -937,12 +943,12 @@ export class AutoRouterService {
                                 dex: 'XExchange',
                                 firstToken:
                                     pair.firstToken.identifier ===
-                                    allocation.tokenRoute[i]
+                                        allocation.tokenRoute[i]
                                         ? pair.firstToken
                                         : pair.secondToken,
                                 secondToken:
                                     pair.firstToken.identifier ===
-                                    allocation.tokenRoute[i]
+                                        allocation.tokenRoute[i]
                                         ? pair.secondToken
                                         : pair.firstToken,
                             }),
@@ -967,17 +973,12 @@ export class AutoRouterService {
             return undefined;
         }
 
-        try {
-            return await this.xoxnoAggregatorService.getQuote(
-                tokenInID,
-                tokenOutID,
-                amountIn,
-                tolerance,
-            );
-        } catch (error) {
-            this.logger.error('Error fetching XOXNO quote', error);
-            return undefined;
-        }
+        return this.xoxnoAggregatorService.getQuote(
+            tokenInID,
+            tokenOutID,
+            amountIn,
+            tolerance,
+        );
     }
 
     private async pickBestSmartSwap(
@@ -1026,7 +1027,8 @@ export class AutoRouterService {
                 quote.amountIn,
                 quote.amountOut,
             );
-        const feeToken = await this.tokenService.tokenMetadata(quote.feeToken);
+        const feeTokenID = await this.toWrappedIfEGLD([quote.feeToken]);
+        const feeToken = await this.tokenService.tokenMetadata(feeTokenID[0]);
 
         return new SmartSwapModel({
             amountOut: quote.amountOut,
@@ -1044,7 +1046,7 @@ export class AutoRouterService {
                 tokenOutExchangeRate,
                 tokenInMetadata.decimals,
             ).toString(),
-            tokensPriceDeviationPercent: quote.priceImpact / 100,
+            tokensPriceDeviationPercent: quote.priceImpact,
             routes: await this.mapXoxnoPathsToRoutes(quote.paths),
         });
     }

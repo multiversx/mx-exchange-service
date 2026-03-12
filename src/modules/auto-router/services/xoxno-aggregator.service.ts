@@ -42,8 +42,11 @@ export class XoxnoAggregatorService {
                 slippage,
                 includePaths: true,
                 sender: Address.Zero().toBech32(),
-                referralId: this.referralID,
             };
+
+            if (this.referralID !== undefined) {
+                params.referralId = this.referralID;
+            }
 
             const response = await axios.get(`${this.baseUrl}/quote`, {
                 params,

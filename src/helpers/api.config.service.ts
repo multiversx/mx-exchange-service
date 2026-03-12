@@ -481,7 +481,7 @@ export class ApiConfigService {
 
     getXoxnoReferralID(): number | undefined {
         const id = this.configService.get<number>('XOXNO_REFERRAL_ID');
-        if (!id) {
+        if (id === undefined || id === null) {
             return undefined;
         }
         return id;
