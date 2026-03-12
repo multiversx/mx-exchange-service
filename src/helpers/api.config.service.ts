@@ -471,6 +471,18 @@ export class ApiConfigService {
         return walletPassword;
     }
 
+    isXoxnoAggregatorEnabled(): boolean {
+        const aggregatorActive = this.configService.get<string>(
+            'ENABLE_XOXNO_AGGREGATOR',
+        );
+
+        if (!aggregatorActive) {
+            return false;
+        }
+
+        return aggregatorActive === 'true';
+    }
+
     getXoxnoApiUrl(): string | undefined {
         const url = this.configService.get<string>('XOXNO_API_URL');
         if (!url) {
