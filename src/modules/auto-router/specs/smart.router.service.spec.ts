@@ -205,9 +205,14 @@ describe('SmartRouterService', () => {
                         new SmartSwapPairModel({
                             address: availablePairs['WEGLD-TOK5'].address,
                             dex: 'XExchange',
-                            firstToken: availablePairs['WEGLD-TOK5'].firstToken,
-                            secondToken:
-                                availablePairs['WEGLD-TOK5'].secondToken,
+                            firstToken: Tokens(
+                                availablePairs['WEGLD-TOK5'].firstToken
+                                    .identifier,
+                            ),
+                            secondToken: Tokens(
+                                availablePairs['WEGLD-TOK5'].secondToken
+                                    .identifier,
+                            ),
                         }),
                     ],
                     pricesImpact: ['2.34719165870830982'],
@@ -224,15 +229,26 @@ describe('SmartRouterService', () => {
                         new SmartSwapPairModel({
                             address: availablePairs['WEGLD-USDT'].address,
                             dex: 'XExchange',
-                            firstToken: availablePairs['WEGLD-USDT'].firstToken,
-                            secondToken:
-                                availablePairs['WEGLD-USDT'].secondToken,
+                            firstToken: Tokens(
+                                availablePairs['WEGLD-USDT'].firstToken
+                                    .identifier,
+                            ),
+                            secondToken: Tokens(
+                                availablePairs['WEGLD-USDT'].secondToken
+                                    .identifier,
+                            ),
                         }),
                         new SmartSwapPairModel({
                             address: availablePairs['TOK5-USDT'].address,
                             dex: 'XExchange',
-                            firstToken: availablePairs['TOK5-USDT'].secondToken,
-                            secondToken: availablePairs['TOK5-USDT'].firstToken,
+                            firstToken: Tokens(
+                                availablePairs['TOK5-USDT'].secondToken
+                                    .identifier,
+                            ),
+                            secondToken: Tokens(
+                                availablePairs['TOK5-USDT'].firstToken
+                                    .identifier,
+                            ),
                         }),
                     ],
                     pricesImpact: ['1.55946094', '0.155236896099713401'],
@@ -249,15 +265,26 @@ describe('SmartRouterService', () => {
                         new SmartSwapPairModel({
                             address: availablePairs['WEGLD-USDC'].address,
                             dex: 'XExchange',
-                            firstToken: availablePairs['WEGLD-USDC'].firstToken,
-                            secondToken:
-                                availablePairs['WEGLD-USDC'].secondToken,
+                            firstToken: Tokens(
+                                availablePairs['WEGLD-USDC'].firstToken
+                                    .identifier,
+                            ),
+                            secondToken: Tokens(
+                                availablePairs['WEGLD-USDC'].secondToken
+                                    .identifier,
+                            ),
                         }),
                         new SmartSwapPairModel({
                             address: availablePairs['TOK5-USDC'].address,
                             dex: 'XExchange',
-                            firstToken: availablePairs['TOK5-USDC'].secondToken,
-                            secondToken: availablePairs['TOK5-USDC'].firstToken,
+                            firstToken: Tokens(
+                                availablePairs['TOK5-USDC'].secondToken
+                                    .identifier,
+                            ),
+                            secondToken: Tokens(
+                                availablePairs['TOK5-USDC'].firstToken
+                                    .identifier,
+                            ),
                         }),
                     ],
                     pricesImpact: ['0.00022564', '2.2001358659184518'],
@@ -450,14 +477,8 @@ function formatTestPairs(
 
         pairs[pair] = new PairModel({
             address,
-            firstToken: new EsdtToken({
-                identifier: Tokens(firstToken.identifier).identifier,
-                decimals: Tokens(firstToken.identifier).decimals,
-            }),
-            secondToken: new EsdtToken({
-                identifier: Tokens(secondToken.identifier).identifier,
-                decimals: Tokens(secondToken.identifier).decimals,
-            }),
+            firstToken,
+            secondToken,
             info,
             totalFeePercent,
         });
