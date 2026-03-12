@@ -35,6 +35,8 @@ export class SwapRoute {
     outputDelta: string;
     @Prop({ index: true })
     outputDeltaPercentage: number;
+    @Prop({ default: null })
+    smartSwapSource?: string;
 }
 
 export const SwapRouteSchema = SchemaFactory.createForClass(SwapRoute).index({

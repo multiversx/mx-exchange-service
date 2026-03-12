@@ -97,6 +97,24 @@ export class RemoteConfigGetterService extends GenericGetterService {
         );
     }
 
+    async getXoxnoAggregatorEnabled(): Promise<boolean> {
+        this.baseKey = 'flag';
+        const name = 'XOXNO_AGGREGATOR';
+        const cacheKey = this.getCacheKey(name);
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.flagRepositoryService
+                    .findOne({
+                        name,
+                    })
+                    .then((res) => {
+                        return res ? res.value : false;
+                    }),
+            Constants.oneHour(),
+        );
+    }
+
     async getSCAddresses(
         cacheKey: string,
         category: SCAddressType,
