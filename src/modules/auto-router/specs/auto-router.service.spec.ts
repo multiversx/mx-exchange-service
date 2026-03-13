@@ -533,11 +533,13 @@ describe('AutoRouterService', () => {
     describe('XOXNO Aggregator Integration', () => {
         let xoxnoService: any;
         let remoteConfigService: any;
+        let apiConfigService: any;
 
         beforeEach(() => {
             jest.clearAllMocks();
             xoxnoService = service['xoxnoAggregatorService'];
             remoteConfigService = service['remoteConfigGetterService'];
+            apiConfigService = service['apiConfigService'];
 
             jest.spyOn(
                 remoteConfigService,
@@ -550,6 +552,10 @@ describe('AutoRouterService', () => {
             jest.spyOn(
                 remoteConfigService,
                 'getXoxnoAggregatorEnabled',
+            ).mockResolvedValue(true);
+            jest.spyOn(
+                apiConfigService,
+                'isXoxnoAggregatorEnabled',
             ).mockResolvedValue(true);
         });
 
