@@ -137,14 +137,8 @@ describe('AutoRouterService', () => {
                         address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
                         ).toBech32(),
-                        firstToken: new EsdtToken({
-                            identifier: Tokens('WEGLD-123456').identifier,
-                            decimals: Tokens('WEGLD-123456').decimals,
-                        }),
-                        secondToken: new EsdtToken({
-                            identifier: Tokens('USDC-123456').identifier,
-                            decimals: Tokens('USDC-123456').decimals,
-                        }),
+                        firstToken: Tokens('WEGLD-123456'),
+                        secondToken: Tokens('USDC-123456'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000000',
                             reserves1: '10000000000',
@@ -187,14 +181,8 @@ describe('AutoRouterService', () => {
                         address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
                         ).toBech32(),
-                        firstToken: new EsdtToken({
-                            identifier: Tokens('WEGLD-123456').identifier,
-                            decimals: Tokens('WEGLD-123456').decimals,
-                        }),
-                        secondToken: new EsdtToken({
-                            identifier: Tokens('USDC-123456').identifier,
-                            decimals: Tokens('USDC-123456').decimals,
-                        }),
+                        firstToken: Tokens('WEGLD-123456'),
+                        secondToken: Tokens('USDC-123456'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000000',
                             reserves1: '10000000000',
@@ -242,14 +230,8 @@ describe('AutoRouterService', () => {
                         address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
                         ).toBech32(),
-                        firstToken: new EsdtToken({
-                            identifier: Tokens('WEGLD-123456').identifier,
-                            decimals: Tokens('WEGLD-123456').decimals,
-                        }),
-                        secondToken: new EsdtToken({
-                            identifier: Tokens('USDC-123456').identifier,
-                            decimals: Tokens('USDC-123456').decimals,
-                        }),
+                        firstToken: Tokens('WEGLD-123456'),
+                        secondToken: Tokens('USDC-123456'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000000',
                             reserves1: '10000000000',
@@ -261,14 +243,8 @@ describe('AutoRouterService', () => {
                         address: Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000012',
                         ).toBech32(),
-                        firstToken: new EsdtToken({
-                            identifier: Tokens('WEGLD-123456').identifier,
-                            decimals: Tokens('WEGLD-123456').decimals,
-                        }),
-                        secondToken: new EsdtToken({
-                            identifier: Tokens('MEX-123456').identifier,
-                            decimals: Tokens('MEX-123456').decimals,
-                        }),
+                        firstToken: Tokens('WEGLD-123456'),
+                        secondToken: Tokens('MEX-123456'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000000',
                             reserves1: '1000000000000000000000000',
@@ -557,21 +533,39 @@ describe('AutoRouterService', () => {
     describe('XOXNO Aggregator Integration', () => {
         let xoxnoService: any;
         let remoteConfigService: any;
+        let apiConfigService: any;
 
         beforeEach(() => {
             jest.clearAllMocks();
             xoxnoService = service['xoxnoAggregatorService'];
             remoteConfigService = service['remoteConfigGetterService'];
+            apiConfigService = service['apiConfigService'];
 
-            jest.spyOn(remoteConfigService, 'getSmartSwapFlagValue').mockResolvedValue(true);
-            jest.spyOn(remoteConfigService, 'getMinSmartSwapDeltaPercentage').mockResolvedValue(new BigNumber(0));
-            jest.spyOn(remoteConfigService, 'getXoxnoAggregatorEnabled').mockResolvedValue(true);
+            jest.spyOn(
+                remoteConfigService,
+                'getSmartSwapFlagValue',
+            ).mockResolvedValue(true);
+            jest.spyOn(
+                remoteConfigService,
+                'getMinSmartSwapDeltaPercentage',
+            ).mockResolvedValue(new BigNumber(0));
+            jest.spyOn(
+                remoteConfigService,
+                'getXoxnoAggregatorEnabled',
+            ).mockResolvedValue(true);
+            jest.spyOn(
+                apiConfigService,
+                'isXoxnoAggregatorEnabled',
+            ).mockResolvedValue(true);
         });
 
         it('should set smartSwap.source = XOXNO when XOXNO provides best output', async () => {
             // Mock internal smart swap to be worse than XOXNO
             jest.spyOn(service as any, 'computeSmartSwap').mockResolvedValue(
-                new AutoRouteModel({ amountOut: '200000000000000000', source: 'internal' } as any)
+                new AutoRouteModel({
+                    amountOut: '200000000000000000',
+                    source: 'internal',
+                } as any),
             );
             jest.spyOn(xoxnoService, 'getQuote').mockResolvedValue({
                 from: 'USDC-123456',
@@ -582,18 +576,22 @@ describe('AutoRouterService', () => {
                 slippage: 0.01,
                 priceImpact: 1.5,
                 rate: 150000000,
-                paths: [{
-                    amountIn: '2000000',
-                    amountOut: '300000000000000000',
-                    swaps: [{
-                        dex: 'XExchange',
-                        address: 'erd1qqq',
-                        from: 'USDC-123456',
-                        to: 'WEGLD-123456',
+                paths: [
+                    {
                         amountIn: '2000000',
                         amountOut: '300000000000000000',
-                    }],
-                }],
+                        swaps: [
+                            {
+                                dex: 'XExchange',
+                                address: 'erd1qqq',
+                                from: 'USDC-123456',
+                                to: 'WEGLD-123456',
+                                amountIn: '2000000',
+                                amountOut: '300000000000000000',
+                            },
+                        ],
+                    },
+                ],
             }); // XOXNO wins
 
             const swap = await service.swap({
@@ -612,7 +610,10 @@ describe('AutoRouterService', () => {
 
         it('should set smartSwap.source = INTERNAL when internal smart-swap is better', async () => {
             jest.spyOn(service as any, 'computeSmartSwap').mockResolvedValue(
-                new AutoRouteModel({ amountOut: '300000000000000000', source: 'internal' } as any)
+                new AutoRouteModel({
+                    amountOut: '300000000000000000',
+                    source: 'internal',
+                } as any),
             );
             jest.spyOn(xoxnoService, 'getQuote').mockResolvedValue({
                 from: 'USDC-123456',
@@ -638,7 +639,10 @@ describe('AutoRouterService', () => {
         });
 
         it('should skip XOXNO when feature flag is disabled', async () => {
-            jest.spyOn(remoteConfigService, 'getXoxnoAggregatorEnabled').mockResolvedValue(false);
+            jest.spyOn(
+                remoteConfigService,
+                'getXoxnoAggregatorEnabled',
+            ).mockResolvedValue(false);
             jest.spyOn(xoxnoService, 'getQuote');
 
             const swap = await service.swap({
@@ -669,9 +673,15 @@ describe('AutoRouterService', () => {
 
         it('should return XOXNO transaction when source is XOXNO', async () => {
             const mockTx = {
-                receiver: 'erd1xoxno', data: 'swap', value: '0',
-                sender: senderAddress, gasLimit: 100000, gasPrice: 1000000000,
-                chainId: '1', version: 1, nonce: 0
+                receiver: 'erd1xoxno',
+                data: 'swap',
+                value: '0',
+                sender: senderAddress,
+                gasLimit: 100000,
+                gasPrice: 1000000000,
+                chainId: '1',
+                version: 1,
+                nonce: 0,
             };
 
             const parentModel = new AutoRouteModel({
@@ -681,39 +691,51 @@ describe('AutoRouterService', () => {
                 tolerance: 0.01,
                 smartSwap: {
                     source: 'xoxno',
-                    amountOut: '300000000000000000'
+                    amountOut: '300000000000000000',
                 } as any,
-                transactions: [
-                    new TransactionModel(mockTx)
-                ]
+                transactions: [new TransactionModel(mockTx)],
             });
 
-            const txs = await service.getTransactions(senderAddress, parentModel);
+            const txs = await service.getTransactions(
+                senderAddress,
+                parentModel,
+            );
 
             expect(txs).toBeDefined();
             expect(txs[0]).toEqual(mockTx);
         });
 
         it('should fall back to internal smart-swap when XOXNO tx fetch fails', async () => {
-            jest.spyOn(xoxnoService, 'getQuote').mockRejectedValue(new Error('API failed'));
+            jest.spyOn(xoxnoService, 'getQuote').mockRejectedValue(
+                new Error('API failed'),
+            );
 
             // Should fallback to internal tx generation which calls ComposableTasksTransactionService
             const composableTxService = service['autoRouterTransactionService'];
-            jest.spyOn(composableTxService, 'smartSwap').mockResolvedValue([{ receiver: 'erd1internal' } as any]);
+            jest.spyOn(composableTxService, 'smartSwap').mockResolvedValue([
+                { receiver: 'erd1internal' } as any,
+            ]);
 
             const parentModel = new AutoRouteModel({
                 tokenInID: 'WEGLD-123456',
                 tokenOutID: 'USDC-123456',
                 amountIn: '2000000',
                 tolerance: 0.01,
-                parallelRouteSwap: { allocations: [{ addressRoute: [], intermediaryAmounts: [] }] } as any,
+                parallelRouteSwap: {
+                    allocations: [
+                        { addressRoute: [], intermediaryAmounts: [] },
+                    ],
+                } as any,
                 smartSwap: {
                     source: 'internal',
-                    amountOut: '300000000000000000'
-                } as any
+                    amountOut: '300000000000000000',
+                } as any,
             });
 
-            const txs = await service.getTransactions(senderAddress, parentModel);
+            const txs = await service.getTransactions(
+                senderAddress,
+                parentModel,
+            );
 
             expect(txs).toBeDefined();
             expect(txs[0].receiver).toBe('erd1internal'); // Fell back successfully
