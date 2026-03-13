@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 import { BigNumber } from 'bignumber.js';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -69,6 +70,7 @@ export class AutoRouterService {
         private readonly smartRouterEvaluationService: SmartRouterEvaluationService,
         private readonly composeTasksAbi: ComposableTasksAbiService,
         private readonly xoxnoAggregatorService: XoxnoAggregatorService,
+        private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -453,14 +455,8 @@ export class AutoRouterService {
             const secondToken = tokenMap.get(pair.secondTokenID);
             return new PairModel({
                 address: pair.address,
-                firstToken: new EsdtToken({
-                    identifier: firstToken.identifier,
-                    decimals: firstToken.decimals,
-                }),
-                secondToken: new EsdtToken({
-                    identifier: secondToken.identifier,
-                    decimals: secondToken.decimals,
-                }),
+                firstToken,
+                secondToken,
                 info: allInfo[index],
                 totalFeePercent: allTotalFeePercent[index],
             });
@@ -967,6 +963,10 @@ export class AutoRouterService {
         amountIn: string,
         tolerance: number,
     ): Promise<XoxnoQuoteModel | undefined> {
+        if (!this.apiConfigService.isXoxnoAggregatorEnabled()) {
+            return undefined;
+        }
+
         const isEnabled =
             await this.remoteConfigGetterService.getXoxnoAggregatorEnabled();
         if (!isEnabled) {
