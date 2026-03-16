@@ -10,6 +10,8 @@ import {
     XoxnoSwapModel,
 } from '../models/xoxno-aggregator.model';
 import { Address } from '@multiversx/sdk-core/out';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class XoxnoAggregatorService {
@@ -33,6 +35,8 @@ export class XoxnoAggregatorService {
         if (!this.baseUrl) {
             return undefined;
         }
+
+        const profiler = new PerformanceProfiler(`xoxno-aggregator`);
 
         try {
             const params: Record<string, string | number | boolean> = {
@@ -67,6 +71,14 @@ export class XoxnoAggregatorService {
             );
 
             return undefined;
+        } finally {
+            profiler.stop();
+
+            MetricsCollector.setExternalCall(
+                profiler.description,
+                'quote',
+                profiler.duration,
+            );
         }
     }
 
