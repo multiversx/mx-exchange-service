@@ -228,6 +228,7 @@ export class StakingStateHandler {
                 }
 
                 const updatedPair = { ...pair };
+                updatedPair.compoundedAPR = { ...updatedPair.compoundedAPR };
 
                 updatedPair.compoundedAPR.dualFarmBaseAPR =
                     completeStakingFarm.baseApr;

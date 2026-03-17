@@ -110,6 +110,7 @@ export class FarmsStateHandler {
                 }
 
                 const updatedPair = { ...pair };
+                updatedPair.compoundedAPR = { ...updatedPair.compoundedAPR };
 
                 updatedPair.compoundedAPR.farmBaseAPR = completeFarm.baseApr;
                 updatedPair.compoundedAPR.farmBoostedAPR =

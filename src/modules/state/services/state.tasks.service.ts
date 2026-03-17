@@ -315,12 +315,16 @@ export class StateTasksService {
     }
 
     async broadcastTokensPriceUpdates(tokenIDs: string[]): Promise<void> {
-        const priceUpdates: string[][] = [];
-        const tokens = await this.tokensState.getTokens(tokenIDs, ['price']);
+        const tokens = await this.tokensState.getTokens(tokenIDs, [
+            'identifier',
+            'price',
+        ]);
 
-        tokenIDs.forEach((tokenID, index) =>
-            priceUpdates.push([tokenID, tokens[index].price]),
-        );
+        const priceByID = new Map(tokens.map((t) => [t.identifier, t.price]));
+
+        const priceUpdates: string[][] = tokenIDs
+            .filter((id) => priceByID.has(id))
+            .map((id) => [id, priceByID.get(id)]);
 
         await this.pubSub.publish(TOKENS_PRICE_UPDATE_EVENT, {
             priceUpdates,
@@ -481,7 +485,7 @@ export class StateTasksService {
         ]);
 
         const feesCollectorUpdates =
-            await this.syncService.getFeesCollectorFeesAndWeekyRewards(
+            await this.syncService.getFeesCollectorFeesAndWeeklyRewards(
                 feesCollector,
             );
 

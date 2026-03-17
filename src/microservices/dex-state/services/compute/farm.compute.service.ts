@@ -73,7 +73,7 @@ export class FarmComputeService {
     }
 
     calculateBoostedRewardsPerWeek(farm: FarmModelV2): string {
-        const blocksInWeek = 14440 * 7;
+        const blocksInWeek = constantsConfig.BLOCKS_PER_WEEK;
         const totalRewardsPerWeek = new BigNumber(
             farm.perBlockRewards,
         ).multipliedBy(blocksInWeek);
