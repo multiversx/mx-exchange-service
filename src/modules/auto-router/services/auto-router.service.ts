@@ -324,6 +324,7 @@ export class AutoRouterService {
                     args.tokenOutID,
                     args.amountIn,
                     args.tolerance,
+                    args.sender,
                 ),
             ]);
 
@@ -552,10 +553,17 @@ export class AutoRouterService {
                         'XOXNO smart swap selected but transaction is missing',
                     );
                 }
-                const transaction = new TransactionModel({
-                    ...parent.transactions[0],
-                    sender,
-                });
+
+                const transaction = new TransactionModel(
+                    parent.transactions[0],
+                );
+
+                if (transaction.sender !== sender) {
+                    throw new Error(
+                        'different sender on XOXNO aggregator transaction',
+                    );
+                }
+
                 await this.smartRouterEvaluationService.addFixedInputSwapComparison(
                     parent,
                     transaction,
@@ -962,6 +970,7 @@ export class AutoRouterService {
         tokenOutID: string,
         amountIn: string,
         tolerance: number,
+        sender?: string,
     ): Promise<XoxnoQuoteModel | undefined> {
         if (!this.apiConfigService.isXoxnoAggregatorEnabled()) {
             return undefined;
@@ -978,6 +987,7 @@ export class AutoRouterService {
             tokenOutID,
             amountIn,
             tolerance,
+            sender,
         );
     }
 
