@@ -46,10 +46,11 @@ export const StateTaskPriority: Record<StateTasks, number> = {
 export const StateTasksWithArguments = [
     StateTasks.INDEX_LP_TOKEN,
     StateTasks.INDEX_PAIR,
-    StateTasks.BROADCAST_PRICE_UPDATES,
     StateTasks.REFRESH_FARM,
     StateTasks.REFRESH_STAKING_FARM,
 ];
+
+export const PENDING_PRICE_UPDATES_KEY = 'dexService.pendingPriceUpdates';
 
 export class TaskDto {
     @IsNotEmpty()
