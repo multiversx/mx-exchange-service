@@ -31,12 +31,17 @@ export class XoxnoAggregatorService {
         tokenOut: string,
         amountIn: string,
         slippage: number,
+        sender?: string,
     ): Promise<XoxnoQuoteModel | undefined> {
         if (!this.baseUrl) {
             return undefined;
         }
 
         const profiler = new PerformanceProfiler(`xoxno-aggregator`);
+
+        if (sender === undefined || !Address.isValid(sender)) {
+            sender = Address.Zero().toBech32();
+        }
 
         try {
             const params: Record<string, string | number | boolean> = {
@@ -45,7 +50,7 @@ export class XoxnoAggregatorService {
                 amountIn,
                 slippage,
                 includePaths: true,
-                sender: Address.Zero().toBech32(),
+                sender,
             };
 
             if (this.referralID !== undefined) {
