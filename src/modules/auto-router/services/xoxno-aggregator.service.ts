@@ -10,6 +10,8 @@ import {
     XoxnoSwapModel,
 } from '../models/xoxno-aggregator.model';
 import { Address } from '@multiversx/sdk-core/out';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class XoxnoAggregatorService {
@@ -29,9 +31,16 @@ export class XoxnoAggregatorService {
         tokenOut: string,
         amountIn: string,
         slippage: number,
+        sender?: string,
     ): Promise<XoxnoQuoteModel | undefined> {
         if (!this.baseUrl) {
             return undefined;
+        }
+
+        const profiler = new PerformanceProfiler(`xoxno-aggregator`);
+
+        if (sender === undefined || !Address.isValid(sender)) {
+            sender = Address.Zero().toBech32();
         }
 
         try {
@@ -41,7 +50,7 @@ export class XoxnoAggregatorService {
                 amountIn,
                 slippage,
                 includePaths: true,
-                sender: Address.Zero().toBech32(),
+                sender,
             };
 
             if (this.referralID !== undefined) {
@@ -67,6 +76,14 @@ export class XoxnoAggregatorService {
             );
 
             return undefined;
+        } finally {
+            profiler.stop();
+
+            MetricsCollector.setExternalCall(
+                profiler.description,
+                'quote',
+                profiler.duration,
+            );
         }
     }
 
