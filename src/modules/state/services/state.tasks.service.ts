@@ -20,6 +20,7 @@ import { FeesCollectorStateService } from './fees.collector.state.service';
 import { StateService } from './state.service';
 import { StakingStateService } from './staking.state.service';
 import {
+    PENDING_PRICE_UPDATES_KEY,
     StateTaskPriority,
     StateTasks,
     StateTasksWithArguments,
@@ -30,8 +31,16 @@ import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 import { StakingModel } from 'src/modules/staking/models/staking.model';
 
 export const STATE_TASKS_CACHE_KEY = 'dexService.stateTasks';
+const TASK_RETRY_COUNT_KEY_PREFIX = 'dexService.taskRetryCount';
+const MAX_TASK_RETRIES = 5;
+const TASK_RETRY_TTL_SECONDS = 86400;
 const INDEX_LP_MAX_ATTEMPTS = 60;
 const PAIR_REFRESH_CONCURRENCY = 50;
+
+function getTaskRetryKey(task: TaskDto): string {
+    const base = `${TASK_RETRY_COUNT_KEY_PREFIX}:${task.name}`;
+    return task.args?.length ? `${base}:${task.args.join(':')}` : base;
+}
 
 @Injectable()
 export class StateTasksService {
@@ -57,6 +66,28 @@ export class StateTasksService {
                 !task.args?.length
             ) {
                 throw new Error(`Task '${task.name}' requires an argument`);
+            }
+
+            if (task.name === StateTasks.BROADCAST_PRICE_UPDATES) {
+                if (task.args?.length) {
+                    const tokenIDs = JSON.parse(task.args[0]) as string[];
+                    await this.cacheService.addToSet(
+                        PENDING_PRICE_UPDATES_KEY,
+                        tokenIDs,
+                    );
+                }
+
+                await this.cacheService.zAdd(
+                    STATE_TASKS_CACHE_KEY,
+                    JSON.stringify({ name: StateTasks.BROADCAST_PRICE_UPDATES }),
+                    StateTaskPriority[task.name],
+                );
+
+                this.logger.info(
+                    `State task ${task.name} added to queue`,
+                    { context: StateTasksService.name },
+                );
+                continue;
             }
 
             const serializedTask = JSON.stringify(instanceToPlain(task));
@@ -113,9 +144,7 @@ export class StateTasksService {
                     await this.updateSnapshot();
                     break;
                 case StateTasks.BROADCAST_PRICE_UPDATES:
-                    await this.broadcastTokensPriceUpdates(
-                        JSON.parse(task.args[0]),
-                    );
+                    await this.broadcastTokensPriceUpdates();
                     break;
                 case StateTasks.REFRESH_PAIR_RESERVES:
                     await this.refreshPairReserves();
@@ -141,14 +170,33 @@ export class StateTasksService {
                 default:
                     break;
             }
+
+            await this.cacheService.deleteRemote(getTaskRetryKey(task));
         } catch (error) {
             this.logger.error(`Failed processing task "${task.name}"`, error);
 
-            await this.cacheService.zAdd(
-                STATE_TASKS_CACHE_KEY,
-                JSON.stringify(instanceToPlain(task)),
-                StateTaskPriority[task.name],
+            const retryCount = await this.cacheService.incrementRemote(
+                getTaskRetryKey(task),
+                TASK_RETRY_TTL_SECONDS,
             );
+
+            if (retryCount >= MAX_TASK_RETRIES) {
+                this.logger.error(
+                    `Task "${task.name}" dead-lettered after ${MAX_TASK_RETRIES} failed attempts`,
+                    { task: instanceToPlain(task), context: StateTasksService.name },
+                );
+                await this.cacheService.deleteRemote(getTaskRetryKey(task));
+            } else {
+                this.logger.warn(
+                    `Re-queuing task "${task.name}" (attempt ${retryCount}/${MAX_TASK_RETRIES})`,
+                    { context: StateTasksService.name },
+                );
+                await this.cacheService.zAdd(
+                    STATE_TASKS_CACHE_KEY,
+                    JSON.stringify(instanceToPlain(task)),
+                    StateTaskPriority[task.name],
+                );
+            }
         } finally {
             profiler.stop(`Finished processing task "${task.name}" in`, true);
         }
@@ -314,13 +362,27 @@ export class StateTasksService {
         });
     }
 
-    async broadcastTokensPriceUpdates(tokenIDs: string[]): Promise<void> {
-        const priceUpdates: string[][] = [];
-        const tokens = await this.tokensState.getTokens(tokenIDs, ['price']);
-
-        tokenIDs.forEach((tokenID, index) =>
-            priceUpdates.push([tokenID, tokens[index].price]),
+    async broadcastTokensPriceUpdates(): Promise<void> {
+        const tokenIDs = await this.cacheService.getSetMembers(
+            PENDING_PRICE_UPDATES_KEY,
         );
+
+        if (tokenIDs.length === 0) {
+            return;
+        }
+
+        await this.cacheService.deleteRemote(PENDING_PRICE_UPDATES_KEY);
+
+        const tokens = await this.tokensState.getTokens(tokenIDs, [
+            'identifier',
+            'price',
+        ]);
+
+        const priceByID = new Map(tokens.map((t) => [t.identifier, t.price]));
+
+        const priceUpdates: string[][] = tokenIDs
+            .filter((id) => priceByID.has(id))
+            .map((id) => [id, priceByID.get(id)]);
 
         await this.pubSub.publish(TOKENS_PRICE_UPDATE_EVENT, {
             priceUpdates,
@@ -481,7 +543,7 @@ export class StateTasksService {
         ]);
 
         const feesCollectorUpdates =
-            await this.syncService.getFeesCollectorFeesAndWeekyRewards(
+            await this.syncService.getFeesCollectorFeesAndWeeklyRewards(
                 feesCollector,
             );
 

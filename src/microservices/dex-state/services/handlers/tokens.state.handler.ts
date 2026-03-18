@@ -15,6 +15,10 @@ import {
 import { sortKeysByField } from '../../utils/sort.utils';
 import { StateStore } from '../state.store';
 
+const TOKEN_IMMUTABLE_FIELDS: ReadonlySet<keyof EsdtToken> = new Set<
+    keyof EsdtToken
+>(['identifier', 'decimals', 'type']);
+
 const TOKEN_SORT_FIELD_MAP = {
     [TokenSortField.TOKENS_SORT_PRICE]: 'price',
     [TokenSortField.TOKENS_SORT_VOLUME]: 'volumeUSD24h',
@@ -33,7 +37,7 @@ const TOKEN_SORT_FIELD_MAP = {
 
 @Injectable()
 export class TokensStateHandler {
-    constructor(private readonly stateStore: StateStore) {}
+    constructor(private readonly stateStore: StateStore) { }
 
     getTokens(tokenIDs: string[], fields: string[] = []): Tokens {
         const result: Tokens = {
@@ -170,8 +174,6 @@ export class TokensStateHandler {
         const updatedTokens = new Map<string, EsdtToken>();
         const failedIdentifiers: string[] = [];
 
-        const nonUpdateableFields = ['identifier', 'decimals', 'type'];
-
         for (const partial of partialTokens) {
             if (!partial.identifier) {
                 continue;
@@ -187,11 +189,11 @@ export class TokensStateHandler {
             const updatedToken = { ...token };
 
             for (const field of updateMask.paths) {
-                if (partial[field] === undefined) {
+                if (!Object.prototype.hasOwnProperty.call(partial, field)) {
                     continue;
                 }
 
-                if (nonUpdateableFields.includes(field)) {
+                if (TOKEN_IMMUTABLE_FIELDS.has(field as keyof EsdtToken)) {
                     continue;
                 }
 

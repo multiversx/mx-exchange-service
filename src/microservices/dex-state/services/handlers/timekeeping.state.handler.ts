@@ -21,15 +21,13 @@ export class TimekeepingStateHandler {
 
         if (this.stateStore.farms.has(address)) {
             time = { ...this.stateStore.farms.get(address).time };
-        }
-
-        if (this.stateStore.stakingFarms.has(address)) {
+        } else if (this.stateStore.stakingFarms.has(address)) {
             time = { ...this.stateStore.stakingFarms.get(address).time };
-        }
-
-        const feesCollector = this.stateStore.feesCollector;
-        if (feesCollector && feesCollector.address === address) {
-            time = { ...feesCollector.time };
+        } else {
+            const feesCollector = this.stateStore.feesCollector;
+            if (feesCollector && feesCollector.address === address) {
+                time = { ...feesCollector.time };
+            }
         }
 
         if (time === undefined) {

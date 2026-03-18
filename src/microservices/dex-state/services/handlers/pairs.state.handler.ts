@@ -23,6 +23,10 @@ import { sortKeysByField } from '../../utils/sort.utils';
 import { StateStore } from '../state.store';
 import { TokensStateHandler } from './tokens.state.handler';
 
+const PAIR_IMMUTABLE_FIELDS: ReadonlySet<keyof PairModel> = new Set<
+    keyof PairModel
+>(['address', 'firstTokenId', 'secondTokenId', 'liquidityPoolTokenId']);
+
 const PAIR_SORT_FIELD_MAP = {
     [PairSortField.PAIRS_SORT_DEPLOYED_AT]: 'deployedAt',
     [PairSortField.PAIRS_SORT_FEES]: 'feesUSD24h',
@@ -38,7 +42,7 @@ export class PairsStateHandler {
     constructor(
         private readonly stateStore: StateStore,
         private readonly tokensHandler: TokensStateHandler,
-    ) {}
+    ) { }
 
     getPairs(addresses: string[], fields: string[] = []): Pairs {
         const result: Pairs = {
@@ -359,13 +363,6 @@ export class PairsStateHandler {
         const updatedPairs = new Map<string, PairModel>();
         const failedAddresses: string[] = [];
 
-        const nonUpdateableFields = [
-            'address',
-            'firstTokenId',
-            'secondTokenId',
-            'liquidityPoolTokenId',
-        ];
-
         for (const partial of partialPairs) {
             if (!partial.address) {
                 continue;
@@ -381,11 +378,11 @@ export class PairsStateHandler {
             const updatedPair = { ...pair };
 
             for (const field of updateMask.paths) {
-                if (partial[field] === undefined) {
+                if (!Object.prototype.hasOwnProperty.call(partial, field)) {
                     continue;
                 }
 
-                if (nonUpdateableFields.includes(field)) {
+                if (PAIR_IMMUTABLE_FIELDS.has(field as keyof PairModel)) {
                     continue;
                 }
 
