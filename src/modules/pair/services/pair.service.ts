@@ -1,7 +1,9 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import { mxConfig } from 'src/config';
 import { BigNumber } from 'bignumber.js';
-import { LiquidityPosition, LockedTokensInfo } from '../models/pair.model';
+import { LiquidityPosition } from '../models/pair.model';
 import {
     quote,
     getAmountOut,
@@ -17,8 +19,6 @@ import {
     EsdtToken,
     EsdtTokenType,
 } from 'src/modules/tokens/models/esdtToken.model';
-import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { PairComputeService } from './pair.compute.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
@@ -38,8 +38,8 @@ export class PairService {
         @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
         private readonly cachingService: CacheService,
-        private readonly contextGetter: ContextGetterService,
         private readonly pairsState: PairsStateService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
@@ -274,7 +274,12 @@ export class PairService {
             if (token && token.type === EsdtTokenType.FungibleLpToken) {
                 returnedData = token.pairAddress;
             }
-        } catch (error) {}
+        } catch (error) {
+            this.logger.warn(
+                `Failed to get pair address for LP token ${tokenID}: ${error.message}`,
+                { context: PairService.name },
+            );
+        }
 
         await this.cachingService.set(
             `${tokenID}.pairAddress`,
@@ -289,37 +294,4 @@ export class PairService {
             throw new Error('You are not the owner.');
     }
 
-    // TODO : remove after adding refresh to state rpc
-    async getLockedTokensInfo(pairAddress: string): Promise<LockedTokensInfo> {
-        const [
-            lockingScAddress,
-            unlockEpoch,
-            lockingDeadlineEpoch,
-            currentEpoch,
-        ] = await Promise.all([
-            this.pairAbi.lockingScAddress(pairAddress),
-            this.pairAbi.unlockEpoch(pairAddress),
-            this.pairAbi.lockingDeadlineEpoch(pairAddress),
-            this.contextGetter.getCurrentEpoch(),
-        ]);
-
-        if (
-            lockingScAddress === undefined ||
-            unlockEpoch === undefined ||
-            lockingDeadlineEpoch === undefined
-        ) {
-            return undefined;
-        }
-
-        if (currentEpoch >= lockingDeadlineEpoch) {
-            return undefined;
-        }
-
-        return new LockedTokensInfo({
-            lockingScAddress: lockingScAddress,
-            lockingSC: new SimpleLockModel({ address: lockingScAddress }),
-            unlockEpoch,
-            lockingDeadlineEpoch,
-        });
-    }
 }

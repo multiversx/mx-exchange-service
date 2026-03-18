@@ -12,7 +12,7 @@ import { StateStore } from '../state.store';
 
 @Injectable()
 export class FarmComputeService {
-    constructor(private readonly stateStore: StateStore) { }
+    constructor(private readonly stateStore: StateStore) {}
 
     computeMissingFarmFields(farm: FarmModelV2): FarmModelV2 {
         refreshWeekStartAndEndEpochs(farm.time);
@@ -62,7 +62,7 @@ export class FarmComputeService {
             .multipliedBy(farm.boostedYieldsRewardsPercenatage)
             .dividedBy(
                 constantsConfig.MAX_PERCENT -
-                farm.boostedYieldsRewardsPercenatage,
+                    farm.boostedYieldsRewardsPercenatage,
             )
             .toFixed();
 

@@ -373,7 +373,7 @@ export class StateSyncService {
         return result;
     }
 
-    async getFeesCollectorFeesAndWeekyRewards(
+    async getFeesCollectorFeesAndWeeklyRewards(
         feesCollector: FeesCollectorModel,
     ): Promise<Partial<FeesCollectorModel>> {
         const time = await this.weeklyRewardsSync.getWeekTimekeeping(

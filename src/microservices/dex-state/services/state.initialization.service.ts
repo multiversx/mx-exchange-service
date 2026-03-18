@@ -126,6 +126,7 @@ export class StateInitializationService {
 
             if (pair && completeFarm.rewardType !== FarmRewardType.DEPRECATED) {
                 const updatedPair = { ...pair };
+                updatedPair.compoundedAPR = { ...updatedPair.compoundedAPR };
                 updatedPair.hasFarms = true;
                 updatedPair.farmAddress = completeFarm.address;
                 updatedPair.farmRewardCollection =
@@ -175,6 +176,7 @@ export class StateInitializationService {
 
             if (pair && stakingFarm) {
                 const updatedPair = { ...pair };
+                updatedPair.compoundedAPR = { ...updatedPair.compoundedAPR };
                 updatedPair.hasDualFarms = true;
                 updatedPair.stakingProxyAddress = stakingProxy.address;
                 updatedPair.dualFarmRewardTokenId = stakingProxy.stakingTokenId;

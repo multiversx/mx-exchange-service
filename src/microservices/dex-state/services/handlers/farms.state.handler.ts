@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
+
+const FARM_IMMUTABLE_FIELDS: ReadonlySet<keyof FarmModelV2> = new Set<
+    keyof FarmModelV2
+>(['address', 'farmedTokenId', 'farmingTokenId', 'farmTokenCollection', 'pairAddress']);
 import {
     Farms,
     UpdateFarmsRequest,
@@ -13,7 +17,7 @@ export class FarmsStateHandler {
     constructor(
         private readonly stateStore: StateStore,
         private readonly farmComputeService: FarmComputeService,
-    ) {}
+    ) { }
 
     getFarms(addresses: string[], fields: string[] = []): Farms {
         const result: Farms = {
@@ -53,14 +57,6 @@ export class FarmsStateHandler {
         const updatedFarms = new Map<string, FarmModelV2>();
         const failedAddresses: string[] = [];
 
-        const nonUpdateableFields = [
-            'address',
-            'farmedTokenId',
-            'farmingTokenId',
-            'farmTokenCollection',
-            'pairAddress',
-        ];
-
         for (const partial of partialFarms) {
             if (!partial.address) {
                 continue;
@@ -76,14 +72,13 @@ export class FarmsStateHandler {
             const updatedFarm = { ...farm };
 
             for (const field of updateMask.paths) {
-                if (partial[field] === undefined) {
+                if (!Object.prototype.hasOwnProperty.call(partial, field)) {
                     continue;
                 }
 
-                if (nonUpdateableFields.includes(field)) {
+                if (FARM_IMMUTABLE_FIELDS.has(field as keyof FarmModelV2)) {
                     continue;
                 }
-
                 updatedFarm[field] = partial[field];
             }
 
@@ -110,6 +105,7 @@ export class FarmsStateHandler {
                 }
 
                 const updatedPair = { ...pair };
+                updatedPair.compoundedAPR = { ...updatedPair.compoundedAPR };
 
                 updatedPair.compoundedAPR.farmBaseAPR = completeFarm.baseApr;
                 updatedPair.compoundedAPR.farmBoostedAPR =

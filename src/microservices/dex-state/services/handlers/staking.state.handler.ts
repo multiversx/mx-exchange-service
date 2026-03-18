@@ -15,6 +15,10 @@ import {
 import { StakingComputeService } from '../compute/staking.compute.service';
 import { StateStore } from '../state.store';
 
+const STAKING_IMMUTABLE_FIELDS: ReadonlySet<keyof StakingModel> = new Set<
+    keyof StakingModel
+>(['address', 'rewardTokenId', 'farmingTokenId', 'farmTokenCollection']);
+
 const STAKING_FARM_SORT_FIELD_MAP = {
     [StakingFarmSortField.STAKING_SORT_PRICE]: 'farmingTokenPriceUSD',
     [StakingFarmSortField.STAKING_SORT_TVL]: 'stakedValueUSD',
@@ -27,7 +31,7 @@ export class StakingStateHandler {
     constructor(
         private readonly stateStore: StateStore,
         private readonly stakingComputeService: StakingComputeService,
-    ) {}
+    ) { }
 
     getStakingFarms(addresses: string[], fields: string[] = []): StakingFarms {
         const result: StakingFarms = {
@@ -163,13 +167,6 @@ export class StakingStateHandler {
         const updatedStakingFarms = new Map<string, StakingModel>();
         const failedAddresses: string[] = [];
 
-        const nonUpdateableFields = [
-            'address',
-            'rewardTokenId',
-            'farmingTokenId',
-            'farmTokenCollection',
-        ];
-
         for (const partial of partialStakingFarms) {
             if (!partial.address) {
                 continue;
@@ -187,11 +184,11 @@ export class StakingStateHandler {
             const updatedStakingFarm = { ...stakingFarm };
 
             for (const field of updateMask.paths) {
-                if (partial[field] === undefined) {
+                if (!Object.prototype.hasOwnProperty.call(partial, field)) {
                     continue;
                 }
 
-                if (nonUpdateableFields.includes(field)) {
+                if (STAKING_IMMUTABLE_FIELDS.has(field as keyof StakingModel)) {
                     continue;
                 }
 
@@ -228,6 +225,7 @@ export class StakingStateHandler {
                 }
 
                 const updatedPair = { ...pair };
+                updatedPair.compoundedAPR = { ...updatedPair.compoundedAPR };
 
                 updatedPair.compoundedAPR.dualFarmBaseAPR =
                     completeStakingFarm.baseApr;
