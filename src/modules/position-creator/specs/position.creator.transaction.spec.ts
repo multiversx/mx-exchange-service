@@ -42,6 +42,7 @@ import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-e
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
+import { XoxnoAggregatorServiceProvider } from 'src/modules/auto-router/mocks/xoxno-aggregator.service.mock';
 
 describe('PositionCreatorTransaction', () => {
     let module: TestingModule;
@@ -91,6 +92,7 @@ describe('PositionCreatorTransaction', () => {
                 SmartRouterServiceProvider,
                 SmartRouterEvaluationServiceProvider,
                 ComposableTasksAbiServiceProvider,
+                XoxnoAggregatorServiceProvider,
             ],
         }).compile();
     });

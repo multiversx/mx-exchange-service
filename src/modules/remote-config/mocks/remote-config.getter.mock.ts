@@ -33,6 +33,10 @@ export class RemoteConfigGetterServiceMock {
     async getMinSmartSwapDeltaPercentage(): Promise<number> {
         return 0.5;
     }
+
+    async getXoxnoAggregatorEnabled(): Promise<boolean> {
+        return false;
+    }
 }
 
 export const RemoteConfigGetterServiceProvider = {

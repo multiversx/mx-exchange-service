@@ -16,6 +16,9 @@ export class AutoRouterArgs {
 
     @Field()
     tolerance: number;
+
+    @Field({ nullable: true })
+    sender?: string;
 }
 
 @ArgsType()
