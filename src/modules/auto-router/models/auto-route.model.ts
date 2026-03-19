@@ -1,8 +1,19 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, registerEnumType } from '@nestjs/graphql';
 import { nestedFieldComplexity } from 'src/helpers/complexity/field.estimators';
 import { TransactionModel } from 'src/models/transaction.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ParallelRouteSwap } from './smart.router.types';
+
+export enum SmartSwapSource {
+    INTERNAL = 'internal',
+    XOXNO = 'xoxno',
+}
+
+registerEnumType(SmartSwapSource, {
+    name: 'SmartSwapSource',
+    description: 'Source of the smart swap route computation',
+});
 
 @ObjectType()
 export class SwapRouteModel {
@@ -97,7 +108,32 @@ export class SmartSwapModel {
     @Field()
     feeAmount: string;
 
+    @Field({ complexity: nestedFieldComplexity })
+    feeToken: EsdtToken;
+
+    @Field(() => SmartSwapSource)
+    source: SmartSwapSource;
+
     constructor(init?: Partial<SmartSwapModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class SmartSwapPairModel {
+    @Field()
+    address: string;
+
+    @Field()
+    dex: string;
+
+    @Field({ complexity: nestedFieldComplexity })
+    firstToken: EsdtToken;
+
+    @Field({ complexity: nestedFieldComplexity })
+    secondToken: EsdtToken;
+
+    constructor(init?: Partial<SmartSwapPairModel>) {
         Object.assign(this, init);
     }
 }
@@ -116,8 +152,8 @@ export class SmartSwapRoute {
     @Field(() => [String])
     pricesImpact: string[];
 
-    @Field(() => [PairModel], { complexity: nestedFieldComplexity })
-    pairs: PairModel[];
+    @Field(() => [SmartSwapPairModel], { complexity: nestedFieldComplexity })
+    pairs: SmartSwapPairModel[];
 
     constructor(init?: Partial<SmartSwapRoute>) {
         Object.assign(this, init);
@@ -138,6 +174,8 @@ export class AutoRouteModel extends SwapRouteModel {
         nullable: true,
     })
     smartSwap?: SmartSwapModel;
+
+    xoxnoAmountOut?: string;
 
     constructor(init?: Partial<AutoRouteModel>) {
         super(init);
