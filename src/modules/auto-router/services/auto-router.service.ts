@@ -335,6 +335,15 @@ export class AutoRouterService {
             );
         }
 
+        this.logger.info(
+            `Active Pairs: ${JSON.stringify(
+                pairs.filter((pair) => pairAddresses.includes(pair.address)),
+            )}`,
+            {
+                context: 'multiSwap',
+            },
+        );
+
         fullPairs.forEach((pair) => {
             const currentPair = pairs.find((p) => p.address === pair.address);
             pair.firstToken = currentPair.firstToken;
@@ -524,6 +533,9 @@ export class AutoRouterService {
         tokenRoute: string[],
         pairs: PairModel[],
     ): string[] {
+        this.logger.info(`Swap pairs: ${JSON.stringify(pairs)}`, {
+            context: 'getPriceImpactPercents',
+        });
         return pairs.map((pair, index) => {
             return this.autoRouterComputeService.computePriceImpactPercent(
                 pair.firstToken.identifier === tokenRoute[index + 1]
