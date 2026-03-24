@@ -50,6 +50,8 @@ describe('XoxnoAggregatorService', () => {
         const tokenOut = 'USDC-123456';
         const amountIn = '1000000000000000000';
         const slippage = 0.01;
+        const sender =
+            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu';
 
         it('should return undefined if base URL is not configured', async () => {
             apiConfigServiceMock.getXoxnoApiUrl.mockReturnValue(
@@ -74,7 +76,13 @@ describe('XoxnoAggregatorService', () => {
                 data: { amountOut: '2000' },
             });
 
-            await service.getQuote(tokenIn, tokenOut, amountIn, slippage);
+            await service.getQuote(
+                tokenIn,
+                tokenOut,
+                amountIn,
+                slippage,
+                sender,
+            );
 
             expect(mockedAxios.get).toHaveBeenCalledWith(
                 `${mockBaseUrl}/quote`,
