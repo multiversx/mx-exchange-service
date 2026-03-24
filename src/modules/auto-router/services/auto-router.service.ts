@@ -50,6 +50,7 @@ import {
     XoxnoQuoteModel,
     XoxnoPathModel,
 } from '../models/xoxno-aggregator.model';
+import { Address } from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class AutoRouterService {
@@ -548,9 +549,9 @@ export class AutoRouterService {
     ): Promise<TransactionModel[]> {
         if (parent.smartSwap !== undefined) {
             if (parent.smartSwap.source === SmartSwapSource.XOXNO) {
-                if (!parent.transactions?.[0]) {
+                if (!parent.transactions?.[0] || !Address.isValid(sender)) {
                     throw new Error(
-                        'XOXNO smart swap selected but transaction is missing',
+                        'XOXNO smart swap selected but transaction or sender is missing',
                     );
                 }
 
