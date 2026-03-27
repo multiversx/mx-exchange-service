@@ -17,6 +17,7 @@ import { ComposableTasksModule } from '../composable-tasks/composable.tasks.modu
 import { SmartRouterService } from './services/smart.router.service';
 import { SmartRouterEvaluationModule } from '../smart-router-evaluation/smart.router.evaluation.module';
 import { StateModule } from '../state/state.module';
+import { XoxnoAggregatorService } from './services/xoxno-aggregator.service';
 
 @Module({
     imports: [
@@ -41,6 +42,7 @@ import { StateModule } from '../state/state.module';
         AutoRouterTransactionService,
         PairTransactionService,
         SmartRouterService,
+        XoxnoAggregatorService,
     ],
     exports: [AutoRouterService, AutoRouterTransactionService],
 })
