@@ -446,6 +446,7 @@ describe('BulkUpdatesService', () => {
             service.recomputeAllValues(pairs, tokens, 1.0, [
                 TEST_TOKEN_IDS.WEGLD,
                 TEST_TOKEN_IDS.USDC,
+                TEST_TOKEN_IDS.MEX,
             ]);
 
             // TOK4 should have derived EGLD computed through MEX -> WEGLD path
@@ -563,9 +564,9 @@ describe('BulkUpdatesService', () => {
                 },
             );
             mexUsdcPairActive.info = new PairInfoModel({
-                reserves0: '1000000000000000000000', // 1000 MEX - small liquidity but active
-                reserves1: '100000', // 0.1 USDC
-                totalSupply: '10000000000000000000',
+                reserves0: '1000000000000000000000000', // 1000 MEX - small liquidity but active
+                reserves1: '100000000', // 0.1 USDC
+                totalSupply: '1000000000000000000000000',
             });
             pairs.set(TEST_ADDRESSES.PAIR_TOK4_EGLD, mexUsdcPairActive);
 
