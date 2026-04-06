@@ -313,6 +313,10 @@ message PairsCountResponse {
   uint32 count = 1;
 }
 
+message IsStateInitializedResponse {
+  bool initialized = 1;
+}
+
 service DexStateService {
   rpc GetPairs (GetPairsRequest) returns (Pairs) {}
   rpc GetFilteredPairs (GetFilteredPairsRequest) returns (PaginatedPairs) {}
@@ -351,4 +355,6 @@ service DexStateService {
   rpc GetWeeklyTimekeeping (GetWeeklyTimekeepingRequest) returns (WeekTimekeeping) {}
 
   rpc UpdateUsdcPrice (UpdateUsdcPriceRequest) returns (UpdateUsdcPriceResponse) {}
+
+  rpc IsStateInitialized (google.protobuf.Empty) returns (IsStateInitializedResponse) {}
 }

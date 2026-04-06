@@ -14,6 +14,15 @@ export class StateService {
     constructor(private readonly stateGrpc: StateGrpcClientService) {}
 
     @StateRpcMetrics()
+    async isStateInitialized(): Promise<boolean> {
+        const response = await firstValueFrom(
+            this.stateGrpc.client.isStateInitialized({}),
+        );
+
+        return response.initialized;
+    }
+
+    @StateRpcMetrics()
     async initState(request: InitStateRequest): Promise<InitStateResponse> {
         return firstValueFrom(this.stateGrpc.client.initState(request));
     }

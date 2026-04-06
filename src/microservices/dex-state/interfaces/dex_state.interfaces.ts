@@ -308,6 +308,10 @@ export interface PairsCountResponse {
     count: number;
 }
 
+export interface IsStateInitializedResponse {
+    initialized: boolean;
+}
+
 export const DEX_STATE_PACKAGE_NAME = 'dex_state';
 
 export interface IDexStateServiceClient {
@@ -390,6 +394,8 @@ export interface IDexStateServiceClient {
     updateUsdcPrice(
         request: UpdateUsdcPriceRequest,
     ): Observable<UpdateUsdcPriceResponse>;
+
+    isStateInitialized(request: Empty): Observable<IsStateInitializedResponse>;
 }
 
 export interface IDexStateService {
@@ -527,6 +533,8 @@ export interface IDexStateService {
         | Promise<UpdateUsdcPriceResponse>
         | Observable<UpdateUsdcPriceResponse>
         | UpdateUsdcPriceResponse;
+
+    isStateInitialized(request: Empty): IsStateInitializedResponse;
 }
 
 export const DEX_STATE_SERVICE_NAME = 'DexStateService';
