@@ -55,7 +55,7 @@ export class StateSyncService {
         this.logger.info(`Starting ${this.populateState.name}`, {
             context: StateSyncService.name,
         });
-        const profiler = new PerformanceProfiler();
+        let profiler = new PerformanceProfiler();
 
         const tokens = new Map<string, EsdtToken>();
         const pairs = new Map<string, PairModel>();
@@ -83,8 +83,13 @@ export class StateSyncService {
             this.stateSnapshot.getLatestSnapshot(),
         ]);
 
+        profiler.stop();
+
         const pairsNeedingAnalytics: string[] = [];
         const tokensNeedingAnalytics: string[] = [];
+
+        profiler = new PerformanceProfiler('Initialize pairs');
+
         for (const pairMeta of pairsMetadata) {
             if (
                 snapshotPairs.has(pairMeta.address) &&
@@ -169,6 +174,15 @@ export class StateSyncService {
             tokensNeedingAnalytics.push(pair.firstTokenId, pair.secondTokenId);
         }
 
+        this.logger.info(
+            `${profiler.description} in ${(profiler.stop() / 1000).toFixed(
+                3,
+            )}s`,
+            { context: this.populateState.name },
+        );
+
+        profiler = new PerformanceProfiler('Recompute All values');
+
         this.bulkUpdatesService.recomputeAllValues(
             pairs,
             tokens,
@@ -176,8 +190,17 @@ export class StateSyncService {
             commonTokenIDs,
         );
 
+        this.logger.info(
+            `${profiler.description} in ${(profiler.stop() / 1000).toFixed(
+                3,
+            )}s`,
+            { context: this.populateState.name },
+        );
+
         const farms = new Map<string, FarmModelV2>();
         const farmAddresses = farmsAddresses([FarmVersion.V2]);
+
+        profiler = new PerformanceProfiler('Initialize farms');
 
         for (const farmAddress of farmAddresses) {
             if (snapshotFarms.has(farmAddress)) {
@@ -192,9 +215,18 @@ export class StateSyncService {
             farms.set(farm.address, { ...farm });
         }
 
+        this.logger.info(
+            `${profiler.description} in ${(profiler.stop() / 1000).toFixed(
+                3,
+            )}s`,
+            { context: this.populateState.name },
+        );
+
         const stakingAddresses =
             await this.remoteConfigGetter.getStakingAddresses();
         const stakingFarms = new Map<string, StakingModel>();
+
+        profiler = new PerformanceProfiler('Initialize staking farms');
 
         for (const stakingAddress of stakingAddresses) {
             if (snapshotStakingFarms.has(stakingAddress)) {
@@ -212,9 +244,18 @@ export class StateSyncService {
             stakingFarms.set(stakingAddress, { ...stakingFarm });
         }
 
+        this.logger.info(
+            `${profiler.description} in ${(profiler.stop() / 1000).toFixed(
+                3,
+            )}s`,
+            { context: this.populateState.name },
+        );
+
         const stakingProxyAddresses =
             await this.remoteConfigGetter.getStakingProxyAddresses();
         const stakingProxies = new Map<string, StakingProxyModel>();
+
+        profiler = new PerformanceProfiler('Initialize staking proxies');
 
         for (const stakingProxyAddress of stakingProxyAddresses) {
             if (snapshotStakingProxies.has(stakingProxyAddress)) {
@@ -234,9 +275,18 @@ export class StateSyncService {
             stakingProxies.set(stakingProxyAddress, { ...stakingProxy });
         }
 
+        this.logger.info(
+            `${profiler.description} in ${(profiler.stop() / 1000).toFixed(
+                3,
+            )}s`,
+            { context: this.populateState.name },
+        );
+
         const feesCollector =
             snapshotFeesCollector ??
             (await this.feesCollectorSync.populateFeesCollector());
+
+        profiler = new PerformanceProfiler('Update analytics');
 
         await this.analyticsSync.updatePairsAnalytics(
             pairs,
@@ -248,13 +298,11 @@ export class StateSyncService {
             tokensNeedingAnalytics,
         );
 
-        profiler.stop();
-
-        this.logger.debug(
-            `${this.populateState.name} : ${profiler.duration}ms`,
-            {
-                context: StateSyncService.name,
-            },
+        this.logger.info(
+            `${profiler.description} in ${(profiler.stop() / 1000).toFixed(
+                3,
+            )}s`,
+            { context: this.populateState.name },
         );
 
         return {
