@@ -199,6 +199,12 @@ export class BulkUpdatesService {
                 }
             }
 
+            pairs = pairs.filter((pair) => {
+                return pair.firstTokenId === id
+                    ? this.commonTokenIDs.includes(pair.secondTokenId)
+                    : this.commonTokenIDs.includes(pair.firstTokenId);
+            });
+
             const tokenPairs: PairModel[] = [];
 
             pairs.forEach((pair) => {
@@ -210,6 +216,8 @@ export class BulkUpdatesService {
 
             return tokenPairs;
         };
+
+        const minLiquidity = new BigNumber(`1e${mxConfig.EGLDDecimals}`);
 
         const tokenDerivedEGLD = (tokenID: string): string => {
             if (memo.has(tokenID)) {
@@ -256,7 +264,10 @@ export class BulkUpdatesService {
                         .times(secondTokenDerivedEGLD)
                         .times(`1e${mxConfig.EGLDDecimals}`)
                         .integerValue();
-                    if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
+                    if (
+                        egldLocked.isGreaterThan(largestLiquidityEGLD) &&
+                        egldLocked.gt(minLiquidity)
+                    ) {
                         largestLiquidityEGLD = egldLocked;
                         priceSoFar = new BigNumber(pair.firstTokenPrice).times(
                             secondTokenDerivedEGLD,
@@ -273,7 +284,10 @@ export class BulkUpdatesService {
                         .times(firstTokenDerivedEGLD)
                         .times(`1e${mxConfig.EGLDDecimals}`)
                         .integerValue();
-                    if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
+                    if (
+                        egldLocked.isGreaterThan(largestLiquidityEGLD) &&
+                        egldLocked.gt(minLiquidity)
+                    ) {
                         largestLiquidityEGLD = egldLocked;
                         priceSoFar = new BigNumber(pair.secondTokenPrice).times(
                             firstTokenDerivedEGLD,
@@ -296,9 +310,8 @@ export class BulkUpdatesService {
         let newLockedValue = new BigNumber(0);
         for (const pair of tokenPairs) {
             if (
-                pair.state === 'Active' ||
-                (this.commonTokenIDs.includes(pair.firstTokenId) &&
-                    this.commonTokenIDs.includes(pair.secondTokenId))
+                this.commonTokenIDs.includes(pair.firstTokenId) &&
+                this.commonTokenIDs.includes(pair.secondTokenId)
             ) {
                 const tokenLockedValueUSD =
                     tokenID === pair.firstTokenId
@@ -360,9 +373,8 @@ export class BulkUpdatesService {
         };
 
         if (
-            pair.state === 'Active' ||
-            (this.commonTokenIDs.includes(pair.firstTokenId) &&
-                this.commonTokenIDs.includes(pair.secondTokenId))
+            this.commonTokenIDs.includes(pair.firstTokenId) &&
+            this.commonTokenIDs.includes(pair.secondTokenId)
         ) {
             result.lockedValueUSD = firstTokenLockedValueUSD
                 .plus(secondTokenLockedValueUSD)

@@ -26,6 +26,7 @@ import {
     IDexStateService,
     InitStateRequest,
     InitStateResponse,
+    IsStateInitializedResponse,
     PaginatedPairs,
     PaginatedStakingFarms,
     PaginatedTokens,
@@ -227,6 +228,13 @@ export class DexStateController implements IDexStateService {
     ): WeekTimekeepingModel {
         this.ensureReady();
         return this.dexStateService.getWeeklyTimekeeping(request);
+    }
+
+    @GrpcMethod(DEX_STATE_SERVICE_NAME, 'isStateInitialized')
+    isStateInitialized(): IsStateInitializedResponse {
+        return {
+            initialized: this.dexStateService.isReady(),
+        };
     }
 
     private ensureReady() {

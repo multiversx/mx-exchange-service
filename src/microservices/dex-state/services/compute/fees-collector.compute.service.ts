@@ -5,6 +5,7 @@ import {
     refreshWeekStartAndEndEpochs,
 } from '../../utils/rewards.compute.utils';
 import { StateStore } from '../state.store';
+import { constantsConfig } from 'src/config';
 
 @Injectable()
 export class FeesCollectorComputeService {
@@ -14,6 +15,11 @@ export class FeesCollectorComputeService {
         feesCollector: FeesCollectorModel,
     ): FeesCollectorModel {
         refreshWeekStartAndEndEpochs(feesCollector.time);
+
+        feesCollector.startWeek =
+            feesCollector.time.currentWeek -
+            constantsConfig.USER_MAX_CLAIM_WEEKS;
+        feesCollector.endWeek = feesCollector.time.currentWeek;
 
         feesCollector.undistributedRewards.forEach((globalInfo) => {
             if (!globalInfo.totalRewardsForWeek) {
