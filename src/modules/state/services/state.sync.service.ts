@@ -343,6 +343,12 @@ export class StateSyncService {
         return this.pairsSync.getPairReservesAndState(pair);
     }
 
+    async refreshTokenMetadata(
+        tokenID: string,
+    ): Promise<Partial<EsdtToken> | undefined> {
+        return this.tokensSync.refreshTokenMetadata(tokenID);
+    }
+
     async getPairAnalytics(pair: PairModel): Promise<Partial<PairModel>> {
         return this.analyticsSync.getPairAnalytics(pair);
     }
