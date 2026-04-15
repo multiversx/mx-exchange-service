@@ -34,8 +34,6 @@ import { SettingsArgs } from './args/settings.args';
 import { SettingsCategoryEnum } from './models/settings.model';
 import { TriggerTaskArgs } from './args/trigger.task.args';
 import { TRIGGER_TASK_EVENT } from '../task-runner/constants';
-import { queueStateTasks } from '../state/utils/state.task.utils';
-import { StateTasks, TaskDto } from '../state/entities/state.tasks.entities';
 
 @Controller('remote-config')
 export class RemoteConfigController {
@@ -278,18 +276,6 @@ export class RemoteConfigController {
             await this.cacheService.deleteInCache(key);
         }
         await this.pubSub.publish('deleteCacheKeys', cacheKeys.keys);
-        return res.status(200).send();
-    }
-
-    @UseGuards(JwtOrNativeAdminGuard)
-    @Post('/cache/init-state')
-    async initState(@Res() res: Response): Promise<Response> {
-        await queueStateTasks(this.cacheService, [
-            new TaskDto({
-                name: StateTasks.INIT_STATE,
-            }),
-        ]);
-
         return res.status(200).send();
     }
 
