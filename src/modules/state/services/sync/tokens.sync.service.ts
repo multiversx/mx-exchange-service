@@ -49,6 +49,26 @@ export class TokensSyncService {
         return token as EsdtToken;
     }
 
+    async refreshTokenMetadata(
+        tokenID: string,
+    ): Promise<Partial<EsdtToken> | undefined> {
+        const tokenMetadata = await this.apiService.getToken(tokenID);
+
+        if (tokenMetadata === undefined) {
+            return undefined;
+        }
+
+        const token = this.getTokenFromMetadata(tokenMetadata);
+
+        if (token.assets) {
+            token.assets.lockedAccounts = token.assets.lockedAccounts
+                ? Object.keys(token.assets.lockedAccounts)
+                : [];
+        }
+
+        return token;
+    }
+
     private getTokenFromMetadata(tokenMetadata: EsdtToken): Partial<EsdtToken> {
         const token: Partial<EsdtToken> = {
             identifier: tokenMetadata.identifier,

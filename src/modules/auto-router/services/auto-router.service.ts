@@ -45,6 +45,7 @@ import {
     XoxnoQuoteModel,
     XoxnoPathModel,
 } from '../models/xoxno-aggregator.model';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 
 @Injectable()
 export class AutoRouterService {
@@ -61,6 +62,7 @@ export class AutoRouterService {
         private readonly composeTasksAbi: ComposableTasksAbiService,
         private readonly pairsState: PairsStateService,
         private readonly tokensState: TokensStateService,
+        private readonly tokenService: TokenService,
         private readonly xoxnoAggregatorService: XoxnoAggregatorService,
         private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -1052,7 +1054,13 @@ export class AutoRouterService {
                 quote.amountOut,
             );
         const feeTokenID = await this.toWrappedIfEGLD([quote.feeToken]);
-        const feeToken = await this.tokensState.getTokens([feeTokenID[0]]);
+        const feeTokenFromState = await this.tokensState.getTokens([
+            feeTokenID[0],
+        ]);
+        const feeToken =
+            feeTokenFromState.length > 0 && feeTokenFromState[0]
+                ? feeTokenFromState
+                : await this.tokenService.getAllTokensMetadata([feeTokenID[0]]);
 
         return new SmartSwapModel({
             amountOut: quote.amountOut,
@@ -1088,13 +1096,46 @@ export class AutoRouterService {
                 paths.flatMap((p) => p.swaps.flatMap((s) => [s.from, s.to])),
             ),
         ];
-        const esdtTokenIDs = await this.toWrappedIfEGLD(tokenIDs);
 
-        // Batch fetch all token metadata (cached)
-        const tokensMetadata = await this.tokensState.getTokens(esdtTokenIDs);
-        const tokenMap = new Map(
-            tokenIDs.map((id, i) => [id, tokensMetadata[i]]),
+        const wrappedEgldTokenID = await this.wrapAbi.wrappedEgldTokenID();
+        const esdtTokenIDs = tokenIDs.map((t) =>
+            t === mxConfig.EGLDIdentifier ? wrappedEgldTokenID : t,
         );
+
+        const allStateTokenIdentifiers = new Set(
+            (await this.tokensState.getAllTokens(['identifier'])).map(
+                (t) => t.identifier,
+            ),
+        );
+        const knownTokenIDs = esdtTokenIDs.filter((id) =>
+            allStateTokenIdentifiers.has(id),
+        );
+        const unknownTokenIDs = esdtTokenIDs.filter(
+            (id) => !allStateTokenIdentifiers.has(id),
+        );
+
+        const tokenMap = new Map<string, EsdtToken>();
+        if (knownTokenIDs.length > 0) {
+            const stateTokens = await this.tokensState.getTokens(knownTokenIDs);
+            stateTokens.forEach((token) => {
+                if (token) tokenMap.set(token.identifier, token);
+            });
+        }
+
+        if (unknownTokenIDs.length > 0) {
+            const unknownTokensMetadata =
+                await this.tokenService.getAllTokensMetadata(unknownTokenIDs);
+            unknownTokensMetadata
+                .filter((token) => token != null)
+                .forEach((token) => tokenMap.set(token.identifier, token));
+        }
+
+        if (tokenIDs.includes(mxConfig.EGLDIdentifier)) {
+            tokenMap.set(
+                mxConfig.EGLDIdentifier,
+                tokenMap.get(wrappedEgldTokenID),
+            );
+        }
 
         return paths.map((path) => {
             const swaps = path.swaps;

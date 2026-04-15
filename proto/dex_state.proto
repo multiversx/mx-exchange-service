@@ -269,7 +269,7 @@ message GetFilteredStakingFarmsRequest {
 }
 
 message UpdateStakingFarmsRequest {
-  repeated StakingProxy stakingFarms = 1;
+  repeated StakingFarm stakingFarms = 1;
   google.protobuf.FieldMask updateMask = 2; 
 }
 
