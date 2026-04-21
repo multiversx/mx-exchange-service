@@ -105,7 +105,7 @@ export class RabbitMqConsumer {
         channel: 'channel-events',
     })
     async consumeEvents(rawEvents: any) {
-        this.logger.info(`Raw events ${rawEvents}`, {
+        this.logger.info(`Raw events ${JSON.stringify(rawEvents)}`, {
             context: RabbitMqConsumer.name,
         });
         if (!rawEvents.events) {
