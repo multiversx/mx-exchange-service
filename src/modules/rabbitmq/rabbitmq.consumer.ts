@@ -106,6 +106,9 @@ export class RabbitMqConsumer {
     })
     async consumeEvents(rawEvents: any) {
         if (!rawEvents.events) {
+            this.logger.info('Empty events', {
+                context: RabbitMqConsumer.name,
+            });
             return;
         }
         const events: RawEvent[] = rawEvents?.events

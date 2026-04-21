@@ -40,6 +40,9 @@ export class StateChangesConsumer {
             !blockData.stateAccessesPerAccounts ||
             Object.keys(blockData.stateAccessesPerAccounts).length === 0
         ) {
+            this.logger.info('Invalid state accesses', {
+                context: StateChangesConsumer.name,
+            });
             return;
         }
 
