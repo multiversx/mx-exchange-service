@@ -105,6 +105,9 @@ export class RabbitMqConsumer {
         channel: 'channel-events',
     })
     async consumeEvents(rawEvents: any) {
+        this.logger.info(`Raw events ${rawEvents}`, {
+            context: RabbitMqConsumer.name,
+        });
         if (!rawEvents.events) {
             this.logger.info('Empty events', {
                 context: RabbitMqConsumer.name,
