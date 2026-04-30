@@ -39,10 +39,6 @@ export class XoxnoAggregatorService {
 
         const profiler = new PerformanceProfiler(`xoxno-aggregator`);
 
-        if (sender === undefined || !Address.isValid(sender)) {
-            sender = Address.Zero().toBech32();
-        }
-
         try {
             const params: Record<string, string | number | boolean> = {
                 from: tokenIn,
@@ -50,8 +46,11 @@ export class XoxnoAggregatorService {
                 amountIn,
                 slippage,
                 includePaths: true,
-                sender,
             };
+
+            if (sender !== undefined && Address.isValid(sender)) {
+                params.sender = sender;
+            }
 
             if (this.referralID !== undefined) {
                 params.referralId = this.referralID;
