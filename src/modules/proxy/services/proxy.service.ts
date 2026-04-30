@@ -63,7 +63,7 @@ export class ProxyService {
 
     async getAssetToken(proxyAddress: string): Promise<EsdtToken> {
         const assetTokenID = await this.proxyAbi.assetTokenID(proxyAddress);
-        return this.tokenService.tokenMetadata(assetTokenID);
+        return this.tokenService.tokenMetadataFromState(assetTokenID);
     }
 
     async getlockedAssetToken(proxyAddress: string): Promise<NftCollection[]> {

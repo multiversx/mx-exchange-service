@@ -9,7 +9,6 @@ import { FarmServiceV1_2 } from './v1.2/services/farm.v1.2.service';
 import { FarmServiceV1_3 } from './v1.3/services/farm.v1.3.service';
 import { FarmServiceV2 } from './v2/services/farm.v2.service';
 import { FarmServiceBase } from './base-module/services/farm.base.service';
-import { FarmModelV2 } from './models/farm.v2.model';
 import { FarmsFilter } from './models/farm.args';
 
 @Injectable()
@@ -20,7 +19,7 @@ export class FarmFactoryService {
         private readonly farmServiceV2: FarmServiceV2,
     ) {}
 
-    getFarms(filters?: FarmsFilter): Array<typeof FarmsUnion> {
+    async getFarms(filters?: FarmsFilter): Promise<Array<typeof FarmsUnion>> {
         const farms: Array<typeof FarmsUnion> = [];
         let addresses = farmsAddresses(filters?.versions);
         if (filters?.addresses) {
@@ -28,6 +27,12 @@ export class FarmFactoryService {
                 filters.addresses.includes(address),
             );
         }
+
+        const farmsV2 = await this.farmServiceV2.getFarms(
+            addresses.filter(
+                (address) => farmVersion(address) === FarmVersion.V2,
+            ),
+        );
 
         for (const address of addresses) {
             const version = farmVersion(address);
@@ -50,13 +55,10 @@ export class FarmFactoryService {
                     );
                     break;
                 case FarmVersion.V2:
-                    farms.push(
-                        new FarmModelV2({
-                            address,
-                            version,
-                            rewardType: farmType(address),
-                        }),
+                    const farm = farmsV2.find(
+                        (farm) => farm.address === address,
                     );
+                    farms.push(farm);
                     break;
                 case FarmVersion.CUSTOM:
                     farms.push(

@@ -10,7 +10,6 @@ import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import moment from 'moment';
-import { TokenRepositoryService } from 'src/modules/tokens/services/token.repository.service';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 
 @Injectable()
@@ -19,7 +18,6 @@ export class TokensCacheWarmerService {
         private readonly tokenService: TokenService,
         private readonly tokenComputeService: TokenComputeService,
         private readonly tokenSetterService: TokenSetterService,
-        private readonly tokenRepository: TokenRepositoryService,
         private readonly pairSetter: PairSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -37,12 +35,10 @@ export class TokensCacheWarmerService {
 
         for (const tokenID of tokenIDs) {
             const token = await this.tokenService.tokenMetadataRaw(tokenID);
-            const tokenType = await this.tokenRepository.getTokenType(tokenID);
 
             const cachedKeys = await Promise.all([
                 this.tokenSetterService.setMetadata(tokenID, token),
                 this.tokenSetterService.setBaseMetadata(tokenID, token),
-                this.tokenSetterService.setEsdtTokenType(tokenID, tokenType),
             ]);
 
             await this.deleteCacheKeys(cachedKeys);

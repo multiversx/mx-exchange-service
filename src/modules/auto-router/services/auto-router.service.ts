@@ -4,10 +4,7 @@ import { BigNumber } from 'bignumber.js';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import {
-    BaseEsdtToken,
-    EsdtToken,
-} from 'src/modules/tokens/models/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import {
     AutoRouterComputeService,
     BestSwapRoute,
@@ -32,12 +29,7 @@ import { CacheService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
-import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
-import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TransactionModel } from 'src/models/transaction.model';
-import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { SmartRouterService } from './smart.router.service';
 import {
     ParallelRouteAllocation,
@@ -45,21 +37,20 @@ import {
 } from '../models/smart.router.types';
 import { SmartRouterEvaluationService } from 'src/modules/smart-router-evaluation/services/smart.router.evaluation.service';
 import { ComposableTasksAbiService } from 'src/modules/composable-tasks/services/composable.tasks.abi.service';
+import { PairsStateService } from 'src/modules/state/services/pairs.state.service';
+import { PairsFilter } from 'src/modules/router/models/filter.args';
+import { TokensStateService } from 'src/modules/state/services/tokens.state.service';
 import { XoxnoAggregatorService } from './xoxno-aggregator.service';
 import {
     XoxnoQuoteModel,
     XoxnoPathModel,
 } from '../models/xoxno-aggregator.model';
+import { TokenService } from 'src/modules/tokens/services/token.service';
 import { Address } from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class AutoRouterService {
     constructor(
-        private readonly routerAbi: RouterAbiService,
-        private readonly tokenService: TokenService,
-        private readonly tokenCompute: TokenComputeService,
-        private readonly pairAbi: PairAbiService,
-        private readonly pairCompute: PairComputeService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
         private readonly autoRouterTransactionService: AutoRouterTransactionService,
         private readonly pairTransactionService: PairTransactionService,
@@ -70,6 +61,9 @@ export class AutoRouterService {
         private readonly smartRouterService: SmartRouterService,
         private readonly smartRouterEvaluationService: SmartRouterEvaluationService,
         private readonly composeTasksAbi: ComposableTasksAbiService,
+        private readonly pairsState: PairsStateService,
+        private readonly tokensState: TokensStateService,
+        private readonly tokenService: TokenService,
         private readonly xoxnoAggregatorService: XoxnoAggregatorService,
         private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -107,15 +101,18 @@ export class AutoRouterService {
             args.tokenOutID,
         ]);
 
-        const [multiSwapStatus, pairs, tokenInMetadata, tokenOutMetadata] =
-            await Promise.all([
+        const [multiSwapStatus, pairs, [tokenIn, tokenOut]] = await Promise.all(
+            [
                 this.remoteConfigGetterService.getMultiSwapStatus(),
                 this.getAllActivePairs(),
-                this.tokenService.baseTokenMetadata(tokenInID),
-                this.tokenService.baseTokenMetadata(tokenOutID),
-            ]);
+                this.tokensState.getTokens(
+                    [tokenInID, tokenOutID],
+                    ['identifier', 'decimals', 'price'],
+                ),
+            ],
+        );
 
-        args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
+        args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenIn);
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
         if (!multiSwapStatus) {
@@ -133,8 +130,8 @@ export class AutoRouterService {
                     tokenInID,
                     tokenOutID,
                     directPair,
-                    tokenInMetadata,
-                    tokenOutMetadata,
+                    tokenIn,
+                    tokenOut,
                     swapType,
                 );
             } else {
@@ -147,8 +144,8 @@ export class AutoRouterService {
             tokenInID,
             tokenOutID,
             pairs,
-            tokenInMetadata,
-            tokenOutMetadata,
+            tokenIn,
+            tokenOut,
             swapType,
         );
     }
@@ -158,11 +155,11 @@ export class AutoRouterService {
         tokenInID: string,
         tokenOutID: string,
         pair: PairModel,
-        tokenInMetadata: BaseEsdtToken,
-        tokenOutMetadata: BaseEsdtToken,
+        tokenIn: EsdtToken,
+        tokenOut: EsdtToken,
         swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
-        const [result, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
+        const [result] = await Promise.all([
             this.isFixedInput(swapType)
                 ? this.pairService.getAmountOut(
                       pair.address,
@@ -174,8 +171,6 @@ export class AutoRouterService {
                       tokenOutID,
                       args.amountOut,
                   ),
-            this.pairCompute.tokenPriceUSD(tokenInID),
-            this.pairCompute.tokenPriceUSD(tokenOutID),
         ]);
 
         if (result === '0') {
@@ -188,19 +183,23 @@ export class AutoRouterService {
 
         const [tokenInExchangeRate, tokenOutExchangeRate] =
             this.calculateExchangeRate(
-                tokenInMetadata.decimals,
-                tokenOutMetadata.decimals,
+                tokenIn.decimals,
+                tokenOut.decimals,
                 amountIn,
                 amountOut,
             );
 
-        if (!this.isFixedInput(swapType))
+        if (!this.isFixedInput(swapType)) {
             amountIn = this.addTolerance(amountIn, args.tolerance);
+        }
 
-        const priceDeviationPercent = await this.getTokenPriceDeviationPercent(
-            [tokenInID, tokenOutID],
-            [amountIn, amountOut],
-        );
+        const [priceDeviationPercent, fullPairs] = await Promise.all([
+            this.getTokenPriceDeviationPercent(
+                [tokenInID, tokenOutID],
+                [amountIn, amountOut],
+            ),
+            this.pairsState.getPairs([pair.address]),
+        ]);
 
         return new AutoRouteModel({
             swapType: swapType,
@@ -210,19 +209,19 @@ export class AutoRouterService {
             tokenOutExchangeRate: tokenOutExchangeRate,
             tokenInExchangeRateDenom: denominateAmount(
                 tokenInExchangeRate,
-                tokenOutMetadata.decimals,
+                tokenOut.decimals,
             ).toString(),
             tokenOutExchangeRateDenom: denominateAmount(
                 tokenOutExchangeRate,
-                tokenInMetadata.decimals,
+                tokenIn.decimals,
             ).toString(),
-            tokenInPriceUSD: tokenInPriceUSD,
-            tokenOutPriceUSD: tokenOutPriceUSD,
+            tokenInPriceUSD: tokenIn.price,
+            tokenOutPriceUSD: tokenOut.price,
             amountIn: amountIn,
             amountOut: amountOut,
             intermediaryAmounts: [amountIn, amountOut],
             tokenRoute: [tokenInID, tokenOutID],
-            pairs: [pair],
+            pairs: fullPairs,
             tolerance: args.tolerance,
             maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
             tokensPriceDeviationPercent: priceDeviationPercent,
@@ -234,13 +233,11 @@ export class AutoRouterService {
         tokenInID: string,
         tokenOutID: string,
         pairs: PairModel[],
-        tokenInMetadata: BaseEsdtToken,
-        tokenOutMetadata: BaseEsdtToken,
+        tokenIn: EsdtToken,
+        tokenOut: EsdtToken,
         swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
-        let swapRoute: BestSwapRoute,
-            tokenInPriceUSD: string,
-            tokenOutPriceUSD: string;
+        let swapRoute: BestSwapRoute;
 
         const paths = await this.getAllPaths(pairs, tokenInID, tokenOutID);
 
@@ -258,11 +255,6 @@ export class AutoRouterService {
                       args.amountOut,
                       swapType,
                   );
-
-            [tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
-                this.pairCompute.tokenPriceUSD(tokenInID),
-                this.pairCompute.tokenPriceUSD(tokenOutID),
-            ]);
         } catch (error) {
             this.logger.error(
                 'Error when computing the swap auto route.',
@@ -272,12 +264,12 @@ export class AutoRouterService {
         }
 
         for (const address of swapRoute.addressRoute) {
-            const lockedTokensInfo = await this.pairService.getLockedTokensInfo(
-                address,
-            );
+            const pair = pairs.find((pair) => pair.address === address);
+
             if (
-                lockedTokensInfo !== undefined &&
-                swapRoute.addressRoute.length > 1
+                pair === undefined ||
+                (pair.lockedTokensInfo !== undefined &&
+                    swapRoute.addressRoute.length > 1)
             ) {
                 throw new Error('No swap route found');
             }
@@ -285,8 +277,8 @@ export class AutoRouterService {
 
         const [tokenInExchangeRate, tokenOutExchangeRate] =
             this.calculateExchangeRate(
-                tokenInMetadata.decimals,
-                tokenOutMetadata.decimals,
+                tokenIn.decimals,
+                tokenOut.decimals,
                 this.isFixedInput(swapType)
                     ? args.amountIn
                     : swapRoute.bestResult,
@@ -295,10 +287,18 @@ export class AutoRouterService {
                     : args.amountOut,
             );
 
-        const priceDeviationPercent = await this.getTokenPriceDeviationPercent(
-            swapRoute.tokenRoute,
-            swapRoute.intermediaryAmounts,
-        );
+        const pairAddresses = this.getPairsRoute(
+            swapRoute.addressRoute,
+            pairs,
+        ).map((pair) => pair.address);
+
+        const [priceDeviationPercent, fullPairs] = await Promise.all([
+            this.getTokenPriceDeviationPercent(
+                swapRoute.tokenRoute,
+                swapRoute.intermediaryAmounts,
+            ),
+            this.pairsState.getPairs(pairAddresses),
+        ]);
 
         let parallelRouteSwap: ParallelRouteSwap;
         let smartSwap: SmartSwapModel | undefined;
@@ -316,8 +316,8 @@ export class AutoRouterService {
                     args.amountIn,
                     swapRoute.bestResult,
                     parallelRouteSwap,
-                    tokenInMetadata,
-                    tokenOutMetadata,
+                    tokenIn,
+                    tokenOut,
                     pairs,
                 ),
                 this.getXoxnoQuote(
@@ -333,10 +333,16 @@ export class AutoRouterService {
                 smartSwap,
                 xoxnoQuote,
                 swapRoute.bestResult,
-                tokenInMetadata,
-                tokenOutMetadata,
+                tokenIn,
+                tokenOut,
             );
         }
+
+        fullPairs.forEach((pair) => {
+            const currentPair = pairs.find((p) => p.address === pair.address);
+            pair.firstToken = currentPair.firstToken;
+            pair.secondToken = currentPair.secondToken;
+        });
 
         return new AutoRouteModel({
             swapType: swapType,
@@ -346,21 +352,21 @@ export class AutoRouterService {
             tokenOutExchangeRate: tokenOutExchangeRate,
             tokenInExchangeRateDenom: denominateAmount(
                 tokenInExchangeRate,
-                tokenOutMetadata.decimals,
+                tokenOut.decimals,
             ).toString(),
             tokenOutExchangeRateDenom: denominateAmount(
                 tokenOutExchangeRate,
-                tokenInMetadata.decimals,
+                tokenIn.decimals,
             ).toString(),
-            tokenInPriceUSD: tokenInPriceUSD,
-            tokenOutPriceUSD: tokenOutPriceUSD,
+            tokenInPriceUSD: tokenIn.price,
+            tokenOutPriceUSD: tokenOut.price,
             amountIn:
                 args.amountIn ||
                 this.addTolerance(swapRoute.bestResult, args.tolerance),
             amountOut: args.amountOut || swapRoute.bestResult,
             intermediaryAmounts: swapRoute.intermediaryAmounts,
             tokenRoute: swapRoute.tokenRoute,
-            pairs: this.getPairsRoute(swapRoute.addressRoute, pairs),
+            pairs: fullPairs,
             tolerance: args.tolerance,
             maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
             tokensPriceDeviationPercent: priceDeviationPercent,
@@ -376,7 +382,7 @@ export class AutoRouterService {
 
     setDefaultAmountInIfNeeded(
         args: AutoRouterArgs,
-        tokenInMetadata: BaseEsdtToken,
+        tokenInMetadata: EsdtToken,
     ): string {
         if (!args.amountOut && !args.amountIn) {
             return new BigNumber(10)
@@ -411,26 +417,34 @@ export class AutoRouterService {
     }
 
     private async getAllActivePairs(): Promise<PairModel[]> {
-        const pairMetadata = await this.routerAbi.pairsMetadata();
+        const pairsCount = await this.pairsState.getPairsCount();
 
-        const states = await this.pairService.getAllStates(
-            pairMetadata.map((pair) => pair.address),
+        const pairsResult = await this.pairsState.getFilteredPairs(
+            0,
+            pairsCount,
+            { state: ['Active'] } as PairsFilter,
+            undefined,
+            [
+                'address',
+                'firstTokenId',
+                'secondTokenId',
+                'totalFeePercent',
+                'info',
+                'lockedTokensInfo',
+            ],
         );
 
         const tokenIDs: string[] = [];
         const pairAddresses: string[] = [];
 
-        let activePairs = pairMetadata.filter(
-            (_pair, index) => states[index] === 'Active',
-        );
-
-        activePairs.forEach((pair) => {
-            tokenIDs.push(...[pair.firstTokenID, pair.secondTokenID]);
+        pairsResult.pairs.forEach((pair) => {
+            tokenIDs.push(...[pair.firstTokenId, pair.secondTokenId]);
         });
 
-        const tokens = await this.tokenService.getAllTokensMetadata([
-            ...new Set(tokenIDs),
-        ]);
+        const tokens = await this.tokensState.getTokens(
+            [...new Set(tokenIDs)],
+            ['identifier', 'isPaused', 'decimals', 'price'],
+        );
 
         const tokenMap = new Map(
             tokens
@@ -438,29 +452,24 @@ export class AutoRouterService {
                 .map((token) => [token.identifier, token]),
         );
 
-        activePairs = activePairs.filter(
+        const activePairs = pairsResult.pairs.filter(
             (pair) =>
-                tokenMap.has(pair.firstTokenID) &&
-                tokenMap.has(pair.secondTokenID),
+                tokenMap.has(pair.firstTokenId) &&
+                tokenMap.has(pair.secondTokenId),
         );
         activePairs.forEach((pair) => {
             pairAddresses.push(pair.address);
         });
 
-        const [allInfo, allTotalFeePercent] = await Promise.all([
-            this.pairAbi.getAllPairsInfoMetadata(pairAddresses),
-            this.pairAbi.getAllPairsTotalFeePercent(pairAddresses),
-        ]);
-
-        return activePairs.map((pair, index) => {
-            const firstToken = tokenMap.get(pair.firstTokenID);
-            const secondToken = tokenMap.get(pair.secondTokenID);
+        return activePairs.map((pair) => {
+            const firstToken = tokenMap.get(pair.firstTokenId);
+            const secondToken = tokenMap.get(pair.secondTokenId);
             return new PairModel({
                 address: pair.address,
                 firstToken,
                 secondToken,
-                info: allInfo[index],
-                totalFeePercent: allTotalFeePercent[index],
+                info: pair.info,
+                totalFeePercent: pair.totalFeePercent,
             });
         });
     }
@@ -689,9 +698,10 @@ export class AutoRouterService {
         tokenRoute: string[],
         intermediaryAmounts: string[],
     ): Promise<number> {
-        const [tokensMetadata, tokensPriceUSD] = await Promise.all([
-            this.tokenService.getAllBaseTokensMetadata(tokenRoute),
-            this.tokenCompute.getAllTokensPriceDerivedUSD(tokenRoute),
+        const tokens = await this.tokensState.getTokens(tokenRoute, [
+            'identifier',
+            'decimals',
+            'price',
         ]);
 
         for (let index = 0; index < tokenRoute.length - 1; index++) {
@@ -702,27 +712,20 @@ export class AutoRouterService {
                 intermediaryAmounts[index + 1],
             ];
 
-            const [
-                tokenIn,
-                tokenInPriceUSD,
-                intermediaryTokenOut,
-                intermediaryTokenOutPriceUSD,
-            ] = [
-                tokensMetadata[index],
-                tokensPriceUSD[index],
-                tokensMetadata[index + 1],
-                tokensPriceUSD[index + 1],
+            const [tokenIn, intermediaryTokenOut] = [
+                tokens[index],
+                tokens[index + 1],
             ];
 
             const amountInUSD = computeValueUSD(
                 amountIn,
                 tokenIn.decimals,
-                tokenInPriceUSD,
+                tokenIn.price,
             );
             const amountOutUSD = computeValueUSD(
                 amountOut,
                 intermediaryTokenOut.decimals,
-                intermediaryTokenOutPriceUSD,
+                intermediaryTokenOut.price,
             );
 
             const priceDeviationPercent = amountInUSD.isLessThan(amountOutUSD)
@@ -755,17 +758,16 @@ export class AutoRouterService {
 
         const tokenIDs = [...new Set(tokenRoutes.flat())];
 
-        const [allTokensMetadata, allTokensPriceUSD] = await Promise.all([
-            this.tokenService.getAllBaseTokensMetadata(tokenIDs),
-            this.tokenCompute.getAllTokensPriceDerivedUSD(tokenIDs),
+        const allTokens = await this.tokensState.getTokens(tokenIDs, [
+            'identifier',
+            'decimals',
+            'price',
         ]);
 
-        const tokensMetadata = new Map<string, BaseEsdtToken>();
-        const tokensPriceUSD = new Map<string, string>();
+        const tokensMetadata = new Map<string, EsdtToken>();
 
         tokenIDs.forEach((tokenID, index) => {
-            tokensMetadata.set(tokenID, allTokensMetadata[index]);
-            tokensPriceUSD.set(tokenID, allTokensPriceUSD[index]);
+            tokensMetadata.set(tokenID, allTokens[index]);
         });
 
         for (const [routeIndex, route] of tokenRoutes.entries()) {
@@ -777,27 +779,20 @@ export class AutoRouterService {
                     intermediaryAmounts[routeIndex][index + 1],
                 ];
 
-                const [
-                    tokenIn,
-                    tokenInPriceUSD,
-                    intermediaryTokenOut,
-                    intermediaryTokenOutPriceUSD,
-                ] = [
+                const [tokenIn, intermediaryTokenOut] = [
                     tokensMetadata.get(tokenInID),
-                    tokensPriceUSD.get(tokenInID),
                     tokensMetadata.get(tokenOutID),
-                    tokensPriceUSD.get(tokenOutID),
                 ];
 
                 const amountInUSD = computeValueUSD(
                     amountIn,
                     tokenIn.decimals,
-                    tokenInPriceUSD,
+                    tokenIn.price,
                 );
                 const amountOutUSD = computeValueUSD(
                     amountOut,
                     intermediaryTokenOut.decimals,
-                    intermediaryTokenOutPriceUSD,
+                    intermediaryTokenOut.price,
                 );
 
                 const priceDeviationPercent = amountInUSD.isLessThan(
@@ -872,8 +867,8 @@ export class AutoRouterService {
         amountIn: string,
         amountOut: string,
         parallelRouteSwap: ParallelRouteSwap,
-        tokenInMetadata: BaseEsdtToken,
-        tokenOutMetadata: BaseEsdtToken,
+        tokenIn: EsdtToken,
+        tokenOut: EsdtToken,
         pairs: PairModel[],
     ): Promise<SmartSwapModel | undefined> {
         const shouldPerformSmartSwap = await this.shouldPerformSmartSwap(
@@ -887,23 +882,40 @@ export class AutoRouterService {
 
         const [tokenInExchangeRate, tokenOutExchangeRate] =
             this.calculateExchangeRate(
-                tokenInMetadata.decimals,
-                tokenOutMetadata.decimals,
+                tokenIn.decimals,
+                tokenOut.decimals,
                 amountIn,
                 parallelRouteSwap.totalResult,
             );
 
-        const [priceDeviationPercent, feePercentage, tokenOut] =
+        const pairAddresses: string[] = [];
+        parallelRouteSwap.allocations.map((allocation) => {
+            pairAddresses.push(
+                ...this.getPairsRoute(allocation.addressRoute, pairs).map(
+                    (pair) => pair.address,
+                ),
+            );
+        });
+
+        const [priceDeviationPercent, feePercentage, fullPairs] =
             await Promise.all([
                 this.getSmartRouterAllocationsPriceDeviationPercent(
                     parallelRouteSwap.allocations,
                 ),
                 this.composeTasksAbi.smartSwapFeePercentage(),
-                this.tokenService.tokenMetadata(tokenOutMetadata.identifier),
+                this.pairsState.getPairs([...new Set(pairAddresses)]),
             ]);
 
         const smartSwapAmountOut = new BigNumber(parallelRouteSwap.totalResult);
         const feeAmount = smartSwapAmountOut.multipliedBy(feePercentage);
+        const pairMap = new Map<string, PairModel>();
+
+        fullPairs.forEach((pair) => {
+            const currentPair = pairs.find((p) => p.address === pair.address);
+            pair.firstToken = currentPair.firstToken;
+            pair.secondToken = currentPair.secondToken;
+            pairMap.set(pair.address, pair);
+        });
 
         return new SmartSwapModel({
             amountOut: smartSwapAmountOut
@@ -915,18 +927,22 @@ export class AutoRouterService {
             tokenOutExchangeRate: tokenOutExchangeRate,
             tokenInExchangeRateDenom: denominateAmount(
                 tokenInExchangeRate,
-                tokenOutMetadata.decimals,
+                tokenOut.decimals,
             ).toString(),
             tokenOutExchangeRateDenom: denominateAmount(
                 tokenOutExchangeRate,
-                tokenInMetadata.decimals,
+                tokenIn.decimals,
             ).toString(),
             tokensPriceDeviationPercent: priceDeviationPercent,
             routes: parallelRouteSwap.allocations.map((allocation) => {
-                const routePairs = this.getPairsRoute(
-                    allocation.addressRoute,
-                    pairs,
-                );
+                const routePairs: PairModel[] = [];
+                allocation.addressRoute.forEach((address) => {
+                    if (pairMap.has(address)) {
+                        routePairs.push(pairMap.get(address));
+                    }
+                });
+
+                this.getPairsRoute(allocation.addressRoute, pairs);
 
                 return new SmartSwapRoute({
                     intermediaryAmounts: allocation.intermediaryAmounts,
@@ -996,8 +1012,8 @@ export class AutoRouterService {
         internalSmartSwap: SmartSwapModel | undefined,
         xoxnoQuote: XoxnoQuoteModel | undefined,
         autoRouterAmountOut: string,
-        tokenInMetadata: BaseEsdtToken,
-        tokenOutMetadata: BaseEsdtToken,
+        tokenInMetadata: EsdtToken,
+        tokenOutMetadata: EsdtToken,
     ): Promise<SmartSwapModel | undefined> {
         const internalOutput = internalSmartSwap
             ? new BigNumber(internalSmartSwap.amountOut)
@@ -1028,8 +1044,8 @@ export class AutoRouterService {
 
     private async mapXoxnoToSmartSwapModel(
         quote: XoxnoQuoteModel,
-        tokenInMetadata: BaseEsdtToken,
-        tokenOutMetadata: BaseEsdtToken,
+        tokenInMetadata: EsdtToken,
+        tokenOutMetadata: EsdtToken,
     ): Promise<SmartSwapModel> {
         const [tokenInExchangeRate, tokenOutExchangeRate] =
             this.calculateExchangeRate(
@@ -1039,14 +1055,20 @@ export class AutoRouterService {
                 quote.amountOut,
             );
         const feeTokenID = await this.toWrappedIfEGLD([quote.feeToken]);
-        const feeToken = await this.tokenService.tokenMetadata(feeTokenID[0]);
+        const feeTokenFromState = await this.tokensState.getTokens([
+            feeTokenID[0],
+        ]);
+        const feeToken =
+            feeTokenFromState.length > 0 && feeTokenFromState[0]
+                ? feeTokenFromState
+                : await this.tokenService.getAllTokensMetadata([feeTokenID[0]]);
 
         return new SmartSwapModel({
             amountOut: quote.amountOut,
             source: SmartSwapSource.XOXNO,
             feePercentage: quote.feePercentage,
             feeAmount: quote.feeAmount,
-            feeToken,
+            feeToken: feeToken[0],
             tokenInExchangeRate,
             tokenOutExchangeRate,
             tokenInExchangeRateDenom: denominateAmount(
@@ -1075,15 +1097,46 @@ export class AutoRouterService {
                 paths.flatMap((p) => p.swaps.flatMap((s) => [s.from, s.to])),
             ),
         ];
-        const esdtTokenIDs = await this.toWrappedIfEGLD(tokenIDs);
 
-        // Batch fetch all token metadata (cached)
-        const tokensMetadata = await this.tokenService.getAllTokensMetadata(
-            esdtTokenIDs,
+        const wrappedEgldTokenID = await this.wrapAbi.wrappedEgldTokenID();
+        const esdtTokenIDs = tokenIDs.map((t) =>
+            t === mxConfig.EGLDIdentifier ? wrappedEgldTokenID : t,
         );
-        const tokenMap = new Map(
-            tokenIDs.map((id, i) => [id, tokensMetadata[i]]),
+
+        const allStateTokenIdentifiers = new Set(
+            (await this.tokensState.getAllTokens(['identifier'])).map(
+                (t) => t.identifier,
+            ),
         );
+        const knownTokenIDs = esdtTokenIDs.filter((id) =>
+            allStateTokenIdentifiers.has(id),
+        );
+        const unknownTokenIDs = esdtTokenIDs.filter(
+            (id) => !allStateTokenIdentifiers.has(id),
+        );
+
+        const tokenMap = new Map<string, EsdtToken>();
+        if (knownTokenIDs.length > 0) {
+            const stateTokens = await this.tokensState.getTokens(knownTokenIDs);
+            stateTokens.forEach((token) => {
+                if (token) tokenMap.set(token.identifier, token);
+            });
+        }
+
+        if (unknownTokenIDs.length > 0) {
+            const unknownTokensMetadata =
+                await this.tokenService.getAllTokensMetadata(unknownTokenIDs);
+            unknownTokensMetadata
+                .filter((token) => token != null)
+                .forEach((token) => tokenMap.set(token.identifier, token));
+        }
+
+        if (tokenIDs.includes(mxConfig.EGLDIdentifier)) {
+            tokenMap.set(
+                mxConfig.EGLDIdentifier,
+                tokenMap.get(wrappedEgldTokenID),
+            );
+        }
 
         return paths.map((path) => {
             const swaps = path.swaps;

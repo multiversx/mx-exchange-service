@@ -31,7 +31,7 @@ export abstract class FarmServiceBase {
 
     async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
         const farmedTokenID = await this.farmAbi.farmedTokenID(farmAddress);
-        return this.tokenService.tokenMetadata(farmedTokenID);
+        return this.tokenService.tokenMetadataFromState(farmedTokenID);
     }
 
     async getAllFarmedTokens(farmAddresses: string[]): Promise<EsdtToken[]> {
@@ -42,7 +42,7 @@ export abstract class FarmServiceBase {
             this.farmAbi.farmedTokenID.bind(this.farmAbi),
             CacheTtlInfo.Token,
         );
-        return this.tokenService.getAllTokensMetadata(farmedTokenIDs);
+        return this.tokenService.getAllTokensMetadataFromState(farmedTokenIDs);
     }
 
     async getFarmToken(farmAddress: string): Promise<NftCollection> {
@@ -59,7 +59,7 @@ export abstract class FarmServiceBase {
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.farmAbi.farmingTokenID(farmAddress);
-        return this.tokenService.tokenMetadata(farmingTokenID);
+        return this.tokenService.tokenMetadataFromState(farmingTokenID);
     }
 
     async getAllFarmingTokens(farmAddresses: string[]): Promise<EsdtToken[]> {
@@ -70,7 +70,7 @@ export abstract class FarmServiceBase {
             this.farmAbi.farmingTokenID.bind(this.farmAbi),
             CacheTtlInfo.Token,
         );
-        return this.tokenService.getAllTokensMetadata(farmingTokenIDs);
+        return this.tokenService.getAllTokensMetadataFromState(farmingTokenIDs);
     }
 
     protected async getRemainingFarmingEpochs(

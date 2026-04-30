@@ -32,15 +32,24 @@ export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
     minted?: string;
     burnt?: string;
     initialMinted?: string;
+    @Field()
     derivedEGLD: string;
     price?: string;
+    @Field({ nullable: true })
     previous24hPrice?: string;
+    @Field({ nullable: true })
     previous7dPrice?: string;
+    @Field({ nullable: true })
     volumeUSD24h?: string;
+    @Field({ nullable: true })
     previous24hVolume?: string;
+    @Field({ nullable: true })
     liquidityUSD?: string;
+    @Field({ nullable: true })
     swapCount24h?: number;
+    @Field({ nullable: true })
     previous24hSwapCount?: number;
+    @Field({ nullable: true })
     trendingScore?: string;
     supply?: string;
     circulatingSupply?: string;
@@ -59,14 +68,20 @@ export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
     canPause: boolean;
     canFreeze: boolean;
     canWipe: boolean;
-    @Field(() => RolesModel, {
+    @Field(() => [RolesModel], {
         nullable: true,
         complexity: nestedFieldComplexity,
     })
-    roles?: RolesModel;
+    roles?: RolesModel[];
     type?: string;
     balance?: string;
+    @Field({ nullable: true })
     createdAt?: string;
+    pairAddress?: string;
+    priceChange24h?: number;
+    priceChange7d?: number;
+    tradeChange24h?: number;
+    volumeUSDChange24h?: number;
 
     constructor(init?: Partial<EsdtToken>) {
         super(init);
@@ -75,7 +90,7 @@ export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
             this.assets = new AssetsModel(init.assets);
         }
         if (init.roles) {
-            this.roles = new RolesModel(init.roles);
+            this.roles = init.roles.map((role) => new RolesModel(role));
         }
     }
 }

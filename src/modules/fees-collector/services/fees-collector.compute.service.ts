@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { BigNumber } from 'bignumber.js';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
 import { Constants, ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
-import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { TokenDistributionModel } from 'src/submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
@@ -16,22 +13,18 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { EnergyService } from 'src/modules/energy/services/energy.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class FeesCollectorComputeService {
     constructor(
         private readonly feesCollectorAbi: FeesCollectorAbiService,
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
-        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
-        private readonly contextGetter: ContextGetterService,
         private readonly energyAbi: EnergyAbiService,
         private readonly energyService: EnergyService,
         private readonly tokenService: TokenService,
         private readonly tokenCompute: TokenComputeService,
-        private readonly apiService: MXApiService,
     ) {}
 
     async computeUserRewardsForWeek(
@@ -97,35 +90,6 @@ export class FeesCollectorComputeService {
         return this.weeklyRewardsSplittingCompute.computeDistribution(
             userRewardsForWeek,
         );
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    @GetOrSetCache({
-        baseKey: 'feesCollector',
-        remoteTtl: CacheTtlInfo.ContractBalance.remoteTtl,
-        localTtl: CacheTtlInfo.ContractBalance.localTtl,
-    })
-    async accumulatedFeesUntilNow(
-        scAddress: string,
-        week: number,
-    ): Promise<string> {
-        return this.computeAccumulatedFeesUntilNow(scAddress, week);
-    }
-
-    async computeAccumulatedFeesUntilNow(
-        scAddress: string,
-        week: number,
-    ): Promise<string> {
-        const [lockedTokensPerBlock, blocksInWeek] = await Promise.all([
-            this.lockedTokensPerBlock(),
-            this.computeBlocksInWeek(scAddress, week),
-        ]);
-
-        return new BigNumber(lockedTokensPerBlock)
-            .multipliedBy(blocksInWeek)
-            .toFixed();
     }
 
     async computeUserLastWeekRewardsUSD(
@@ -216,30 +180,6 @@ export class FeesCollectorComputeService {
         return userAPRForWeek;
     }
 
-    private async computeBlocksInWeek(
-        scAddress: string,
-        week: number,
-    ): Promise<number> {
-        const [startEpochForCurrentWeek, currentEpoch] = await Promise.all([
-            this.weekTimekeepingCompute.startEpochForWeek(scAddress, week),
-            this.contextGetter.getCurrentEpoch(),
-        ]);
-
-        const promises = [];
-        for (
-            let epoch = startEpochForCurrentWeek;
-            epoch <= currentEpoch;
-            epoch++
-        ) {
-            promises.push(this.contextGetter.getBlocksCountInEpoch(epoch, 1));
-        }
-
-        const blocksInEpoch = await Promise.all(promises);
-        return blocksInEpoch.reduce((total, current) => {
-            return total + current;
-        });
-    }
-
     @ErrorLoggerAsync()
     @GetOrSetCache({
         baseKey: 'feesCollector',
@@ -280,28 +220,5 @@ export class FeesCollectorComputeService {
         );
 
         return totalUsdValue.toFixed();
-    }
-
-    @ErrorLoggerAsync()
-    @GetOrSetCache({
-        baseKey: 'feesCollector',
-        remoteTtl: Constants.oneHour() * 4,
-        localTtl: Constants.oneHour() * 3,
-    })
-    async lockedTokensPerBlock(): Promise<string> {
-        return this.computeLockedTokensPerBlock();
-    }
-
-    async computeLockedTokensPerBlock(): Promise<string> {
-        const [lockedTokensPerEpoch, stats] = await Promise.all([
-            this.feesCollectorAbi.lockedTokensPerEpoch(),
-            this.apiService.getStats(),
-        ]);
-
-        const lockedTokensPerBlock = new BigNumber(
-            lockedTokensPerEpoch,
-        ).dividedBy(stats.roundsPerEpoch);
-
-        return lockedTokensPerBlock.integerValue().toFixed();
     }
 }

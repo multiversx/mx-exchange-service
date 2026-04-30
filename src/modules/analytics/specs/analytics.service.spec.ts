@@ -46,7 +46,9 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
-import { StakingFilteringService } from 'src/modules/staking/services/staking.filtering.service';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
+import { StakingStateServiceProvider } from 'src/modules/state/mocks/staking.state.service.mock';
 
 describe('AnalyticsService', () => {
     let module: TestingModule;
@@ -80,7 +82,9 @@ describe('AnalyticsService', () => {
                 FarmServiceV1_2,
                 FarmServiceV1_3,
                 FarmServiceV2,
+                FarmsStateServiceProvider,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 ProxyAbiServiceProvider,
@@ -102,7 +106,7 @@ describe('AnalyticsService', () => {
                 StakingAbiServiceProvider,
                 StakingService,
                 StakingComputeService,
-                StakingFilteringService,
+                StakingStateServiceProvider,
                 EnergyAbiServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 AnalyticsQueryServiceProvider,

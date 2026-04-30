@@ -17,9 +17,8 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { Address } from '@multiversx/sdk-core';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
-import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
-import { Tokens } from 'src/modules/pair/mocks/pair.constants';
+import { PairsData } from 'src/modules/pair/mocks/pair.constants';
 import { WrapAbiServiceProvider } from 'src/modules/wrapping/mocks/wrap.abi.service.mock';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
@@ -31,13 +30,12 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
-import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { gasConfig, scAddress } from 'src/config';
-import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { SmartRouterServiceProvider } from '../mocks/smart.router.service.mock';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
 import { XoxnoAggregatorServiceProvider } from '../mocks/xoxno-aggregator.service.mock';
 import BigNumber from 'bignumber.js';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -78,7 +76,6 @@ describe('AutoRouterService', () => {
                 ContextGetterServiceProvider,
                 MXProxyServiceProvider,
                 TokenServiceProvider,
-                TokenComputeServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 PairService,
@@ -94,10 +91,11 @@ describe('AutoRouterService', () => {
                 ComposableTasksTransactionService,
                 ApiConfigService,
                 MXApiServiceProvider,
-                PairFilteringService,
                 SmartRouterServiceProvider,
                 SmartRouterEvaluationServiceProvider,
                 ComposableTasksAbiServiceProvider,
+                PairsStateServiceProvider,
+                TokensStateServiceProvider,
                 XoxnoAggregatorServiceProvider,
             ],
             exports: [],
@@ -133,19 +131,11 @@ describe('AutoRouterService', () => {
                 intermediaryAmounts: ['1000000', '99690060900928177'],
                 tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
-                    new PairModel({
-                        address: Address.newFromHex(
+                    PairsData(
+                        Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
                         ).toBech32(),
-                        firstToken: Tokens('WEGLD-123456'),
-                        secondToken: Tokens('USDC-123456'),
-                        info: new PairInfoModel({
-                            reserves0: '1000000000000000000000',
-                            reserves1: '10000000000',
-                            totalSupply: '10000000000',
-                        }),
-                        totalFeePercent: 0.003,
-                    }),
+                    ) as unknown as PairModel,
                 ],
                 tolerance: 0.01,
                 maxPriceDeviationPercent: 1,
@@ -177,19 +167,11 @@ describe('AutoRouterService', () => {
                 intermediaryAmounts: ['2000000', '199360247566635212'],
                 tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
-                    new PairModel({
-                        address: Address.newFromHex(
+                    PairsData(
+                        Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
                         ).toBech32(),
-                        firstToken: Tokens('WEGLD-123456'),
-                        secondToken: Tokens('USDC-123456'),
-                        info: new PairInfoModel({
-                            reserves0: '1000000000000000000000',
-                            reserves1: '10000000000',
-                            totalSupply: '10000000000',
-                        }),
-                        totalFeePercent: 0.003,
-                    }),
+                    ) as unknown as PairModel,
                 ],
                 tolerance: 0.01,
                 maxPriceDeviationPercent: 1,
@@ -226,32 +208,16 @@ describe('AutoRouterService', () => {
                 ],
                 tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
                 pairs: [
-                    new PairModel({
-                        address: Address.newFromHex(
+                    PairsData(
+                        Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000013',
                         ).toBech32(),
-                        firstToken: Tokens('WEGLD-123456'),
-                        secondToken: Tokens('USDC-123456'),
-                        info: new PairInfoModel({
-                            reserves0: '1000000000000000000000',
-                            reserves1: '10000000000',
-                            totalSupply: '10000000000',
-                        }),
-                        totalFeePercent: 0.003,
-                    }),
-                    new PairModel({
-                        address: Address.newFromHex(
+                    ) as unknown as PairModel,
+                    PairsData(
+                        Address.newFromHex(
                             '0000000000000000000000000000000000000000000000000000000000000012',
                         ).toBech32(),
-                        firstToken: Tokens('WEGLD-123456'),
-                        secondToken: Tokens('MEX-123456'),
-                        info: new PairInfoModel({
-                            reserves0: '1000000000000000000000',
-                            reserves1: '1000000000000000000000000',
-                            totalSupply: '1000000000000000000000',
-                        }),
-                        totalFeePercent: 0.003,
-                    }),
+                    ) as unknown as PairModel,
                 ],
                 tolerance: 0.01,
                 maxPriceDeviationPercent: 1,

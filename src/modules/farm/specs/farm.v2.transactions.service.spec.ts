@@ -18,6 +18,7 @@ import { ContextGetterServiceProvider } from 'src/services/context/mocks/context
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { Address } from '@multiversx/sdk-core/out';
 import { encodeTransactionData } from 'src/helpers/helpers';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('FarmTransactionsServiceV2', () => {
     let module: TestingModule;
@@ -37,6 +38,7 @@ describe('FarmTransactionsServiceV2', () => {
                 MXApiServiceProvider,
                 FarmAbiServiceProviderV2,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 RouterAbiServiceProvider,

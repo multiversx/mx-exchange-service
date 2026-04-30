@@ -4,7 +4,6 @@ import { MetricsController } from './endpoints/metrics/metrics.controller';
 import { PairModule } from './modules/pair/pair.module';
 import { RemoteConfigController } from './modules/remote-config/remote-config.controller';
 import { RemoteConfigModule } from './modules/remote-config/remote-config.module';
-import { TokenController } from './modules/tokens/token.controller';
 import { TokenModule } from './modules/tokens/token.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { ESTransactionsService } from './services/elastic-search/services/es.transactions.service';
@@ -15,6 +14,8 @@ import { XPortalApiService } from './services/multiversx-communication/mx.xporta
 import { PushNotificationsModule } from './modules/push-notifications/push.notifications.module';
 import { TradingContestAdminController } from './modules/trading-contest/controllers/trading.contest.admin.controller';
 import { TradingContestModule } from './modules/trading-contest/trading.contest.module';
+import { StateTasksModule } from './modules/state/state.tasks.module';
+import { StateController } from './modules/state/controllers/state.controller';
 
 @Module({
     imports: [
@@ -26,14 +27,15 @@ import { TradingContestModule } from './modules/trading-contest/trading.contest.
         SmartRouterEvaluationModule,
         PushNotificationsModule,
         TradingContestModule,
+        StateTasksModule,
     ],
     controllers: [
         MetricsController,
-        TokenController,
         RemoteConfigController,
         SmartRouterEvaluationController,
         PushNotificationsController,
         TradingContestAdminController,
+        StateController,
     ],
     providers: [ESTransactionsService, XPortalApiService],
 })

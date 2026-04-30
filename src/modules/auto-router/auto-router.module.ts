@@ -16,6 +16,7 @@ import { TokenModule } from '../tokens/token.module';
 import { ComposableTasksModule } from '../composable-tasks/composable.tasks.module';
 import { SmartRouterService } from './services/smart.router.service';
 import { SmartRouterEvaluationModule } from '../smart-router-evaluation/smart.router.evaluation.module';
+import { StateModule } from '../state/state.module';
 import { XoxnoAggregatorService } from './services/xoxno-aggregator.service';
 
 @Module({
@@ -31,6 +32,7 @@ import { XoxnoAggregatorService } from './services/xoxno-aggregator.service';
         ComposableTasksModule,
         RemoteConfigModule,
         SmartRouterEvaluationModule,
+        StateModule,
     ],
     providers: [
         SwapRouteResolver,

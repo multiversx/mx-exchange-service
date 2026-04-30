@@ -46,5 +46,4 @@ export interface IPairComputeService {
     volumeUSD(pairAddress: string): Promise<string>;
     feesUSD(pairAddress: string, time: string): Promise<string>;
     feesAPR(pairAddress: string): Promise<string>;
-    type(pairAddress: string): Promise<string>;
 }

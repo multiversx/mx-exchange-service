@@ -320,7 +320,7 @@ export class AnalyticsComputeService {
             commonTokens,
         );
 
-        const tokens = await this.tokenService.getAllTokensMetadata([
+        const tokens = await this.tokenService.getAllTokensMetadataFromState([
             quoteToken,
             baseToken,
         ]);
@@ -391,7 +391,7 @@ export class AnalyticsComputeService {
             pairsTokens.add(pair.secondTokenID);
         });
 
-        const tokens = await this.tokenService.getAllTokensMetadata(
+        const tokens = await this.tokenService.getAllTokensMetadataFromState(
             Array.from(pairsTokens),
         );
 

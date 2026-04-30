@@ -5,7 +5,6 @@ import { ApiConfigService } from '../../helpers/api.config.service';
 import { WeeklyRewardsSplittingComputeService } from './services/weekly-rewards-splitting.compute.service';
 import { WeekTimekeepingModule } from '../week-timekeeping/week-timekeeping.module';
 import { ProgressComputeService } from './services/progress.compute.service';
-import { GlobalInfoByWeekResolver } from './weekly-rewards-splitting.resolver';
 import { RouterModule } from '../../modules/router/router.module';
 import { PairModule } from '../../modules/pair/pair.module';
 import { TokenModule } from '../../modules/tokens/token.module';
@@ -35,11 +34,9 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         WeeklyRewardsSplittingAbiService,
         WeeklyRewardsSplittingComputeService,
         WeeklyRewardsSplittingSetterService,
-        GlobalInfoByWeekResolver,
     ],
     exports: [
         ProgressComputeService,
-        GlobalInfoByWeekResolver,
         WeeklyRewardsSplittingAbiService,
         WeeklyRewardsSplittingComputeService,
         WeeklyRewardsSplittingSetterService,

@@ -9,7 +9,6 @@ import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
-import { PriceCandlesResolutions } from '../models/query.args';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 
@@ -110,6 +109,8 @@ export class AnalyticsPairService {
                         feeUSD !== undefined
                             ? new BigNumber(feeUSD.value).toFixed()
                             : '0',
+                    firstTokenId: firstTokenID,
+                    secondTokenId: secondTokenID,
                 }),
             );
         }

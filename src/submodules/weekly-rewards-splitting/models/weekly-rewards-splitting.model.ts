@@ -27,7 +27,7 @@ export class GlobalInfoByWeekModel {
     apr: string;
 
     @Field(() => [EsdtTokenPayment], { complexity: nestedFieldComplexity })
-    totalRewardsForWeek: [EsdtTokenPayment];
+    totalRewardsForWeek: EsdtTokenPayment[];
 
     @Field(() => [
         TokenDistributionModel,
@@ -88,19 +88,6 @@ export class ClaimProgress {
     week: number;
 
     constructor(init?: Partial<ClaimProgress>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
-export class UserInfoByWeekSubModel {
-    @Field(() => ClaimProgress, { complexity: nestedFieldComplexity })
-    claimProgress: ClaimProgress;
-
-    @Field()
-    lastActiveWeekForUser: number;
-
-    constructor(init?: Partial<UserInfoByWeekSubModel>) {
         Object.assign(this, init);
     }
 }

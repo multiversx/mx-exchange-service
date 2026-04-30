@@ -22,6 +22,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Address } from '@multiversx/sdk-core/out';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { encodeTransactionData } from 'src/helpers/helpers';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('ProxyFarmTransactionsService', () => {
     let module: TestingModule;
@@ -44,6 +45,7 @@ describe('ProxyFarmTransactionsService', () => {
                 FarmAbiServiceProviderV1_3,
                 FarmAbiServiceProviderV2,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 RouterAbiServiceProvider,

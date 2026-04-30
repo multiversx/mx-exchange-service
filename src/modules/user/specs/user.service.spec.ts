@@ -18,7 +18,6 @@ import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/rem
 import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
-import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
@@ -67,6 +66,9 @@ import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
+import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('UserService', () => {
     let module: TestingModule;
@@ -106,6 +108,7 @@ describe('UserService', () => {
                     useClass: FarmAbiServiceMock,
                 },
                 FarmAbiFactory,
+                FarmsStateServiceProvider,
                 LockedTokenWrapperAbiServiceProvider,
                 ProxyService,
                 ProxyAbiServiceProvider,
@@ -141,6 +144,8 @@ describe('UserService', () => {
                 RemoteConfigGetterServiceProvider,
                 MXDataApiServiceProvider,
                 ApiConfigService,
+                TokensStateServiceProvider,
+                PairsStateServiceProvider,
             ],
             imports: [
                 WinstonModule.forRoot({
@@ -179,7 +184,7 @@ describe('UserService', () => {
                 identifier: 'MEX-123456',
                 ticker: 'MEX',
                 name: 'MEX',
-                type: 'Ecosystem',
+                type: 'FungibleESDT',
                 owner: Address.fromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
                 ).bech32(),
@@ -202,7 +207,7 @@ describe('UserService', () => {
                 circulatingSupply: '1',
                 transactions: 1,
                 price: '0.01',
-                roles: new RolesModel(),
+                roles: [],
                 assets: new AssetsModel(),
             }),
         ]);

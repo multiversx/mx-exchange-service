@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package dex_state;
+
+import "weekly_rewards.proto";
+import "pairs.proto";
+
+message Farm {
+  string address                            = 1;
+  string farmedTokenId                      = 2;
+  string farmedTokenPriceUSD                = 3;
+  string farmTokenCollection                = 4;
+  uint32 farmTokenDecimals                  = 5;
+  string farmTokenPriceUSD                  = 6;
+  string farmTokenSupply                    = 7;
+  string farmTokenSupplyCurrentWeek         = 8;
+  string farmingTokenId                     = 9;
+  string farmingTokenPriceUSD               = 10;
+  bool produceRewardsEnabled                = 11;
+  string perBlockRewards                    = 12;
+  uint32 penaltyPercent                     = 13;
+  uint32 minimumFarmingEpochs               = 14;
+  string rewardPerShare                     = 15;
+  string rewardReserve                      = 16;
+  uint32 lastRewardBlockNonce               = 17;
+  string divisionSafetyConstant             = 18;
+  string totalValueLockedUSD                = 19;
+  string state                              = 20;
+  string burnGasLimit                       = 21;
+  string transferExecGasLimit               = 22;
+  string pairAddress                        = 23;
+  string lastErrorMessage                   = 24;
+  uint32 boostedYieldsRewardsPercenatage    = 25;
+  BoostedYieldsFactors boostedYieldsFactors = 26;
+  string lockingScAddress                   = 27;
+  string lockEpochs                         = 28;
+  string undistributedBoostedRewards        = 29;
+  string energyFactoryAddress               = 30;
+  string rewardType                         = 31;
+  WeekTimekeeping time                      = 32;
+  string accumulatedRewards                 = 33;
+  repeated GlobalInfo boosterRewards        = 34;
+  uint32 lastGlobalUpdateWeek               = 35;
+  string baseApr                            = 36;
+  string boostedApr                         = 37;
+  string optimalEnergyPerLp                 = 38;
+  string boostedRewardsPerWeek              = 39;
+  Pair pair                                 = 40;
+}

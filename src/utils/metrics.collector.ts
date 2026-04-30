@@ -10,6 +10,7 @@ export class MetricsCollector {
     private static dataApiQueryDurationHistogram: Histogram<string>;
     private static vmQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
+    private static stateRpcDurationHistogram: Histogram<string>;
     private static guestQueriesGauge: Gauge<string>;
     private static currentNonceGauge: Gauge<string>;
     private static lastProcessedNonceGauge: Gauge<string>;
@@ -88,6 +89,15 @@ export class MetricsCollector {
                 help: 'Gas Difference between gas limit and gas used',
                 labelNames: ['endpoint', 'receiver'],
                 buckets: [100000, 1000000, 10000000],
+            });
+        }
+
+        if (!MetricsCollector.stateRpcDurationHistogram) {
+            MetricsCollector.stateRpcDurationHistogram = new Histogram({
+                name: 'state_rpc_duration',
+                help: 'State gRPC',
+                labelNames: ['rpc'],
+                buckets: [],
             });
         }
 
@@ -218,6 +228,14 @@ export class MetricsCollector {
         MetricsCollector.gasDifferenceHistogram
             .labels(endpoint, receiver)
             .observe(gasDifference);
+    }
+
+    static setStateRpcDuration(rpc: string, duration: number) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.baseMetrics.setExternalCall('stateRPC', duration);
+        MetricsCollector.stateRpcDurationHistogram
+            .labels(rpc)
+            .observe(duration);
     }
 
     static setCurrentNonce(shardId: number, nonce: number) {
