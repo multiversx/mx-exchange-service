@@ -14,6 +14,10 @@ export class TokensStateServiceMock {
         return tokenIDs.map((tokenID) => Tokens(tokenID));
     }
 
+    async getAllTokens(fields: (keyof EsdtToken)[] = []): Promise<EsdtToken[]> {
+        return this.getTokens(MockedTokens, fields);
+    }
+
     async getFilteredTokens(
         offset: number,
         limit: number,

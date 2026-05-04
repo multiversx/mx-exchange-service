@@ -503,11 +503,14 @@ export class StakingComputeService {
             );
         }
         const remainingRewards = await Promise.all(promises);
-        return remainingRewards.length > 0
-            ? remainingRewards.reduce((acc, curr) => {
-                  return new BigNumber(acc).plus(curr);
-              })
-            : new BigNumber(0);
+
+        if (remainingRewards.length === 0) {
+            return new BigNumber(0);
+        }
+
+        return remainingRewards.reduce((acc, curr) => {
+            return new BigNumber(acc).plus(curr);
+        });
     }
 
     async computeUserRewardsDistributionForWeek(

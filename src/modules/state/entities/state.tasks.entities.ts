@@ -25,6 +25,8 @@ export enum StateTasks {
     REFRESH_STAKING_FARM = 'refreshStakingFarm',
     REFRESH_STAKING_FARMS = 'refreshAllStakingFarms',
     REFRESH_FEES_COLLECTOR = 'refreshFeesCollector',
+    REFRESH_TOKEN = 'refreshToken',
+    REFRESH_TOKENS = 'refreshAllTokens',
 }
 
 export const StateTaskPriority: Record<StateTasks, number> = {
@@ -35,8 +37,10 @@ export const StateTaskPriority: Record<StateTasks, number> = {
     refreshAllFarms: 13,
     refreshAllStakingFarms: 13,
     refreshFeesCollector: 13,
+    refreshAllTokens: 13,
     refreshFarm: 15,
     refreshStakingFarm: 15,
+    refreshToken: 15,
     broadcastPriceUpdates: 30,
     indexLpToken: 100,
     updateSnapshot: 200,
@@ -48,6 +52,7 @@ export const StateTasksWithArguments = [
     StateTasks.INDEX_PAIR,
     StateTasks.REFRESH_FARM,
     StateTasks.REFRESH_STAKING_FARM,
+    StateTasks.REFRESH_TOKEN,
 ];
 
 export const PENDING_PRICE_UPDATES_KEY = 'dexService.pendingPriceUpdates';

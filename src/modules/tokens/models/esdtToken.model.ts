@@ -35,21 +35,21 @@ export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
     @Field()
     derivedEGLD: string;
     price?: string;
-    @Field()
+    @Field({ nullable: true })
     previous24hPrice?: string;
-    @Field()
+    @Field({ nullable: true })
     previous7dPrice?: string;
-    @Field()
+    @Field({ nullable: true })
     volumeUSD24h?: string;
-    @Field()
+    @Field({ nullable: true })
     previous24hVolume?: string;
-    @Field()
+    @Field({ nullable: true })
     liquidityUSD?: string;
-    @Field()
+    @Field({ nullable: true })
     swapCount24h?: number;
-    @Field()
+    @Field({ nullable: true })
     previous24hSwapCount?: number;
-    @Field()
+    @Field({ nullable: true })
     trendingScore?: string;
     supply?: string;
     circulatingSupply?: string;
@@ -75,7 +75,7 @@ export class EsdtToken extends BaseEsdtToken implements IEsdtToken {
     roles?: RolesModel[];
     type?: string;
     balance?: string;
-    @Field()
+    @Field({ nullable: true })
     createdAt?: string;
     pairAddress?: string;
     priceChange24h?: number;

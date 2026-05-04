@@ -36,6 +36,7 @@ const MAX_TASK_RETRIES = 5;
 const TASK_RETRY_TTL_SECONDS = 86400;
 const INDEX_LP_MAX_ATTEMPTS = 60;
 const PAIR_REFRESH_CONCURRENCY = 50;
+const TOKEN_REFRESH_CONCURRENCY = 50;
 
 function getTaskRetryKey(task: TaskDto): string {
     const base = `${TASK_RETRY_COUNT_KEY_PREFIX}:${task.name}`;
@@ -166,6 +167,12 @@ export class StateTasksService {
                     break;
                 case StateTasks.REFRESH_FEES_COLLECTOR:
                     await this.refreshFeesCollector();
+                    break;
+                case StateTasks.REFRESH_TOKEN:
+                    await this.refreshToken(task.args[0]);
+                    break;
+                case StateTasks.REFRESH_TOKENS:
+                    await this.refreshTokens();
                     break;
                 default:
                     break;
@@ -548,5 +555,54 @@ export class StateTasksService {
             );
 
         await this.feesCollectorState.updateFeesCollector(feesCollectorUpdates);
+    }
+
+    async refreshToken(identifier: string): Promise<void> {
+        const updates = await this.syncService.refreshTokenMetadata(identifier);
+
+        if (!updates) {
+            throw new Error(`Token ${identifier} not found`);
+        }
+
+        const tokenUpdates = new Map<string, Partial<EsdtToken>>();
+        tokenUpdates.set(identifier, updates);
+
+        const updateResult = await this.tokensState.updateTokens(tokenUpdates);
+
+        this.logger.debug(`Refresh token ${identifier} task completed`, {
+            context: StateTasksService.name,
+            updateResult,
+        });
+    }
+
+    async refreshTokens(): Promise<void> {
+        const tokens = await this.tokensState.getAllTokens(['identifier']);
+
+        const tokenUpdates = new Map<string, Partial<EsdtToken>>();
+
+        const profiler = new PerformanceProfiler();
+
+        for (let i = 0; i < tokens.length; i += TOKEN_REFRESH_CONCURRENCY) {
+            const chunk = tokens.slice(i, i + TOKEN_REFRESH_CONCURRENCY);
+            const results = await Promise.all(
+                chunk.map((token) =>
+                    this.syncService.refreshTokenMetadata(token.identifier),
+                ),
+            );
+            results.forEach((updates, idx) => {
+                if (updates) {
+                    tokenUpdates.set(chunk[idx].identifier, updates);
+                }
+            });
+        }
+
+        profiler.stop('Finished syncing tokens metadata in', true);
+
+        const updateResult = await this.tokensState.updateTokens(tokenUpdates);
+
+        this.logger.debug(`Refresh all tokens metadata task completed`, {
+            context: StateTasksService.name,
+            updateResult,
+        });
     }
 }

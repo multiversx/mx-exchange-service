@@ -100,6 +100,9 @@ export class StateStore {
 
     // Setters for controlled mutation
     setToken(identifier: string, token: EsdtToken): void {
+        if (!identifier) {
+            throw new Error('Token identifier must not be empty');
+        }
         this._tokens.set(identifier, token);
     }
 
@@ -145,7 +148,10 @@ export class StateStore {
         if (!this._tokenPairs.has(tokenId)) {
             this._tokenPairs.set(tokenId, []);
         }
-        this._tokenPairs.get(tokenId).push(pairAddress);
+        const pairs = this._tokenPairs.get(tokenId);
+        if (!pairs.includes(pairAddress)) {
+            pairs.push(pairAddress);
+        }
     }
 
     addTokenByType(type: EsdtTokenType, tokenId: string): void {
