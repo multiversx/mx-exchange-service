@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import moment from 'moment';
 import { Model, UpdateWriteOpResult } from 'mongoose';
-import { MongoServerError } from 'mongodb';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairModel } from 'src/modules/pair/models/pair.model';
@@ -128,7 +127,7 @@ export class StateSnapshotService {
 
             return result;
         } catch (error) {
-            if (error.name === MongoServerError.name && error.code === 11000) {
+            if (error.name === 'MongoServerError' && error.code === 11000) {
                 this.logger.warn('Duplicate snapshot', {
                     context: StateSnapshotService.name,
                     date,
