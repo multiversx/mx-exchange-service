@@ -2,16 +2,18 @@
 
 FROM node:24-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-    npm ci --no-audit --no-fund
+RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile
 
 FROM node:24-alpine AS build
 WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN pnpm build
 
 FROM node:24-alpine AS runtime
 WORKDIR /app

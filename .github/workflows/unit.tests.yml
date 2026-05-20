@@ -19,16 +19,21 @@ jobs:
 
         steps:
             - uses: actions/checkout@v5
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+
             - name: Use Node.js ${{ matrix.node-version }}
               uses: actions/setup-node@v5
               with:
                   node-version: ${{ matrix.node-version }}
+                  cache: 'pnpm'
 
             - name: Redis Server in GitHub Actions
               uses: supercharge/redis-github-action@1.8.1
               with:
                   redis-version: ${{ matrix.redis-version }}
 
-            - run: npm ci
-            - run: npm run build --if-present
-            - run: npm test
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm build --if-present
+            - run: pnpm test
