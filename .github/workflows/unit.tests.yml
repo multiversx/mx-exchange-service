@@ -35,5 +35,5 @@ jobs:
                   redis-version: ${{ matrix.redis-version }}
 
             - run: pnpm install --frozen-lockfile
-            - run: pnpm build --if-present
+            - run: pnpm build
             - run: pnpm test
