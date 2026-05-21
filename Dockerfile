@@ -1,24 +1,29 @@
-FROM node:18.17.1-alpine3.18 as build
+# syntax=docker/dockerfile:1.7
+
+FROM node:24-alpine AS deps
 WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile
 
-ENV PATH /app/node_modules/.bin:$PATH
-
-COPY package.json ./
-COPY package-lock.json ./
-
-ENV PYTHONUNBUFFERED=1
-RUN apk update && apk add --update --no-cache alpine-sdk libusb-dev musl-dev linux-headers eudev-libs eudev-dev python2 && ln -sf python2 /usr/bin/python
-RUN python -m ensurepip
-RUN pip install --no-cache --upgrade pip setuptools
-
-RUN npm ci
-
-COPY . ./
-RUN npm run build
-
-FROM node:18.17.1-alpine3.18
+FROM node:24-alpine AS build
 WORKDIR /app
-COPY --from=build /app /app
+RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
 
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN pnpm build
+
+FROM node:24-alpine AS runtime
+WORKDIR /app
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false \
+    NPM_CONFIG_FUND=false
+
+# tini reaps zombies and forwards SIGTERM so the Node process shuts down cleanly under Kubernetes.
+RUN apk add --no-cache tini
+USER node
+COPY --chown=node:node --from=build /app /app
 EXPOSE 3005
-CMD [ "npm", "run", "start:testnet" ]
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "dist/main.js"]
