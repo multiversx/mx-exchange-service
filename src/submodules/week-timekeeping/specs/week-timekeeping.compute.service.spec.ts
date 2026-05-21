@@ -53,7 +53,7 @@ describe('WeekTimekeepingComputeService', () => {
         // epoch < firstWeekStartEpoch should error
         await expect(
             service.computeWeekForEpoch(scAddress, firstWeekStartEpoch - 1),
-        ).rejects.toThrowError(ErrInvalidEpochLowerThanFirstWeekStartEpoch);
+        ).rejects.toThrow(ErrInvalidEpochLowerThanFirstWeekStartEpoch);
         // epoch == firstWeekStartEpoch
         expect(
             await service.computeWeekForEpoch(scAddress, firstWeekStartEpoch),
@@ -87,11 +87,11 @@ describe('WeekTimekeepingComputeService', () => {
         // week < 0 should error
         await expect(
             service.computeStartEpochForWeek(scAddress, -1),
-        ).rejects.toThrowError(ErrInvalidWeek);
+        ).rejects.toThrow(ErrInvalidWeek);
         //week = 0 should error
         await expect(
             service.computeStartEpochForWeek(scAddress, 0),
-        ).rejects.toThrowError(ErrInvalidWeek);
+        ).rejects.toThrow(ErrInvalidWeek);
         //week == 1 should return firstWeekStartEpoch
         expect(await service.computeStartEpochForWeek(scAddress, 1)).toEqual(
             firstWeekStartEpoch,
@@ -116,11 +116,11 @@ describe('WeekTimekeepingComputeService', () => {
         // week < 0 should error
         await expect(
             service.computeEndEpochForWeek(scAddress, -1),
-        ).rejects.toThrowError(ErrInvalidWeek);
+        ).rejects.toThrow(ErrInvalidWeek);
         // week = 0 should error
         await expect(
             service.computeEndEpochForWeek(scAddress, 0),
-        ).rejects.toThrowError(ErrInvalidWeek);
+        ).rejects.toThrow(ErrInvalidWeek);
         // week == 1 should return firstWeekStartEpoch
         expect(await service.computeEndEpochForWeek(scAddress, 1)).toEqual(
             firstWeekStartEpoch + service.epochsInWeek - 1,

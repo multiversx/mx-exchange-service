@@ -119,7 +119,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                     [],
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return transaction with single token', async () => {
@@ -343,7 +343,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return error on farm token', async () => {
@@ -371,7 +371,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrowError('Invalid farm token payment');
+            ).rejects.toThrow('Invalid farm token payment');
         });
 
         it('should return transaction with EGLD and no merge farm tokens', async () => {
@@ -826,7 +826,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return error on dual farm token', async () => {
@@ -851,7 +851,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrowError('Invalid dual yield token payment');
+            ).rejects.toThrow('Invalid dual yield token payment');
         });
 
         it('should return transaction with EGLD no merge dual farm tokens', async () => {
@@ -1258,7 +1258,7 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return error on staking token', async () => {
@@ -1283,7 +1283,7 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                 ),
-            ).rejects.toThrowError('Invalid staking token payment');
+            ).rejects.toThrow('Invalid staking token payment');
         });
 
         it('should return transaction with EGLD no merge staking tokens', async () => {
@@ -1594,7 +1594,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid ESDT tokens payments');
+            ).rejects.toThrow('Invalid ESDT tokens payments');
         });
 
         it('should return error on invalid farm token merge', async () => {
@@ -1626,7 +1626,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid farm token payment');
+            ).rejects.toThrow('Invalid farm token payment');
         });
 
         it('should return transaction no merge farm tokens', async () => {
@@ -1825,7 +1825,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid locked tokens payments');
+            ).rejects.toThrow('Invalid locked tokens payments');
 
             expect(
                 service.createFarmPositionDualTokens(
@@ -1847,7 +1847,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid locked tokens payments');
+            ).rejects.toThrow('Invalid locked tokens payments');
 
             expect(
                 service.createFarmPositionDualTokens(
@@ -1869,7 +1869,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid locked tokens payments');
+            ).rejects.toThrow('Invalid locked tokens payments');
         });
 
         it('should return error on wrapped farm token', async () => {
@@ -1902,7 +1902,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid wrapped farm token payment');
+            ).rejects.toThrow('Invalid wrapped farm token payment');
         });
 
         it('should return transaction without consolidate', async () => {
@@ -2039,7 +2039,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid ESDT tokens payments');
+            ).rejects.toThrow('Invalid ESDT tokens payments');
         });
 
         it('should return error on invalid farm token merge', async () => {
@@ -2078,7 +2078,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid dual farm token payment');
+            ).rejects.toThrow('Invalid dual farm token payment');
         });
 
         it('should return transaction no merge farm tokens', async () => {
@@ -2293,7 +2293,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid farm token payment');
+            ).rejects.toThrow('Invalid farm token payment');
         });
 
         it('should return transaction', async () => {
@@ -2352,7 +2352,7 @@ describe('PositionCreatorTransaction', () => {
                     new SwapRouteModel(),
                     1440,
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return transaction with ESDT payment', async () => {

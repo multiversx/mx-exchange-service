@@ -29,7 +29,7 @@ export enum ContractType {
 @ObjectType()
 export class UserToken extends EsdtToken {
     @Field() valueUSD: string;
-    @Field({ nullable: true }) pairAddress: string;
+    @Field({ nullable: true }) declare pairAddress: string;
 
     constructor(init?: Partial<UserToken>) {
         super(init);
