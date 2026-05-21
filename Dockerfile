@@ -21,9 +21,12 @@ ENV NPM_CONFIG_UPDATE_NOTIFIER=false \
     NPM_CONFIG_FUND=false
 
 # tini reaps zombies and forwards SIGTERM so the Node process shuts down cleanly under Kubernetes.
-RUN apk add --no-cache tini
-USER node
+# Pre-create logs/ owned by node so winston's File transport (when LOG_FILE is set) can write there.
+RUN apk add --no-cache tini && \
+    install -d -o node -g node /app/logs
+
 COPY --chown=node:node --from=build /app /app
+USER node
 EXPOSE 3005
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/main.js"]
