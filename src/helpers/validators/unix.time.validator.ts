@@ -21,7 +21,7 @@ export class IsValidUnixTimeConstraint implements ValidatorConstraintInterface {
 }
 
 export function IsValidUnixTime(validationOptions?: ValidationOptions) {
-    return (object: Object, propertyName: string) => {
+    return (object: object, propertyName: string) => {
         registerDecorator({
             target: object.constructor,
             propertyName: propertyName,

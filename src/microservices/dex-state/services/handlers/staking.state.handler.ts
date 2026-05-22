@@ -133,7 +133,7 @@ export class StakingStateHandler {
                     sortValue: new BigNumber(
                         stakingFarm?.[decodedSortField] ?? 0,
                     ),
-                    rewardsEnded: !stakingFarm?.isProducingRewards ?? true,
+                    rewardsEnded: !stakingFarm?.isProducingRewards,
                 };
             })
             .sort((a, b) => {

@@ -64,7 +64,7 @@ describe('EscrowTransactionService', () => {
                     amount: '1000000000000000000',
                 },
             ]),
-        ).rejects.toThrowError('Sender and receiver cannot be the same');
+        ).rejects.toThrow('Sender and receiver cannot be the same');
     });
 
     it('should return a lock funds transaction', async () => {

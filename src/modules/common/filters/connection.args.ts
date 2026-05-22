@@ -37,7 +37,6 @@ function checkPagingSanity(args: ConnectionArgs): PagingMeta {
         );
     }
 
-    // eslint-disable-next-line no-nested-ternary
     return isForwardPaging
         ? { pagingType: 'forward', after, first }
         : isBackwardPaging
