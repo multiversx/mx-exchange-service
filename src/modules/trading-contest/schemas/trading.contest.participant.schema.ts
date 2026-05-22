@@ -14,7 +14,7 @@ export class TradingContestParticipant {
         index: true,
         required: true,
     })
-    contest: mongoose.Schema.Types.ObjectId | TradingContest;
+    contest: mongoose.Types.ObjectId | TradingContest;
     @Prop({ index: true, required: true })
     address: string;
 }

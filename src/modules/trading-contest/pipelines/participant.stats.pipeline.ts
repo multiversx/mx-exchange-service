@@ -2,8 +2,8 @@ import mongoose, { PipelineStage } from 'mongoose';
 import { TradingContestParamsDto } from '../dtos/contest.leaderboard.dto';
 
 export const participantStatsPipeline = (
-    contestId: string,
-    participantId: string,
+    contestId: string | mongoose.Types.ObjectId,
+    participantId: string | mongoose.Types.ObjectId,
     parameters: TradingContestParamsDto,
 ): PipelineStage[] => {
     const {

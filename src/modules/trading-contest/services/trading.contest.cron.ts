@@ -55,7 +55,7 @@ export class TradingContestCronService {
             for (const swap of swapsByHash[hash]) {
                 if (
                     swap.contest === null ||
-                    swap.contest instanceof mongoose.Schema.Types.ObjectId
+                    swap.contest instanceof mongoose.Types.ObjectId
                 ) {
                     this.logger.warn(
                         `Contest for swap ${swap._id} is not populated. Will delete swap`,
