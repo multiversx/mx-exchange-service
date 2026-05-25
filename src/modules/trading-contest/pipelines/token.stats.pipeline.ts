@@ -2,9 +2,9 @@ import mongoose, { PipelineStage } from 'mongoose';
 import { TradingContestParamsDto } from '../dtos/contest.leaderboard.dto';
 
 export const tokenStatsPipeline = (
-    contestId: string,
+    contestId: string | mongoose.Types.ObjectId,
     parameters: TradingContestParamsDto,
-    participantId?: string,
+    participantId?: string | mongoose.Types.ObjectId,
 ): PipelineStage[] => {
     const {
         startTimestamp,
