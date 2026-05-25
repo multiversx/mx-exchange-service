@@ -188,7 +188,7 @@ export class SmartRouterEvaluationService {
             filterObj.timestamp = timestampQuery;
         }
 
-        const totalCount = await model.find(filterObj).count();
+        const totalCount = await model.countDocuments(filterObj);
 
         const result = await model
             .find(filterObj)

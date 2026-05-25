@@ -2,7 +2,7 @@ import mongoose, { AccumulatorOperator, PipelineStage } from 'mongoose';
 import { AggregationParamsDto } from '../dtos/contest.leaderboard.dto';
 
 export const contestStatsPipeline = (
-    contestId: string,
+    contestId: string | mongoose.Types.ObjectId,
     parameters: AggregationParamsDto,
 ): PipelineStage[] => {
     const { startTimestamp, endTimestamp, includeTradeCount, includeFees } =

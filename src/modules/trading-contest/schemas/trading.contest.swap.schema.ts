@@ -14,7 +14,7 @@ export class TradingContestSwap {
         index: true,
         required: true,
     })
-    contest: mongoose.Schema.Types.ObjectId | TradingContestDocument;
+    contest: mongoose.Types.ObjectId | TradingContestDocument;
     @Prop({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'TradingContestParticipant',
@@ -22,7 +22,7 @@ export class TradingContestSwap {
         default: null,
     })
     participant?:
-        | mongoose.Schema.Types.ObjectId
+        | mongoose.Types.ObjectId
         | TradingContestParticipantDocument;
     @Prop({ index: true })
     txHash: string;
