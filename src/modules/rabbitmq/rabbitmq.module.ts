@@ -100,7 +100,7 @@ export class RabbitMqModule {
         return {
             module: RabbitMqModule,
             imports: [
-                RabbitMQModule.forRootAsync(RabbitMQModule, {
+                RabbitMQModule.forRootAsync({
                     useFactory: () => {
                         return {
                             exchanges: [
