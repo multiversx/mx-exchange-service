@@ -386,8 +386,10 @@ export class RouterTransactionService {
                     }),
                 )
                 .withGasLimit(
-                    args.addressRoute.length *
-                        gasConfig.router.multiPairSwapMultiplier,
+                    BigInt(
+                        args.addressRoute.length *
+                            gasConfig.router.multiPairSwapMultiplier,
+                    ),
                 )
                 .withChainID(mxConfig.chainID)
                 .buildTransaction()

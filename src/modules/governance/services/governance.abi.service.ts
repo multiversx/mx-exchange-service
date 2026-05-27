@@ -27,7 +27,7 @@ import { GovernanceDescriptionService } from './governance.description.service';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { decimalToHex } from '../../../utils/token.converters';
-import { ResultsParser } from '@multiversx/sdk-core';
+import { SmartContractQueryResponse } from '@multiversx/sdk-core';
 
 @Injectable()
 export class GovernanceTokenSnapshotAbiService extends GenericAbiService {
@@ -192,18 +192,18 @@ export class GovernanceTokenSnapshotAbiService extends GenericAbiService {
             this.type,
         );
         const interaction = contract.methodsExplicit.getProposals();
-        const query = interaction.check().buildQuery();
-        const queryResponse = await this.mxProxy
-            .getService()
-            .queryContract(query);
-        const endpointDefinition = interaction.getEndpoint();
-        queryResponse.returnData = queryResponse.returnData.filter(
-            (data) => data.length > 0,
-        );
-
-        const response = new ResultsParser().parseQueryResponse(
-            queryResponse,
-            endpointDefinition,
+        const rawResponse = await this.runQuery(interaction);
+        const filteredResponse = new SmartContractQueryResponse({
+            function: rawResponse.function,
+            returnCode: rawResponse.returnCode,
+            returnMessage: rawResponse.returnMessage,
+            returnDataParts: rawResponse.returnDataParts.filter(
+                (part) => part.length > 0,
+            ),
+        });
+        const response = this.parseQueryResponse(
+            filteredResponse,
+            interaction,
         );
 
         return response.firstValue.valueOf().map((proposal: any) => {

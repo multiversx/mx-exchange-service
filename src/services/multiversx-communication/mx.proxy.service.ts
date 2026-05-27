@@ -540,8 +540,7 @@ export class MXProxyService {
         );
 
         return factory
-            .createTransactionForExecute({
-                sender: Address.newFromBech32(options.sender),
+            .createTransactionForExecute(Address.newFromBech32(options.sender), {
                 contract: Address.newFromBech32(contractAddress),
                 function: options.function,
                 gasLimit: BigInt(options.gasLimit),

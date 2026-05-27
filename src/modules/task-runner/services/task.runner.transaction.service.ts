@@ -1,4 +1,5 @@
 import {
+    Address,
     Transaction,
     TransactionComputer,
     TransactionWatcher,
@@ -42,10 +43,10 @@ export class TaskRunnerTransactionService implements OnModuleInit {
         );
 
         this.transactionWatcher = new TransactionWatcher({
-            getTransaction: async (hash) => {
+            getTransaction: async (txHash) => {
                 return await this.mxProxy
                     .getService()
-                    .getTransaction(hash, true);
+                    .getTransaction(txHash);
             },
         });
 
@@ -69,8 +70,8 @@ export class TaskRunnerTransactionService implements OnModuleInit {
 
             const transaction = new Transaction({
                 nonce: BigInt(nonce),
-                sender: tx.sender,
-                receiver: tx.receiver,
+                sender: Address.newFromBech32(tx.sender),
+                receiver: Address.newFromBech32(tx.receiver),
                 value: BigInt(tx.value),
                 data: Buffer.from(tx.data, 'base64'),
                 gasPrice: BigInt(tx.gasPrice),

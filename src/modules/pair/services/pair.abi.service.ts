@@ -14,7 +14,6 @@ import {
     BigUIntValue,
     EnumValue,
     Field,
-    ResultsParser,
     ReturnCode,
     Struct,
     TokenIdentifierValue,
@@ -319,10 +318,7 @@ export class PairAbiService
         try {
             const interaction: Interaction =
                 contract.methodsExplicit.getInitialLiquidtyAdder();
-            const query = interaction.check().buildQuery();
-            const queryResponse = await this.mxProxy
-                .getService()
-                .queryContract(query);
+            const queryResponse = await this.runQuery(interaction);
             if (
                 queryResponse.returnMessage.includes(
                     VmQueryError.BAD_ARRAY_LENGTH,
@@ -330,10 +326,9 @@ export class PairAbiService
             ) {
                 return '';
             }
-            const endpointDefinition = interaction.getEndpoint();
-            const response = new ResultsParser().parseQueryResponse(
+            const response = this.parseQueryResponse(
                 queryResponse,
-                endpointDefinition,
+                interaction,
             );
             if (!response.firstValue.valueOf()) {
                 return '';
@@ -422,10 +417,7 @@ export class PairAbiService
         try {
             const interaction: Interaction =
                 contract.methodsExplicit.getLockingScAddress();
-            const query = interaction.check().buildQuery();
-            const queryResponse = await this.mxProxy
-                .getService()
-                .queryContract(query);
+            const queryResponse = await this.runQuery(interaction);
             if (
                 queryResponse.returnMessage.includes(
                     VmQueryError.BAD_ARRAY_LENGTH,
@@ -434,10 +426,9 @@ export class PairAbiService
             ) {
                 return undefined;
             }
-            const endpointDefinition = interaction.getEndpoint();
-            const response = new ResultsParser().parseQueryResponse(
+            const response = this.parseQueryResponse(
                 queryResponse,
-                endpointDefinition,
+                interaction,
             );
             return response.firstValue.valueOf().bech32();
         } catch (error) {
@@ -479,17 +470,13 @@ export class PairAbiService
         const interaction: Interaction =
             contract.methodsExplicit.getUnlockEpoch();
         try {
-            const query = interaction.check().buildQuery();
-            const queryResponse = await this.mxProxy
-                .getService()
-                .queryContract(query);
+            const queryResponse = await this.runQuery(interaction);
             if (queryResponse.returnCode === VmQueryError.FUNCTION_NOT_FOUND) {
                 return undefined;
             }
-            const endpointDefinition = interaction.getEndpoint();
-            const response = new ResultsParser().parseQueryResponse(
+            const response = this.parseQueryResponse(
                 queryResponse,
-                endpointDefinition,
+                interaction,
             );
             const unlockEpoch = response.firstValue.valueOf();
             return unlockEpoch !== undefined
@@ -538,17 +525,13 @@ export class PairAbiService
         const interaction: Interaction =
             contract.methodsExplicit.getLockingDeadlineEpoch();
         try {
-            const query = interaction.check().buildQuery();
-            const queryResponse = await this.mxProxy
-                .getService()
-                .queryContract(query);
+            const queryResponse = await this.runQuery(interaction);
             if (queryResponse.returnCode === VmQueryError.FUNCTION_NOT_FOUND) {
                 return undefined;
             }
-            const endpointDefinition = interaction.getEndpoint();
-            const response = new ResultsParser().parseQueryResponse(
+            const response = this.parseQueryResponse(
                 queryResponse,
-                endpointDefinition,
+                interaction,
             );
             const lockingDeadlineEpoch = response.firstValue.valueOf();
             return lockingDeadlineEpoch !== undefined
