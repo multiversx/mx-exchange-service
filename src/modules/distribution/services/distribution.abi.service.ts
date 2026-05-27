@@ -51,7 +51,7 @@ export class DistributionAbiService extends GenericAbiService {
         const contract = await this.mxProxy.getDistributionSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.calculateLockedAssets([
-                new AddressValue(Address.fromString(userAddress)),
+                new AddressValue(Address.newFromBech32(userAddress)),
             ]);
 
         const response = await this.getGenericData(interaction);

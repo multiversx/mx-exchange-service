@@ -4,7 +4,7 @@ import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx
 import { MXGatewayServiceProvider } from 'src/services/multiversx-communication/mx.gateway.service.mock';
 import { SCPermissions } from '../models/escrow.model';
 import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
-import { Address, ReturnCode, U32Value } from '@multiversx/sdk-core/out';
+import { Address, ReturnCode, U32Value } from '@multiversx/sdk-core';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';

@@ -104,7 +104,7 @@ export class TokenUnstakeAbiService
         const contract = await this.mxProxy.getTokenUnstakeContract();
         const interaction: Interaction =
             contract.methodsExplicit.getUnlockedTokensForUser([
-                new AddressValue(Address.fromString(userAddress)),
+                new AddressValue(Address.newFromBech32(userAddress)),
             ]);
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map(

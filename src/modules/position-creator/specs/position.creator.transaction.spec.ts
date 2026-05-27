@@ -25,7 +25,7 @@ import { PairTransactionService } from 'src/modules/pair/services/pair.transacti
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
@@ -109,7 +109,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createLiquidityPositionSingleToken(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -132,7 +132,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -146,7 +146,7 @@ describe('PositionCreatorTransaction', () => {
             const transactions =
                 await service.createLiquidityPositionSingleToken(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -199,7 +199,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -213,7 +213,7 @@ describe('PositionCreatorTransaction', () => {
             const transactions =
                 await service.createLiquidityPositionSingleToken(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -265,7 +265,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -279,7 +279,7 @@ describe('PositionCreatorTransaction', () => {
             const transactions =
                 await service.createLiquidityPositionSingleToken(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -331,7 +331,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createFarmPositionSingleToken(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
                     [
@@ -354,7 +354,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createFarmPositionSingleToken(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
                     [
@@ -384,7 +384,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -397,7 +397,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transactions = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -451,7 +451,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -464,7 +464,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transactions = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -518,7 +518,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -531,7 +531,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transactions = await service.createFarmPositionSingleToken(
                 senderAddress,
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -607,7 +607,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -620,7 +620,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transactions = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -680,7 +680,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -693,7 +693,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transactions = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -748,7 +748,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -761,7 +761,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transaction = await service.createFarmPositionSingleToken(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -866,14 +866,14 @@ describe('PositionCreatorTransaction', () => {
             );
 
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -941,7 +941,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -953,7 +953,7 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
@@ -1016,7 +1016,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -1028,7 +1028,7 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
@@ -1113,7 +1113,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -1125,7 +1125,7 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
@@ -1187,7 +1187,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
@@ -1577,7 +1577,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createFarmPositionDualTokens(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
                     [
@@ -1604,7 +1604,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createFarmPositionDualTokens(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
                     [
@@ -1635,7 +1635,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const transactions = await service.createFarmPositionDualTokens(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -1682,7 +1682,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const transactions = await service.createFarmPositionDualTokens(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -1734,7 +1734,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const transactions = await service.createFarmPositionDualTokens(
                 senderAddress,
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -1808,7 +1808,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createFarmPositionDualTokens(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
                     [
@@ -1830,7 +1830,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createFarmPositionDualTokens(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
                     [
@@ -1852,7 +1852,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createFarmPositionDualTokens(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
                     [
@@ -1880,7 +1880,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.createFarmPositionDualTokens(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
                     [
@@ -1911,7 +1911,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const transactions = await service.createFarmPositionDualTokens(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -1959,7 +1959,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const transactions = await service.createFarmPositionDualTokens(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 [
@@ -2016,7 +2016,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
@@ -2050,7 +2050,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
@@ -2089,7 +2089,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
@@ -2144,7 +2144,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
@@ -2222,7 +2222,7 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             );
@@ -2283,7 +2283,7 @@ describe('PositionCreatorTransaction', () => {
             expect(
                 service.exitFarmPositionDualTokens(
                     Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
                     ).bech32(),
                     new EsdtTokenPayment({
@@ -2302,7 +2302,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const transaction = await service.exitFarmPositionDualTokens(
                 Address.Zero().bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 new EsdtTokenPayment({

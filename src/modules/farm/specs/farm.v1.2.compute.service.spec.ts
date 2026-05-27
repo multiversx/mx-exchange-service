@@ -12,7 +12,7 @@ import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { FarmAbiServiceProviderV1_2 } from '../mocks/farm.v1.2.abi.service.mock';
 import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -70,7 +70,7 @@ describe('FarmService', () => {
         );
 
         const farmLockedValueUSD = await service.computeFarmLockedValueUSD(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
             ).bech32(),
         );
@@ -84,7 +84,7 @@ describe('FarmService', () => {
 
         const lockedFarmingTokenReserve =
             await service.computeLockedFarmingTokenReserve(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
@@ -98,7 +98,7 @@ describe('FarmService', () => {
 
         const unlockedFarmingTokenReserve =
             await service.computeUnlockedFarmingTokenReserve(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
@@ -112,7 +112,7 @@ describe('FarmService', () => {
 
         const lockedFarmingTokenReserveUSD =
             await service.computeLockedFarmingTokenReserveUSD(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
@@ -126,7 +126,7 @@ describe('FarmService', () => {
 
         const unlockedFarmingTokenReserveUSD =
             await service.computeUnlockedFarmingTokenReserveUSD(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
@@ -140,7 +140,7 @@ describe('FarmService', () => {
 
         const virtualValueLockedUSD =
             await service.computeVirtualValueLockedUSD(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
             );
@@ -153,7 +153,7 @@ describe('FarmService', () => {
         );
 
         const unlockedRewardsAPR = await service.computeUnlockedRewardsAPR(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
             ).bech32(),
         );
@@ -166,7 +166,7 @@ describe('FarmService', () => {
         );
 
         const lockedRewardsAPR = await service.computeLockedRewardsAPR(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
             ).bech32(),
         );

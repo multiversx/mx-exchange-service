@@ -62,7 +62,7 @@ import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staki
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 
 @Injectable()

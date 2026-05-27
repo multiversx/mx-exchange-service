@@ -26,7 +26,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
@@ -122,7 +122,7 @@ describe('FarmServiceV2', () => {
         jest.spyOn(farmAbi, 'userTotalFarmPosition').mockResolvedValue('2');
 
         const accumulatedRewards = await service.computeUserRewardsForWeek(
-            Address.fromBech32(
+            Address.newFromBech32(
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
             ).bech32(),
             Address.Zero().bech32(),

@@ -5,7 +5,7 @@ import { IRouterAbiService } from '../services/interfaces';
 import { pairs } from 'src/modules/pair/mocks/pair.constants';
 import { RouterAbiService } from '../services/router.abi.service';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 export class RouterAbiServiceMock implements IRouterAbiService {
     async pairsAddress(): Promise<string[]> {

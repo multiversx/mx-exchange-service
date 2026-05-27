@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LockedTokenWrapperTransactionService } from '../services/locked-token-wrapper.transaction.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig, scAddress } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';

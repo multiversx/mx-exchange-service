@@ -6,7 +6,7 @@ import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx
 import { TransactionModel } from 'src/models/transaction.model';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { mxConfig, scAddress } from 'src/config';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { FeesCollectorTransactionModel } from '../models/fees-collector.model';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { CacheModule } from '@nestjs/cache-manager';
@@ -154,10 +154,10 @@ describe('FeesCollectorTransactionService', () => {
         const transaction = await service.handleKnownContracts(
             senderAddress,
             [
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
                 ).bech32(),
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000002',
                 ).bech32(),
             ],
@@ -176,9 +176,9 @@ describe('FeesCollectorTransactionService', () => {
                 senderUsername: undefined,
                 value: '0',
                 data: encodeTransactionData(
-                    `removeKnownContracts@${Address.fromHex(
+                    `removeKnownContracts@${Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000001',
-                    ).bech32()}@${Address.fromHex(
+                    ).bech32()}@${Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000002',
                     ).bech32()}`,
                 ),

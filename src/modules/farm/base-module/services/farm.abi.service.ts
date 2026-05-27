@@ -1,7 +1,7 @@
 import {
     BigUIntValue,
     BytesValue,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+} from '@multiversx/sdk-core';
 import { Address, Interaction, ReturnCode } from '@multiversx/sdk-core';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';

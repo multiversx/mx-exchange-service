@@ -9,7 +9,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { ComposableTaskType } from '../models/composable.tasks.model';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 describe('Composable Tasks Transaction', () => {
     let module: TestingModule;

@@ -21,13 +21,13 @@ import BigNumber from 'bignumber.js';
 import {
     BytesValue,
     U64Value,
-} from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+} from '@multiversx/sdk-core';
 import { GovernanceTokenSnapshotMerkleService } from './governance.token.snapshot.merkle.service';
 import { GovernanceDescriptionService } from './governance.description.service';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { decimalToHex } from '../../../utils/token.converters';
-import { ResultsParser } from '@multiversx/sdk-core/out';
+import { ResultsParser } from '@multiversx/sdk-core';
 
 @Injectable()
 export class GovernanceTokenSnapshotAbiService extends GenericAbiService {

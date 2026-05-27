@@ -8,7 +8,7 @@ import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.se
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WeeklyRewardsSplittingAbiService } from '../services/weekly-rewards-splitting.abi.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';

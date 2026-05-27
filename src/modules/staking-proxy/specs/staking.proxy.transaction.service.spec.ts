@@ -23,7 +23,7 @@ import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/s
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { StakingServiceMock } from 'src/modules/staking/mocks/staking.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';

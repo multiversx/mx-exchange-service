@@ -54,7 +54,7 @@ import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.
 import { StakingProxyAbiService } from '../../staking-proxy/services/staking.proxy.abi.service';
 import { UserEnergyComputeService } from '../services/userEnergy/user.energy.compute.service';
 import { MXProxyServiceProvider } from '../../../services/multiversx-communication/mx.proxy.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { gasConfig, mxConfig, scAddress } from 'src/config';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
@@ -179,7 +179,7 @@ describe('UserEnergyTransactionService', () => {
             UserEnergyComputeService,
         );
 
-        const farmAddress = Address.fromHex(
+        const farmAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000041',
         ).bech32();
         jest.spyOn(userEnergyCompute, 'userActiveFarmsV2').mockResolvedValue([

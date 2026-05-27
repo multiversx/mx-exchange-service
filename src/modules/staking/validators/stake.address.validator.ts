@@ -1,7 +1,7 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from '@nestjs/apollo';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 @Injectable()
 export class StakeAddressValidationPipe implements PipeTransform {
@@ -14,7 +14,7 @@ export class StakeAddressValidationPipe implements PipeTransform {
 
         for (const entry of values) {
             try {
-                address = Address.fromBech32(entry);
+                address = Address.newFromBech32(entry);
             } catch (error) {
                 throw new UserInputError('Invalid address');
             }

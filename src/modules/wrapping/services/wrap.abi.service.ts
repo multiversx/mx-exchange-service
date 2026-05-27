@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
+import { Interaction } from '@multiversx/sdk-core';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';

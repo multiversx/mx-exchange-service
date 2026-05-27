@@ -2,7 +2,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { MXApiService } from './mx.api.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 export class MXApiServiceMock {
     async getCurrentEpoch(): Promise<number> {
@@ -48,7 +48,7 @@ export class MXApiServiceMock {
                 balance: '1000000000000000000',
                 identifier: 'EGLDMEXFL-abcdef-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
-                creator: Address.fromHex(
+                creator: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 nonce: 1,

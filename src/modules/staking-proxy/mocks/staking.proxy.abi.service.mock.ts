@@ -1,4 +1,4 @@
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { IStakingProxyAbiService } from '../services/interfaces';
 import { StakingProxyAbiService } from '../services/staking.proxy.abi.service';
 

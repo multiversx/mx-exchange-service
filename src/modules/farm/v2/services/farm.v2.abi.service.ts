@@ -295,7 +295,7 @@ export class FarmAbiServiceV2
         );
         const interaction: Interaction =
             contract.methodsExplicit.calculateRewardsForGivenPosition([
-                new AddressValue(Address.fromString(args.user)),
+                new AddressValue(Address.newFromBech32(args.user)),
                 new BigUIntValue(new BigNumber(args.liquidity)),
                 new Struct(
                     new StructType('FarmTokenAttributes', [
@@ -356,7 +356,7 @@ export class FarmAbiServiceV2
                         ),
                         new Field(
                             new AddressValue(
-                                Address.fromString(
+                                Address.newFromBech32(
                                     decodedAttributes.originalOwner,
                                 ),
                             ),
@@ -399,7 +399,7 @@ export class FarmAbiServiceV2
         const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getUserTotalFarmPosition([
-                new AddressValue(Address.fromString(userAddress)),
+                new AddressValue(Address.newFromBech32(userAddress)),
             ]);
         const response = await this.getGenericData(interaction);
 

@@ -18,7 +18,7 @@ export class MXProxyServiceMock extends MXProxyService {
         const json = JSON.parse(jsonContent);
 
         return new SmartContract({
-            address: Address.fromString(contractAddress),
+            address: Address.newFromBech32(contractAddress),
             abi: AbiRegistry.create(json),
         });
     }

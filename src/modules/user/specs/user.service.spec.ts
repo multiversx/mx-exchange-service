@@ -58,7 +58,7 @@ import { FarmAbiServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.abi
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmServiceBaseMock } from 'src/modules/farm/mocks/farm.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -171,7 +171,7 @@ describe('UserService', () => {
 
         expect(
             await userEsdts.getAllEsdtTokens(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
                 ).bech32(),
                 {
@@ -185,7 +185,7 @@ describe('UserService', () => {
                 ticker: 'MEX',
                 name: 'MEX',
                 type: 'FungibleESDT',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
                 ).bech32(),
                 supply: '2000000000000000000',
@@ -219,7 +219,7 @@ describe('UserService', () => {
 
         expect(
             await userMetaEsdts.getAllNftTokens(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
                 ).bech32(),
                 {
@@ -237,13 +237,13 @@ describe('UserService', () => {
                 balance: '1000000000000000000',
                 identifier: 'EGLDMEXFL-abcdef-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
-                creator: Address.fromHex(
+                creator: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
                 ).bech32(),
                 nonce: 1,
                 royalties: 0,
                 valueUSD: '20',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
                 decodedAttributes: new FarmTokenAttributesModelV1_2({

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
+import { Interaction } from '@multiversx/sdk-core';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { AddressValue } from '@multiversx/sdk-core/out';
+import { AddressValue } from '@multiversx/sdk-core';
 import { IProxyPairAbiService } from '../interfaces';
 
 @Injectable()

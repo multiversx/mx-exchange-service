@@ -158,7 +158,7 @@ export class EnergyAbiService
         const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getEnergyEntryForUser([
-                new AddressValue(Address.fromString(userAddress)),
+                new AddressValue(Address.newFromBech32(userAddress)),
             ]);
 
         const response = await this.getGenericData(interaction);
@@ -175,7 +175,7 @@ export class EnergyAbiService
         const contract = await this.mxProxy.getSimpleLockEnergySmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getEnergyAmountForUser([
-                new AddressValue(Address.fromString(userAddress)),
+                new AddressValue(Address.newFromBech32(userAddress)),
             ]);
 
         const response = await this.getGenericData(interaction);

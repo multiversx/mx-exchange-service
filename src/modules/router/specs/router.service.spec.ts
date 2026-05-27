@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RouterService } from '../services/router.service';
 import { PairFilterArgs } from '../models/filter.args';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -63,22 +63,22 @@ describe('RouterService', () => {
         });
         expect(filteredPairs).toEqual([
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             ),
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',
                 ).bech32(),
             ),
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000015',
                 ).bech32(),
             ),
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000019',
                 ).bech32(),
             ),
@@ -100,7 +100,7 @@ describe('RouterService', () => {
         });
         expect(filteredPairs).toEqual([
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000015',
                 ).bech32(),
             ),
@@ -122,37 +122,37 @@ describe('RouterService', () => {
         });
         expect(filteredPairs).toEqual([
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
             ),
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',
                 ).bech32(),
             ),
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000014',
                 ).bech32(),
             ),
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000015',
                 ).bech32(),
             ),
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000017',
                 ).bech32(),
             ),
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000018',
                 ).bech32(),
             ),
             PairsData(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000019',
                 ).bech32(),
             ),

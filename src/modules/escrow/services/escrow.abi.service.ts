@@ -3,7 +3,7 @@ import {
     AddressValue,
     Interaction,
     TypedValue,
-} from '@multiversx/sdk-core/out';
+} from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -54,7 +54,7 @@ export class EscrowAbiService
         const contract = await this.mxProxy.getEscrowContract();
         const interaction: Interaction =
             contract.methodsExplicit.getScheduledTransfers([
-                new AddressValue(Address.fromString(receiverAddress)),
+                new AddressValue(Address.newFromBech32(receiverAddress)),
             ]);
         const response = await this.getGenericData(interaction);
 
@@ -95,7 +95,7 @@ export class EscrowAbiService
     async getAllSendersRaw(receiverAddress: string): Promise<string[]> {
         const contract = await this.mxProxy.getEscrowContract();
         const interaction: Interaction = contract.methodsExplicit.getAllSenders(
-            [new AddressValue(Address.fromString(receiverAddress))],
+            [new AddressValue(Address.newFromBech32(receiverAddress))],
         );
         const response = await this.getGenericData(interaction);
         return response.firstValue
@@ -126,12 +126,12 @@ export class EscrowAbiService
             if (
                 key.includes(allSendersHex) &&
                 key.includes(itemHex) &&
-                Address.fromHex(value).bech32() === senderAddress
+                Address.newFromHex(value).bech32() === senderAddress
             ) {
                 const receiverHex = key
                     .split(allSendersHex)[1]
                     .split(itemHex)[0];
-                receivers.push(Address.fromHex(receiverHex).bech32());
+                receivers.push(Address.newFromHex(receiverHex).bech32());
             }
         }
 
@@ -152,7 +152,7 @@ export class EscrowAbiService
     async getSenderLastTransferEpochRaw(address: string): Promise<number> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
-            ['senderLastTransferEpoch', Address.fromString(address)],
+            ['senderLastTransferEpoch', Address.newFromBech32(address)],
         );
         return hexValue === '' ? 0 : new BigNumber(hexValue, 16).toNumber();
     }
@@ -171,7 +171,7 @@ export class EscrowAbiService
     async getReceiverLastTransferEpochRaw(address: string): Promise<number> {
         const hexValue = await this.mxGateway.getSCStorageKeys(
             scAddress.escrow,
-            ['receiverLastTransferEpoch', Address.fromString(address)],
+            ['receiverLastTransferEpoch', Address.newFromBech32(address)],
         );
         return hexValue === '' ? 0 : new BigNumber(hexValue, 16).toNumber();
     }
@@ -191,7 +191,7 @@ export class EscrowAbiService
             scAddress.escrow,
             ['energyFactoryAddress'],
         );
-        return Address.fromHex(hexValue).bech32();
+        return Address.newFromHex(hexValue).bech32();
     }
 
     @ErrorLoggerAsync()
@@ -271,7 +271,7 @@ export class EscrowAbiService
         const contract = await this.mxProxy.getEscrowContract();
         const interaction: Interaction =
             contract.methodsExplicit.getPermissions([
-                new AddressValue(Address.fromString(address)),
+                new AddressValue(Address.newFromBech32(address)),
             ]);
 
         const response = await this.getGenericData(interaction);
@@ -311,7 +311,7 @@ export class EscrowAbiService
         Object.keys(hexValues).forEach((key) => {
             if (key.includes(permissionsHex)) {
                 const addressHex = key.split(permissionsHex)[1];
-                addresses.push(Address.fromHex(addressHex).bech32());
+                addresses.push(Address.newFromHex(addressHex).bech32());
             }
         });
 

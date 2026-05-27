@@ -12,7 +12,7 @@ import { Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { VmQueryError } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@multiversx/sdk-exchange';
-import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
+import { ReturnCode } from '@multiversx/sdk-core';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { scAddress } from 'src/config';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
@@ -52,7 +52,7 @@ export class WeeklyRewardsSplittingAbiService
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getCurrentClaimProgress([
-                new AddressValue(Address.fromString(user)),
+                new AddressValue(Address.newFromBech32(user)),
             ]);
         const response = await this.getGenericData(interaction);
         if (
@@ -100,7 +100,7 @@ export class WeeklyRewardsSplittingAbiService
         );
         const interaction: Interaction =
             contract.methodsExplicit.getUserEnergyForWeek([
-                new AddressValue(Address.fromString(user)),
+                new AddressValue(Address.newFromBech32(user)),
                 new U32Value(new BigNumber(week)),
             ]);
         const response = await this.getGenericData(interaction);
@@ -161,7 +161,7 @@ export class WeeklyRewardsSplittingAbiService
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction =
             contract.methodsExplicit.getLastActiveWeekForUser([
-                new AddressValue(Address.fromString(user)),
+                new AddressValue(Address.newFromBech32(user)),
             ]);
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();

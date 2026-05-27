@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
+import { Interaction } from '@multiversx/sdk-core';
 import { U64Value } from '@multiversx/sdk-core';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PhaseModel } from '../models/price.discovery.model';

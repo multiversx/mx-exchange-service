@@ -364,7 +364,7 @@ export class RouterTransactionService {
                 .integerValue();
             endpointArgs.push(
                 ...[
-                    new AddressValue(Address.fromString(address)),
+                    new AddressValue(Address.newFromBech32(address)),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(amountOutMin),
@@ -376,10 +376,14 @@ export class RouterTransactionService {
             contract.methodsExplicit
                 .multiPairSwap(endpointArgs)
                 .withSingleESDTTransfer(
-                    TokenTransfer.fungibleFromBigInteger(
-                        args.tokenRoute[0],
-                        args.intermediaryAmounts[0],
-                    ),
+                    new TokenTransfer({
+                        token: new Token({ identifier: args.tokenRoute[0] }),
+                        amount: BigInt(
+                            new BigNumber(
+                                args.intermediaryAmounts[0],
+                            ).toFixed(0),
+                        ),
+                    }),
                 )
                 .withGasLimit(
                     args.addressRoute.length *

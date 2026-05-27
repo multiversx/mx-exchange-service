@@ -2,7 +2,7 @@ import MerkleTree from 'merkletreejs';
 import CryptoJS from 'crypto-js';
 import BigNumber from 'bignumber.js';
 import { Address, ArgSerializer } from '@multiversx/sdk-core';
-import { BigUIntValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+import { BigUIntValue } from '@multiversx/sdk-core';
 
 export class AddressVotingPower {
     address: string;

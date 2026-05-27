@@ -464,7 +464,7 @@ export class StakingAbiService
             stakeAddress,
         );
         const transactionArgs: TypedValue[] = [
-            new AddressValue(Address.fromString(scAddress)),
+            new AddressValue(Address.newFromBech32(scAddress)),
         ];
         const interaction: Interaction =
             contract.methodsExplicit.isWhitelisted(transactionArgs);
@@ -739,7 +739,7 @@ export class StakingAbiService
         );
         const interaction: Interaction =
             contract.methodsExplicit.getUserTotalFarmPosition([
-                new AddressValue(Address.fromString(userAddress)),
+                new AddressValue(Address.newFromBech32(userAddress)),
             ]);
         const response = await this.getGenericData(interaction);
 

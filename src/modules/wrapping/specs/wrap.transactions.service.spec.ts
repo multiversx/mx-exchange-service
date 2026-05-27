@@ -4,7 +4,7 @@ import { WrapAbiServiceProvider } from '../mocks/wrap.abi.service.mock';
 import { WrapService } from '../services/wrap.service';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';

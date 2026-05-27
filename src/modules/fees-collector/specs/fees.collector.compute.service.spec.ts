@@ -13,7 +13,7 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';

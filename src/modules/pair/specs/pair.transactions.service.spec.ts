@@ -77,7 +77,7 @@ describe('TransactionPairService', () => {
 
         const initialLiquidityBatchTransactions =
             await service.addInitialLiquidityBatch(senderAddress, {
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
                 tokens: [
@@ -124,7 +124,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                `MultiESDTNFTTransfer@${Address.fromHex(
+                `MultiESDTNFTTransfer@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32()}@2@WEGLD-123456@@9000000000000000000@MEX-123456@@10000000000000000000@addInitialLiquidity`,
             ),
@@ -146,7 +146,7 @@ describe('TransactionPairService', () => {
         const addLiquidityTransaction = await service.addInitialLiquidity(
             senderAddress,
             {
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
                 tokens: [
@@ -172,7 +172,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                `MultiESDTNFTTransfer@${Address.fromHex(
+                `MultiESDTNFTTransfer@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32()}@02@WEGLD-123456@@10000000000000000000@MEX-123456@@9000000000000000000@addInitialLiquidity`,
             ),
@@ -194,7 +194,7 @@ describe('TransactionPairService', () => {
         const addLiquidityTransaction = await service.addLiquidity(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
                 tokens: [
@@ -222,7 +222,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                `MultiESDTNFTTransfer@${Address.fromHex(
+                `MultiESDTNFTTransfer@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32()}@2@WEGLD-123456@@9@MEX-123456@@10@addLiquidity@8@9`,
             ),
@@ -244,7 +244,7 @@ describe('TransactionPairService', () => {
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             senderAddress,
             {
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
                 tokens: [
@@ -292,7 +292,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                `MultiESDTNFTTransfer@${Address.fromHex(
+                `MultiESDTNFTTransfer@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32()}@02@WEGLD-123456@@10@MEX-123456@@09@addLiquidity@09@08`,
             ),
@@ -316,7 +316,7 @@ describe('TransactionPairService', () => {
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             senderAddress,
             {
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
                 tokens: [
@@ -365,7 +365,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                `MultiESDTNFTTransfer@${Address.fromHex(
+                `MultiESDTNFTTransfer@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32()}@02@WEGLD-123456@@09@MEX-123456@@10@addLiquidity@08@09`,
             ),
@@ -384,7 +384,7 @@ describe('TransactionPairService', () => {
         );
 
         const transactions = await service.removeLiquidity(senderAddress, {
-            pairAddress: Address.fromHex(
+            pairAddress: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             liquidity: '10',
@@ -396,7 +396,7 @@ describe('TransactionPairService', () => {
             {
                 nonce: 0,
                 value: '0',
-                receiver: Address.fromHex(
+                receiver: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
                 sender: senderAddress,
@@ -443,7 +443,7 @@ describe('TransactionPairService', () => {
         );
 
         const transactions = await service.swapTokensFixedInput(senderAddress, {
-            pairAddress: Address.fromHex(
+            pairAddress: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             tokenInID: 'EGLD',
@@ -478,7 +478,7 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.swapTokensFixedOutput(senderAddress, {
-            pairAddress: Address.fromHex(
+            pairAddress: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             tokenInID: 'MEX-123456',
@@ -512,7 +512,7 @@ describe('TransactionPairService', () => {
         );
 
         const transactions = await service.validateTokens(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             [
@@ -532,7 +532,7 @@ describe('TransactionPairService', () => {
 
         try {
             await service.validateTokens(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
                 [
@@ -546,7 +546,7 @@ describe('TransactionPairService', () => {
 
         try {
             await service.validateTokens(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
                 ).bech32(),
                 [
@@ -565,7 +565,7 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.whitelist(senderAddress, {
-            pairAddress: Address.fromHex(
+            pairAddress: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             address: Address.Zero().bech32(),
@@ -574,7 +574,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -600,7 +600,7 @@ describe('TransactionPairService', () => {
         );
 
         const transaction = await service.removeWhitelist(senderAddress, {
-            pairAddress: Address.fromHex(
+            pairAddress: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             address: Address.Zero().bech32(),
@@ -609,7 +609,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -636,7 +636,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.addTrustedSwapPair(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             Address.Zero().bech32(),
@@ -647,7 +647,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -674,7 +674,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.removeTrustedSwapPair(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             'WEGLD-123456',
@@ -684,7 +684,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -711,7 +711,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.pause(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
         );
@@ -719,7 +719,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -744,7 +744,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.resume(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
         );
@@ -752,7 +752,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -777,7 +777,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.setStateActiveNoSwaps(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
         );
@@ -785,7 +785,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -810,7 +810,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.setFeePercents(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             3,
@@ -820,7 +820,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -845,7 +845,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.setLockingDeadlineEpoch(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             1000,
@@ -854,7 +854,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -879,7 +879,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.setUnlockEpoch(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             1005,
@@ -888,7 +888,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -913,7 +913,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.setLockingScAddress(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             Address.Zero().bech32(),
@@ -922,7 +922,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,
@@ -949,7 +949,7 @@ describe('TransactionPairService', () => {
 
         const transaction = await service.setupFeesCollector(
             senderAddress,
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
         );
@@ -957,7 +957,7 @@ describe('TransactionPairService', () => {
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.fromHex(
+            receiver: Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
             ).bech32(),
             sender: senderAddress,

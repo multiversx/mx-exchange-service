@@ -53,7 +53,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 enum NftTokenType {
     FarmToken,

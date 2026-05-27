@@ -72,7 +72,7 @@ export class MetabondingAbiService
             await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getStakedAmountForUser([
-                new AddressValue(Address.fromString(userAddress)),
+                new AddressValue(Address.newFromBech32(userAddress)),
             ]);
 
         const response = await this.getGenericData(interaction);
@@ -93,7 +93,7 @@ export class MetabondingAbiService
         const contract =
             await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getUserEntry([
-            new AddressValue(Address.fromString(userAddress)),
+            new AddressValue(Address.newFromBech32(userAddress)),
         ]);
 
         const response = await this.getGenericData(interaction);
