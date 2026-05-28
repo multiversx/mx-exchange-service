@@ -1,4 +1,3 @@
-import { Interaction } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { FarmMigrationConfig } from '../../models/farm.model';
 import { FarmAbiService } from '../../base-module/services/farm.abi.service';
@@ -41,6 +40,12 @@ export class FarmAbiServiceV1_2
     async getLockedAssetFactoryAddressRaw(
         farmAddress: string,
     ): Promise<string> {
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getLockedAssetFactoryManagedAddress',
+        );
         return response.firstValue.valueOf().toBech32();
     }
 
@@ -57,11 +62,12 @@ export class FarmAbiServiceV1_2
     }
 
     async getFarmingTokenReserveRaw(farmAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmingTokenReserve();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getFarmingTokenReserve',
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -78,11 +84,12 @@ export class FarmAbiServiceV1_2
     }
 
     async getUndistributedFeesRaw(farmAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getUndistributedFees();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getUndistributedFees',
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -99,11 +106,12 @@ export class FarmAbiServiceV1_2
     }
 
     async getCurrentBlockFeeRaw(farmAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getCurrentBlockFee();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getCurrentBlockFee',
+        );
         const currentBlockFee = response.firstValue.valueOf();
         return currentBlockFee ? currentBlockFee[1].toFixed() : '0';
     }
@@ -121,11 +129,12 @@ export class FarmAbiServiceV1_2
     }
 
     async getLockedRewardAprMuliplierRaw(farmAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedRewardAprMuliplier();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getLockedRewardAprMuliplier',
+        );
         return response.firstValue.valueOf().integerValue();
     }
 
@@ -145,11 +154,12 @@ export class FarmAbiServiceV1_2
     async getFarmMigrationConfigurationRaw(
         farmAddress: string,
     ): Promise<FarmMigrationConfig | undefined> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmMigrationConfiguration();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getFarmMigrationConfiguration',
+        );
         const decodedResponse = response.firstValue.valueOf();
 
         return new FarmMigrationConfig({
