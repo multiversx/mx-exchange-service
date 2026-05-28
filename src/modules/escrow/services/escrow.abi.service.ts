@@ -1,9 +1,4 @@
-import {
-    Address,
-    AddressValue,
-    Interaction,
-    TypedValue,
-} from '@multiversx/sdk-core';
+import { Address, AddressValue, TypedValue } from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -51,12 +46,13 @@ export class EscrowAbiService
     async getScheduledTransfersRaw(
         receiverAddress: string,
     ): Promise<ScheduledTransferModel[]> {
-        const contract = await this.mxProxy.getEscrowContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getScheduledTransfers([
-                new AddressValue(Address.newFromBech32(receiverAddress)),
-            ]);
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getEscrowAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.escrow,
+            'getScheduledTransfers',
+            [new AddressValue(Address.newFromBech32(receiverAddress))],
+        );
 
         return response.firstValue.valueOf().map(
             (rawValue: TypedValue) =>
@@ -93,11 +89,13 @@ export class EscrowAbiService
     }
 
     async getAllSendersRaw(receiverAddress: string): Promise<string[]> {
-        const contract = await this.mxProxy.getEscrowContract();
-        const interaction: Interaction = contract.methodsExplicit.getAllSenders(
+        const abi = await this.mxProxy.getEscrowAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.escrow,
+            'getAllSenders',
             [new AddressValue(Address.newFromBech32(receiverAddress))],
         );
-        const response = await this.getGenericData(interaction);
         return response.firstValue
             .valueOf()
             .map((rawAddress: AddressValue) => rawAddress.valueOf().toBech32());
@@ -268,13 +266,13 @@ export class EscrowAbiService
     }
 
     async getAddressPermissionRaw(address: string): Promise<SCPermissions[]> {
-        const contract = await this.mxProxy.getEscrowContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getPermissions([
-                new AddressValue(Address.newFromBech32(address)),
-            ]);
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getEscrowAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.escrow,
+            'getPermissions',
+            [new AddressValue(Address.newFromBech32(address))],
+        );
         const permissions = response.firstValue.valueOf().toNumber();
         switch (permissions) {
             case 0:

@@ -4,12 +4,12 @@ import { MXProxyService } from '../../../services/multiversx-communication/mx.pr
 import {
     Address,
     AddressValue,
-    Interaction,
     TokenIdentifierValue,
     TypedValue,
     U32Value,
 } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
+import { scAddress } from 'src/config';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
@@ -37,13 +37,16 @@ export class FeesCollectorAbiService
     }
 
     async getAccumulatedFeesRaw(week: number, token: string): Promise<string> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getAccumulatedFees([
+        const abi = await this.mxProxy.getFeesCollectorAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.feesCollector,
+            'getAccumulatedFees',
+            [
                 new U32Value(new BigNumber(week)),
                 new TokenIdentifierValue(token),
-            ]);
-        const response = await this.getGenericData(interaction);
+            ],
+        );
         return response.firstValue.valueOf().integerValue().toFixed();
     }
 
@@ -58,10 +61,12 @@ export class FeesCollectorAbiService
     }
 
     async getLockedTokensPerEpochRaw(): Promise<string> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedTokensPerEpoch();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFeesCollectorAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.feesCollector,
+            'getLockedTokensPerEpoch',
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -76,10 +81,12 @@ export class FeesCollectorAbiService
     }
 
     async getAllTokensRaw(): Promise<string[]> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getRewardTokens();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFeesCollectorAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.feesCollector,
+            'getRewardTokens',
+        );
         return response.firstValue.valueOf();
     }
 
@@ -94,10 +101,12 @@ export class FeesCollectorAbiService
     }
 
     async getKnownContractsRaw(): Promise<string[]> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getAllKnownContracts();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFeesCollectorAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.feesCollector,
+            'getAllKnownContracts',
+        );
         return response.firstValue
             .valueOf()
             .map((value: TypedValue) => value.valueOf().toBech32());
@@ -114,10 +123,12 @@ export class FeesCollectorAbiService
     }
 
     async getLastLockedTokensAddWeekRaw(): Promise<number> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastLockedTokensAddWeek();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFeesCollectorAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.feesCollector,
+            'getLastLockedTokensAddWeek',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -134,13 +145,16 @@ export class FeesCollectorAbiService
     }
 
     async getRewardsClaimedRaw(week: number, token: string): Promise<string> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getRewardsClaimed([
+        const abi = await this.mxProxy.getFeesCollectorAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.feesCollector,
+            'getRewardsClaimed',
+            [
                 new U32Value(new BigNumber(week)),
                 new TokenIdentifierValue(token),
-            ]);
-        const response = await this.getGenericData(interaction);
+            ],
+        );
         return response.firstValue.valueOf().integerValue().toFixed();
     }
 
@@ -155,12 +169,13 @@ export class FeesCollectorAbiService
     }
 
     async getAllowExternalClaimRewardsRaw(address: string): Promise<boolean> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getAllowExternalClaimRewards([
-                new AddressValue(Address.newFromBech32(address)),
-            ]);
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFeesCollectorAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.feesCollector,
+            'getAllowExternalClaimRewards',
+            [new AddressValue(Address.newFromBech32(address))],
+        );
         return response.firstValue.valueOf();
     }
 
@@ -180,13 +195,16 @@ export class FeesCollectorAbiService
         week: number,
         token: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getFeesCollectorContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getTokenAvailableAmount([
+        const abi = await this.mxProxy.getFeesCollectorAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.feesCollector,
+            'getTokenAvailableAmount',
+            [
                 new U32Value(new BigNumber(week)),
                 new TokenIdentifierValue(token),
-            ]);
-        const response = await this.getGenericData(interaction);
+            ],
+        );
         return response.firstValue.valueOf().integerValue().toFixed();
     }
 }

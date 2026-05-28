@@ -1,6 +1,7 @@
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { Address, AddressValue } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
+import { scAddress } from 'src/config';
 import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
@@ -30,10 +31,12 @@ export class TokenUnstakeAbiService
     }
 
     async getUnbondEpochsRaw(): Promise<number> {
-        const contract = await this.mxProxy.getTokenUnstakeContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getUnbondEpochs();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getTokenUnstakeAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.tokenUnstake,
+            'getUnbondEpochs',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -48,10 +51,12 @@ export class TokenUnstakeAbiService
     }
 
     async getFeesBurnPercentageRaw(): Promise<number> {
-        const contract = await this.mxProxy.getTokenUnstakeContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getFeesBurnPercentage();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getTokenUnstakeAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.tokenUnstake,
+            'getFeesBurnPercentage',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -66,6 +71,12 @@ export class TokenUnstakeAbiService
     }
 
     async feesCollectorAddressRaw(): Promise<string> {
+        const abi = await this.mxProxy.getTokenUnstakeAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.tokenUnstake,
+            'getFeesCollectorAddress',
+        );
         return response.firstValue.valueOf().toBech32();
     }
 
@@ -80,6 +91,12 @@ export class TokenUnstakeAbiService
     }
 
     async getEnergyFactoryAddressRaw(): Promise<string> {
+        const abi = await this.mxProxy.getTokenUnstakeAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.tokenUnstake,
+            'getEnergyFactoryAddress',
+        );
         return response.firstValue.valueOf().toBech32();
     }
 
@@ -93,12 +110,13 @@ export class TokenUnstakeAbiService
     async getUnlockedTokensForUserRaw(
         userAddress: string,
     ): Promise<UnstakePairModel[]> {
-        const contract = await this.mxProxy.getTokenUnstakeContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getUnlockedTokensForUser([
-                new AddressValue(Address.newFromBech32(userAddress)),
-            ]);
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getTokenUnstakeAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.tokenUnstake,
+            'getUnlockedTokensForUser',
+            [new AddressValue(Address.newFromBech32(userAddress))],
+        );
         return response.firstValue.valueOf().map(
             (unstakePair) =>
                 new UnstakePairModel({

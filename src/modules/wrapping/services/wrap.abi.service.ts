@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Interaction } from '@multiversx/sdk-core';
+import { scAddress } from 'src/config';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
@@ -23,10 +23,12 @@ export class WrapAbiService extends GenericAbiService {
     }
 
     async getWrappedEgldTokenIDRaw(): Promise<string> {
-        const contract = await this.mxProxy.getWrapSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getWrappedEgldTokenId();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getWrapAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.wrappingAddress.get('shardID-1'),
+            'getWrappedEgldTokenId',
+        );
         return response.firstValue.valueOf().toString();
     }
 }
