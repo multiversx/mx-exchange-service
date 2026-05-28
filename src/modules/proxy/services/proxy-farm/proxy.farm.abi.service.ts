@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Interaction } from '@multiversx/sdk-core';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
@@ -31,12 +30,12 @@ export class ProxyFarmAbiService
     }
 
     async getWrappedFarmTokenIDRaw(proxyAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
+        const abi = await this.mxProxy.getProxyDexAbi(proxyAddress);
+        const response = await this.getGenericData(
+            abi,
             proxyAddress,
+            'getWrappedFarmTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getWrappedFarmTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -52,13 +51,12 @@ export class ProxyFarmAbiService
     }
 
     async getIntermediatedFarmsRaw(proxyAddress: string): Promise<string[]> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
+        const abi = await this.mxProxy.getProxyDexAbi(proxyAddress);
+        const response = await this.getGenericData(
+            abi,
             proxyAddress,
+            'getIntermediatedFarms',
         );
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getIntermediatedFarms();
-        const response = await this.getGenericData(interaction);
         return response.firstValue
             .valueOf()
             .map((farmAddress: AddressValue) => {
