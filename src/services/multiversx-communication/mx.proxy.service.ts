@@ -1,7 +1,6 @@
 import {
     AbiRegistry,
     Address,
-    SmartContract,
     SmartContractTransactionsFactory,
     TransactionsFactoryConfig,
 } from '@multiversx/sdk-core';
@@ -22,7 +21,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 @Injectable()
 export class MXProxyService {
     private readonly proxy: ProxyNetworkProviderProfiler;
-    private static smartContracts: SmartContract[];
+    private static abiCache: Map<string, AbiRegistry> = new Map();
     private static smartContractTransactionFactories: SmartContractTransactionsFactory[];
 
     constructor(
@@ -53,7 +52,6 @@ export class MXProxyService {
             },
         );
 
-        MXProxyService.smartContracts = [];
         MXProxyService.smartContractTransactionFactories = [];
     }
 
@@ -68,12 +66,8 @@ export class MXProxyService {
         return response.shardID;
     }
 
-    async getRouterSmartContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.routerAddress,
-            abiConfig.router,
-            'Router',
-        );
+    async getRouterAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.router, 'Router');
     }
 
     async getRouterSmartContractTransaction(
@@ -87,8 +81,8 @@ export class MXProxyService {
         );
     }
 
-    async getPairSmartContract(pairAddress: string): Promise<SmartContract> {
-        return this.getSmartContract(pairAddress, abiConfig.pair, 'Pair');
+    async getPairAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.pair, 'Pair');
     }
 
     async getPairSmartContractTransaction(
@@ -103,12 +97,8 @@ export class MXProxyService {
         );
     }
 
-    async getWrapSmartContract(shardID = 1): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.wrappingAddress.get(`shardID-${shardID}`),
-            abiConfig.wrap,
-            'EgldEsdtSwap',
-        );
+    async getWrapAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.wrap, 'EgldEsdtSwap');
     }
 
     async getWrapSmartContractTransaction(
@@ -123,7 +113,7 @@ export class MXProxyService {
         );
     }
 
-    async getFarmSmartContract(farmAddress: string): Promise<SmartContract> {
+    async getFarmAbi(farmAddress: string): Promise<AbiRegistry> {
         const version = farmVersion(farmAddress);
         const type = farmType(farmAddress);
 
@@ -131,7 +121,11 @@ export class MXProxyService {
             type === undefined
                 ? abiConfig.farm[version]
                 : abiConfig.farm[version][type];
-        return await this.getSmartContract(farmAddress, abiPath, 'Farm');
+        const contractInterface =
+            type === undefined
+                ? `Farm_${version}`
+                : `Farm_${version}_${type}`;
+        return this.getAbi(abiPath, contractInterface);
     }
 
     async getFarmSmartContractTransaction(
@@ -156,14 +150,8 @@ export class MXProxyService {
         );
     }
 
-    async getStakingSmartContract(
-        stakeAddress: string,
-    ): Promise<SmartContract> {
-        return await this.getSmartContract(
-            stakeAddress,
-            abiConfig.staking,
-            'Farm',
-        );
+    async getStakingAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.staking, 'Farm');
     }
 
     async getStakingSmartContractTransaction(
@@ -178,14 +166,8 @@ export class MXProxyService {
         );
     }
 
-    async getStakingProxySmartContract(
-        stakingProxyAddress: string,
-    ): Promise<SmartContract> {
-        return await this.getSmartContract(
-            stakingProxyAddress,
-            abiConfig.stakingProxy,
-            'FarmStakingProxy',
-        );
+    async getStakingProxyAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.stakingProxy, 'FarmStakingProxy');
     }
 
     async getStakingProxySmartContractTransaction(
@@ -200,15 +182,9 @@ export class MXProxyService {
         );
     }
 
-    async getProxyDexSmartContract(
-        proxyAddress: string,
-    ): Promise<SmartContract> {
+    async getProxyDexAbi(proxyAddress: string): Promise<AbiRegistry> {
         const version = proxyVersion(proxyAddress);
-        return this.getSmartContract(
-            proxyAddress,
-            abiConfig.proxy[version],
-            'ProxyDexImpl',
-        );
+        return this.getAbi(abiConfig.proxy[version], 'ProxyDexImpl');
     }
 
     async getProxyDexSmartContractTransaction(
@@ -225,12 +201,8 @@ export class MXProxyService {
         );
     }
 
-    async getDistributionSmartContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.distributionAddress,
-            abiConfig.distribution,
-            'Distribution',
-        );
+    async getDistributionAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.distribution, 'Distribution');
     }
 
     async getDistributionSmartContractTransaction(
@@ -244,12 +216,8 @@ export class MXProxyService {
         );
     }
 
-    async getLockedAssetFactorySmartContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.lockedAssetAddress,
-            abiConfig.lockedAssetFactory,
-            'LockedAssetFactory',
-        );
+    async getLockedAssetFactoryAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.lockedAssetFactory, 'LockedAssetFactory');
     }
 
     async getLockedAssetFactorySmartContractTransaction(
@@ -263,14 +231,8 @@ export class MXProxyService {
         );
     }
 
-    async getPriceDiscoverySmartContract(
-        priceDiscoveryAddress: string,
-    ): Promise<SmartContract> {
-        return this.getSmartContract(
-            priceDiscoveryAddress,
-            abiConfig.priceDiscovery,
-            'PriceDiscovery',
-        );
+    async getPriceDiscoveryAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.priceDiscovery, 'PriceDiscovery');
     }
 
     async getPriceDiscoverySmartContractTransaction(
@@ -285,14 +247,8 @@ export class MXProxyService {
         );
     }
 
-    async getSimpleLockSmartContract(
-        simpleLockAddress: string,
-    ): Promise<SmartContract> {
-        return this.getSmartContract(
-            simpleLockAddress,
-            abiConfig.simpleLock,
-            'SimpleLock',
-        );
+    async getSimpleLockAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.simpleLock, 'SimpleLock');
     }
 
     async getSimpleLockSmartContractTransaction(
@@ -307,12 +263,8 @@ export class MXProxyService {
         );
     }
 
-    async getSimpleLockEnergySmartContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.simpleLockEnergy,
-            abiConfig.simpleLockEnergy,
-            'SimpleLockEnergy',
-        );
+    async getSimpleLockEnergyAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.simpleLockEnergy, 'SimpleLockEnergy');
     }
 
     async getSimpleLockEnergySmartContractTransaction(
@@ -326,12 +278,8 @@ export class MXProxyService {
         );
     }
 
-    async getMetabondingStakingSmartContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.metabondingStakingAddress,
-            abiConfig.metabondingStaking,
-            'MetabondingStaking',
-        );
+    async getMetabondingStakingAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.metabondingStaking, 'MetabondingStaking');
     }
 
     async getMetabondingStakingSmartContractTransaction(
@@ -345,14 +293,8 @@ export class MXProxyService {
         );
     }
 
-    async getFeesCollectorContract(
-        contractAddress?: string,
-    ): Promise<SmartContract> {
-        return this.getSmartContract(
-            contractAddress ?? scAddress.feesCollector,
-            abiConfig.feesCollector,
-            'FeesCollector',
-        );
+    async getFeesCollectorAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.feesCollector, 'FeesCollector');
     }
 
     async getFeesCollectorSmartContractTransaction(
@@ -367,12 +309,8 @@ export class MXProxyService {
         );
     }
 
-    async getLockedTokenWrapperContract() {
-        return this.getSmartContract(
-            scAddress.lockedTokenWrapper,
-            abiConfig.lockedTokenWrapper,
-            'LockedTokenWrapper',
-        );
+    async getLockedTokenWrapperAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.lockedTokenWrapper, 'LockedTokenWrapper');
     }
 
     async getLockedTokenWrapperSmartContractTransaction(
@@ -386,12 +324,8 @@ export class MXProxyService {
         );
     }
 
-    async getEnergyUpdateContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.energyUpdate,
-            abiConfig.energyUpdate,
-            'EnergyUpdate',
-        );
+    async getEnergyUpdateAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.energyUpdate, 'EnergyUpdate');
     }
 
     async getEnergyUpdateSmartContractTransaction(
@@ -405,12 +339,8 @@ export class MXProxyService {
         );
     }
 
-    async getTokenUnstakeContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.tokenUnstake,
-            abiConfig.tokenUnstake,
-            'TokenUnstakeModule',
-        );
+    async getTokenUnstakeAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.tokenUnstake, 'TokenUnstakeModule');
     }
 
     async getTokenUnstakeSmartContractTransaction(
@@ -424,12 +354,8 @@ export class MXProxyService {
         );
     }
 
-    async getEscrowContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.escrow,
-            abiConfig.escrow,
-            'LkmexTransfer',
-        );
+    async getEscrowAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.escrow, 'LkmexTransfer');
     }
 
     async getEscrowSmartContractTransaction(
@@ -443,23 +369,25 @@ export class MXProxyService {
         );
     }
 
-    async getGovernanceSmartContract(
+    async getGovernanceAbi(type: GovernanceType): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.governance[type], `GovernanceV2_${type}`);
+    }
+
+    async getGovernanceSmartContractTransaction(
         governanceAddress: string,
         type: GovernanceType,
-    ): Promise<SmartContract> {
-        return this.getSmartContract(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
             governanceAddress,
             abiConfig.governance[type],
-            'GovernanceV2',
+            `GovernanceV2_${type}`,
+            options,
         );
     }
 
-    async getPostitionCreatorContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.positionCreator,
-            abiConfig.positionCreator,
-            'AutoPosCreator',
-        );
+    async getPositionCreatorAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.positionCreator, 'AutoPosCreator');
     }
 
     async getPositionCreatorContractTransaction(
@@ -473,9 +401,8 @@ export class MXProxyService {
         );
     }
 
-    async getLockedTokenPositionCreatorContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.lockedTokenPositionCreator,
+    async getLockedTokenPositionCreatorAbi(): Promise<AbiRegistry> {
+        return this.getAbi(
             abiConfig.lockedTokenPositionCreator,
             'LockedTokenPosCreatorContract',
         );
@@ -492,12 +419,8 @@ export class MXProxyService {
         );
     }
 
-    async getComposableTasksSmartContract(): Promise<SmartContract> {
-        return this.getSmartContract(
-            scAddress.composableTasks,
-            abiConfig.composableTasks,
-            'ComposableTasksContract',
-        );
+    async getComposableTasksAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.composableTasks, 'ComposableTasksContract');
     }
 
     async getComposableTasksContractTransaction(
@@ -511,20 +434,21 @@ export class MXProxyService {
         );
     }
 
-    async getSmartContract(
-        contractAddress: string,
+    async getAbi(
         contractAbiPath: string,
         contractInterface: string,
-    ): Promise<SmartContract> {
-        const key = `${contractInterface}.${contractAddress}`;
-        return (
-            MXProxyService.smartContracts[key] ||
-            this.createSmartContract(
-                contractAddress,
-                contractAbiPath,
-                contractInterface,
-            )
-        );
+    ): Promise<AbiRegistry> {
+        const cached = MXProxyService.abiCache.get(contractInterface);
+        if (cached) {
+            return cached;
+        }
+        const jsonContent: string = await promises.readFile(contractAbiPath, {
+            encoding: 'utf8',
+        });
+        const json = JSON.parse(jsonContent);
+        const abi = AbiRegistry.create(json);
+        MXProxyService.abiCache.set(contractInterface, abi);
+        return abi;
     }
 
     async getSmartContractTransaction(
@@ -539,8 +463,9 @@ export class MXProxyService {
             options.chainID ?? mxConfig.chainID,
         );
 
-        return factory
-            .createTransactionForExecute(Address.newFromBech32(options.sender), {
+        const transaction = await factory.createTransactionForExecute(
+            Address.newFromBech32(options.sender),
+            {
                 contract: Address.newFromBech32(contractAddress),
                 function: options.function,
                 gasLimit: BigInt(options.gasLimit),
@@ -549,8 +474,9 @@ export class MXProxyService {
                     ? BigInt(options.nativeTransferAmount)
                     : BigInt(0),
                 tokenTransfers: options.tokenTransfers ?? [],
-            })
-            .toPlainObject();
+            },
+        );
+        return transaction.toPlainObject();
     }
 
     async getSmartContractTransactionFactory(
@@ -568,24 +494,6 @@ export class MXProxyService {
                 chainID,
             )
         );
-    }
-
-    private async createSmartContract(
-        contractAddress: string,
-        contractAbiPath: string,
-        contractInterface: string,
-    ): Promise<SmartContract> {
-        const jsonContent: string = await promises.readFile(contractAbiPath, {
-            encoding: 'utf8',
-        });
-        const json = JSON.parse(jsonContent);
-        const newSC = new SmartContract({
-            address: Address.newFromBech32(contractAddress),
-            abi: AbiRegistry.create(json),
-        });
-        const key = `${contractInterface}.${contractAddress}`;
-        MXProxyService.smartContracts[key] = newSC;
-        return newSC;
     }
 
     private async createSmartContractTransactionsFactory(

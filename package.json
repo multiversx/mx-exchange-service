@@ -39,9 +39,9 @@
         "@grpc/proto-loader": "^0.8.1",
         "@grpc/reflection": "^1.0.4",
         "@isaacs/ttlcache": "^1.4.1",
-        "@multiversx/sdk-core": "^14.2.9",
+        "@multiversx/sdk-core": "^15.4.1",
         "@multiversx/sdk-exchange": "^0.2.24",
-        "@multiversx/sdk-native-auth-server": "2.0.0",
+        "@multiversx/sdk-native-auth-server": "2.1.0",
         "@multiversx/sdk-nestjs-cache": "6.0.1-beta.0",
         "@multiversx/sdk-nestjs-common": "6.0.1-beta.0",
         "@multiversx/sdk-nestjs-elastic": "6.0.1-beta.0",
@@ -101,7 +101,7 @@
         ],
         "overrides": {
             "@nestjs/mapped-types": "^2.1.1",
-            "@multiversx/sdk-exchange>@multiversx/sdk-core": "^14.2.9"
+            "@multiversx/sdk-exchange>@multiversx/sdk-core": "^15.4.1"
         }
     },
     "devDependencies": {

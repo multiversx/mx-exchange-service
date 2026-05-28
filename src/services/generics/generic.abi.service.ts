@@ -1,6 +1,8 @@
 import {
+    AbiRegistry,
+    Address,
     ArgSerializer,
-    Interaction,
+    EndpointDefinition,
     ReturnCode,
     SmartContractQuery,
     SmartContractQueryResponse,
@@ -24,38 +26,44 @@ export class GenericAbiService {
     }
 
     async getGenericData(
-        interaction: Interaction,
+        abi: AbiRegistry,
+        contractAddress: string,
+        functionName: string,
+        args: TypedValue[] = [],
     ): Promise<TypedOutcomeBundle> {
-        const query = this.buildQuery(interaction);
-        const queryResponse = await this.queryExecutor.execute(query);
-        return this.parseQueryResponse(queryResponse, interaction);
-    }
-
-    protected buildQuery(interaction: Interaction): SmartContractQuery {
-        const argSerializer = new ArgSerializer();
-        const encodedArgs = argSerializer
-            .valuesToBuffers(interaction.getArguments())
-            .map((buffer) => Uint8Array.from(buffer));
-
-        return new SmartContractQuery({
-            contract: interaction.getContractAddress(),
-            function: interaction.getFunction().toString(),
-            arguments: encodedArgs,
-        });
+        const endpoint = abi.getEndpoint(functionName);
+        const queryResponse = await this.runQuery(
+            contractAddress,
+            functionName,
+            args,
+        );
+        return this.parseQueryResponse(queryResponse, endpoint);
     }
 
     protected async runQuery(
-        interaction: Interaction,
+        contractAddress: string,
+        functionName: string,
+        args: TypedValue[] = [],
     ): Promise<SmartContractQueryResponse> {
-        return this.queryExecutor.execute(this.buildQuery(interaction));
+        const argSerializer = new ArgSerializer();
+        const encodedArgs = argSerializer
+            .valuesToBuffers(args)
+            .map((buffer) => Uint8Array.from(buffer));
+
+        const query = new SmartContractQuery({
+            contract: Address.newFromBech32(contractAddress),
+            function: functionName,
+            arguments: encodedArgs,
+        });
+
+        return this.queryExecutor.execute(query);
     }
 
     protected parseQueryResponse(
         queryResponse: SmartContractQueryResponse,
-        interaction: Interaction,
+        endpoint: EndpointDefinition,
     ): TypedOutcomeBundle {
         const argSerializer = new ArgSerializer();
-        const endpoint = interaction.getEndpoint();
         const returnCode = new ReturnCode(queryResponse.returnCode);
         const values: TypedValue[] = argSerializer.buffersToValues(
             queryResponse.returnDataParts.map((part) => Buffer.from(part)),
