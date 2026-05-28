@@ -1,8 +1,4 @@
-import {
-    Interaction,
-    ReturnCode,
-    TokenIdentifierValue,
-} from '@multiversx/sdk-core';
+import { ReturnCode, TokenIdentifierValue } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { PairTokens } from 'src/modules/pair/models/pair.model';
@@ -14,7 +10,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { IRouterAbiService } from './interfaces';
-import { constantsConfig } from 'src/config';
+import { constantsConfig, scAddress } from 'src/config';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
@@ -37,11 +33,12 @@ export class RouterAbiService
     }
 
     async getAllPairsAddressRaw(): Promise<string[]> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getAllPairsManagedAddresses();
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getAllPairsManagedAddresses',
+        );
         return response.firstValue.valueOf().map((pairAddress) => {
             return pairAddress.toString();
         });
@@ -58,11 +55,12 @@ export class RouterAbiService
     }
 
     async getPairsMetadataRaw(): Promise<PairMetadata[]> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getAllPairContractMetadata();
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getAllPairContractMetadata',
+        );
         return response.firstValue.valueOf().map((v) => {
             return new PairMetadata({
                 firstTokenID: v.first_token_id.toString(),
@@ -82,10 +80,12 @@ export class RouterAbiService
     }
 
     async getPairCreationEnabledRaw(): Promise<boolean> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getPairCreationEnabled();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getPairCreationEnabled',
+        );
         return response.firstValue.valueOf();
     }
 
@@ -99,9 +99,12 @@ export class RouterAbiService
     }
 
     async getStateRaw(): Promise<boolean> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getState();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getState',
+        );
         return response.firstValue.valueOf();
     }
 
@@ -115,10 +118,13 @@ export class RouterAbiService
     }
 
     async getOwnerRaw(): Promise<string> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getOwner();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getOwner',
+        );
+        return response.firstValue.valueOf().toBech32();
     }
 
     @ErrorLoggerAsync()
@@ -131,10 +137,12 @@ export class RouterAbiService
     }
 
     async getAllPairTokensRaw(): Promise<PairTokens[]> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getAllPairTokens();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getAllPairTokens',
+        );
         return response.firstValue.valueOf().map((v) => {
             return new PairTokens({
                 firstTokenID: v.first_token_id.toString(),
@@ -153,11 +161,13 @@ export class RouterAbiService
     }
 
     async getPairTemplateAddressRaw(): Promise<string> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getPairTemplateAddress();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getPairTemplateAddress',
+        );
+        return response.firstValue.valueOf().toBech32();
     }
 
     @ErrorLoggerAsync()
@@ -170,10 +180,12 @@ export class RouterAbiService
     }
 
     async getTemporaryOwnerPeriodRaw(): Promise<string> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getTemporaryOwnerPeriod();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getTemporaryOwnerPeriod',
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -191,13 +203,13 @@ export class RouterAbiService
     async getEnableSwapByUserConfigRaw(
         tokenID: string,
     ): Promise<EnableSwapByUserConfig> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getEnableSwapByUserConfig([
-                TokenIdentifierValue.esdtTokenIdentifier(tokenID),
-            ]);
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getEnableSwapByUserConfig',
+            [TokenIdentifierValue.esdtTokenIdentifier(tokenID)],
+        );
 
         if (
             response.returnCode.equals(ReturnCode.UserError) &&
@@ -228,11 +240,12 @@ export class RouterAbiService
     }
 
     async getCommonTokensForUserPairsRaw(): Promise<string[]> {
-        const contract = await this.mxProxy.getRouterSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getCommonTokensForUserPairs();
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getRouterAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.routerAddress,
+            'getCommonTokensForUserPairs',
+        );
         return response.firstValue.valueOf();
     }
 }

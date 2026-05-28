@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Interaction } from '@multiversx/sdk-core';
 import { U64Value } from '@multiversx/sdk-core';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PhaseModel } from '../models/price.discovery.model';
@@ -40,13 +39,12 @@ export class PriceDiscoveryAbiService
     async getLaunchedTokenIDRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getLaunchedTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLaunchedTokenId();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -65,13 +63,12 @@ export class PriceDiscoveryAbiService
     async getAcceptedTokenIDRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getAcceptedTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getAcceptedTokenId();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -88,13 +85,12 @@ export class PriceDiscoveryAbiService
     }
 
     async getRedeemTokenIDRaw(priceDiscoveryAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getRedeemTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getRedeemTokenId();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -125,13 +121,12 @@ export class PriceDiscoveryAbiService
     async getLaunchedTokenBalanceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getLaunchedTokenBalance',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLaunchedTokenBalance();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -150,13 +145,12 @@ export class PriceDiscoveryAbiService
     async getAcceptedTokenBalanceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getAcceptedTokenBalance',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getAcceptedTokenBalance();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -179,15 +173,13 @@ export class PriceDiscoveryAbiService
     async getLaunchedTokenRedeemBalanceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getRedeemTokenTotalCirculatingSupply',
+            [new U64Value(new BigNumber(1))],
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getRedeemTokenTotalCirculatingSupply([
-                new U64Value(new BigNumber(1)),
-            ]);
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -210,15 +202,13 @@ export class PriceDiscoveryAbiService
     async getAcceptedTokenRedeemBalanceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getRedeemTokenTotalCirculatingSupply',
+            [new U64Value(new BigNumber(2))],
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getRedeemTokenTotalCirculatingSupply([
-                new U64Value(new BigNumber(2)),
-            ]);
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -235,13 +225,12 @@ export class PriceDiscoveryAbiService
     }
 
     async getStartBlockRaw(priceDiscoveryAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getStartBlock',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getStartBlock();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -258,12 +247,12 @@ export class PriceDiscoveryAbiService
     }
 
     async getEndBlockRaw(priceDiscoveryAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getEndBlock',
         );
-        const interaction: Interaction = contract.methodsExplicit.getEndBlock();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -282,13 +271,12 @@ export class PriceDiscoveryAbiService
     async getCurrentPhaseRaw(
         priceDiscoveryAddress: string,
     ): Promise<PhaseModel> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getCurrentPhase',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getCurrentPhase();
-
-        const response = await this.getGenericData(interaction);
 
         const phaseName = response.firstValue.valueOf().name;
         const penalty = response.firstValue.valueOf().fields.penalty_percentage;
@@ -321,13 +309,12 @@ export class PriceDiscoveryAbiService
     async getMinLaunchedTokenPriceRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getMinLaunchedTokenPrice',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getMinLaunchedTokenPrice();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -350,12 +337,12 @@ export class PriceDiscoveryAbiService
     async getNoLimitPhaseDurationBlocksRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getNoLimitPhaseDurationBlocks',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getNoLimitPhaseDurationBlocks();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -378,12 +365,12 @@ export class PriceDiscoveryAbiService
     async getLinearPenaltyPhaseDurationBlocksRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getLinearPenaltyPhaseDurationBlocks',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLinearPenaltyPhaseDurationBlocks();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -406,12 +393,12 @@ export class PriceDiscoveryAbiService
     async getFixedPenaltyPhaseDurationBlocksRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getFixedPenaltyPhaseDurationBlocks',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getFixedPenaltyPhaseDurationBlocks();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -430,12 +417,12 @@ export class PriceDiscoveryAbiService
     async getLockingScAddressRaw(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getLockingScAddress',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockingScAddress();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -452,12 +439,12 @@ export class PriceDiscoveryAbiService
     }
 
     async getUnlockEpochRaw(priceDiscoveryAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getUnlockEpoch',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getUnlockEpoch();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -476,12 +463,12 @@ export class PriceDiscoveryAbiService
     async getPenaltyMinPercentageRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getPenaltyMinPercentage',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getPenaltyMinPercentage();
-        const response = await this.getGenericData(interaction);
         const rawPenalty: BigNumber = response.firstValue.valueOf();
         return rawPenalty
             .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
@@ -503,12 +490,12 @@ export class PriceDiscoveryAbiService
     async getPenaltyMaxPercentageRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getPenaltyMaxPercentage',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getPenaltyMaxPercentage();
-        const response = await this.getGenericData(interaction);
         const rawPenalty: BigNumber = response.firstValue.valueOf();
         return rawPenalty
             .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
@@ -532,12 +519,12 @@ export class PriceDiscoveryAbiService
     async getFixedPenaltyPercentageRaw(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
+        const abi = await this.mxProxy.getPriceDiscoveryAbi();
+        const response = await this.getGenericData(
+            abi,
             priceDiscoveryAddress,
+            'getFixedPenaltyPercentage',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getFixedPenaltyPercentage();
-        const response = await this.getGenericData(interaction);
         const rawPenalty: BigNumber = response.firstValue.valueOf();
         return rawPenalty
             .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)

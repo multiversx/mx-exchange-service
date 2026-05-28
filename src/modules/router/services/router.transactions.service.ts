@@ -347,7 +347,6 @@ export class RouterTransactionService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const contract = await this.mxProxy.getRouterSmartContract();
 
         const wrapTransaction = await this.wrapIfNeeded(
             sender,
@@ -373,27 +372,29 @@ export class RouterTransactionService {
         }
 
         transactions.push(
-            contract.methodsExplicit
-                .multiPairSwap(endpointArgs)
-                .withSingleESDTTransfer(
-                    new TokenTransfer({
-                        token: new Token({ identifier: args.tokenRoute[0] }),
-                        amount: BigInt(
-                            new BigNumber(
-                                args.intermediaryAmounts[0],
-                            ).toFixed(0),
-                        ),
-                    }),
-                )
-                .withGasLimit(
-                    BigInt(
+            await this.mxProxy.getRouterSmartContractTransaction(
+                new TransactionOptions({
+                    sender,
+                    chainID: mxConfig.chainID,
+                    gasLimit:
                         args.addressRoute.length *
-                            gasConfig.router.multiPairSwapMultiplier,
-                    ),
-                )
-                .withChainID(mxConfig.chainID)
-                .buildTransaction()
-                .toPlainObject(),
+                        gasConfig.router.multiPairSwapMultiplier,
+                    function: 'multiPairSwap',
+                    arguments: endpointArgs,
+                    tokenTransfers: [
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: args.tokenRoute[0],
+                            }),
+                            amount: BigInt(
+                                new BigNumber(
+                                    args.intermediaryAmounts[0],
+                                ).toFixed(0),
+                            ),
+                        }),
+                    ],
+                }),
+            ),
         );
 
         const unwrapTransaction = await this.unwrapIfNeeded(

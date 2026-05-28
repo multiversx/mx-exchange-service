@@ -1,4 +1,3 @@
-import { Interaction } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
@@ -34,12 +33,12 @@ export class StakingProxyAbiService
     }
 
     async getlpFarmAddressRaw(stakingProxyAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingProxySmartContract(
+        const abi = await this.mxProxy.getStakingProxyAbi();
+        const response = await this.getGenericData(
+            abi,
             stakingProxyAddress,
+            'getLpFarmAddress',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLpFarmAddress();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -57,12 +56,12 @@ export class StakingProxyAbiService
     async getStakingFarmAddressRaw(
         stakingProxyAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getStakingProxySmartContract(
+        const abi = await this.mxProxy.getStakingProxyAbi();
+        const response = await this.getGenericData(
+            abi,
             stakingProxyAddress,
+            'getStakingFarmAddress',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getStakingFarmAddress();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -78,12 +77,12 @@ export class StakingProxyAbiService
     }
 
     async getPairAddressRaw(stakingProxyAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingProxySmartContract(
+        const abi = await this.mxProxy.getStakingProxyAbi();
+        const response = await this.getGenericData(
+            abi,
             stakingProxyAddress,
+            'getPairAddress',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getPairAddress();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -100,12 +99,12 @@ export class StakingProxyAbiService
     }
 
     async getStakingTokenIDRaw(stakingProxyAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingProxySmartContract(
+        const abi = await this.mxProxy.getStakingProxyAbi();
+        const response = await this.getGenericData(
+            abi,
             stakingProxyAddress,
+            'getStakingTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getStakingTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -122,12 +121,12 @@ export class StakingProxyAbiService
     }
 
     async getFarmTokenIDRaw(stakingProxyAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingProxySmartContract(
+        const abi = await this.mxProxy.getStakingProxyAbi();
+        const response = await this.getGenericData(
+            abi,
             stakingProxyAddress,
+            'getFarmTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -144,12 +143,12 @@ export class StakingProxyAbiService
     }
 
     async getDualYieldTokenIDRaw(stakingProxyAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingProxySmartContract(
+        const abi = await this.mxProxy.getStakingProxyAbi();
+        const response = await this.getGenericData(
+            abi,
             stakingProxyAddress,
+            'getDualYieldTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getDualYieldTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -178,12 +177,12 @@ export class StakingProxyAbiService
     }
 
     async getLpFarmTokenIDRaw(stakingProxyAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingProxySmartContract(
+        const abi = await this.mxProxy.getStakingProxyAbi();
+        const response = await this.getGenericData(
+            abi,
             stakingProxyAddress,
+            'getLpFarmTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLpFarmTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 }
