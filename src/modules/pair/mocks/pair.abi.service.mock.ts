@@ -65,7 +65,7 @@ export class PairAbiServiceMock implements IPairAbiService {
         return PairsData(pairAddress).feeState;
     }
     async lockingScAddress(pairAddress: string): Promise<string> {
-        return Address.Zero().bech32();
+        return Address.Zero().toBech32();
     }
     async unlockEpoch(pairAddress: string): Promise<number> {
         return 1;

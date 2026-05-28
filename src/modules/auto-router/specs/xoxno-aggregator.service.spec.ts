@@ -131,7 +131,7 @@ describe('XoxnoAggregatorService', () => {
                 transaction: {
                     nonce: 0,
                     value: '0',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     receiver: 'erd1router',
                     gasPrice: 1000000000,
                     gasLimit: 8000000,

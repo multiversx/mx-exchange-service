@@ -56,7 +56,7 @@ export class MXGatewayService {
                     break;
                 case 'object':
                     if (key instanceof Address) {
-                        fullKey = fullKey.concat(key.hex());
+                        fullKey = fullKey.concat(key.toHex());
                         break;
                     }
                     break;

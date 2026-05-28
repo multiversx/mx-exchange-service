@@ -369,13 +369,10 @@ export class FarmAbiService
             const contract = await this.mxProxy.getFarmSmartContract(
                 farmAddress,
             );
-            const interaction: Interaction =
-                contract.methodsExplicit.getPairContractManagedAddress();
-            const response = await this.getGenericData(interaction);
             if (response.returnCode.equals(ReturnCode.FunctionNotFound)) {
-                return Address.Zero().bech32();
+                return Address.Zero().toBech32();
             }
-            return response.firstValue.valueOf().bech32();
+            return response.firstValue.valueOf().toBech32();
         } catch {
             return undefined;
         }

@@ -47,7 +47,7 @@ describe('WeekTimekeepingComputeService', () => {
         const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
             WeekTimekeepingAbiService,
         );
-        const scAddress = Address.Zero().bech32();
+        const scAddress = Address.Zero().toBech32();
         const firstWeekStartEpoch =
             await weekTimekeepingAbi.firstWeekStartEpoch(scAddress);
         // epoch < firstWeekStartEpoch should error
@@ -81,7 +81,7 @@ describe('WeekTimekeepingComputeService', () => {
         const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
             WeekTimekeepingAbiService,
         );
-        const scAddress = Address.Zero().bech32();
+        const scAddress = Address.Zero().toBech32();
         const firstWeekStartEpoch =
             await weekTimekeepingAbi.firstWeekStartEpoch(scAddress);
         // week < 0 should error
@@ -109,7 +109,7 @@ describe('WeekTimekeepingComputeService', () => {
         const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
             WeekTimekeepingAbiService,
         );
-        const scAddress = Address.Zero().bech32();
+        const scAddress = Address.Zero().toBech32();
         const firstWeekStartEpoch =
             await weekTimekeepingAbi.firstWeekStartEpoch(scAddress);
 

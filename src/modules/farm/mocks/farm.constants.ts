@@ -4,7 +4,7 @@ export const farms = [
     {
         address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000021',
-        ).bech32(),
+        ).toBech32(),
         farmedTokenID: 'MEX-123456',
         farmTokenID: 'EGLDMEXFL-abcdef',
         farmingTokenID: 'EGLDMEXLP-abcdef',
@@ -16,7 +16,7 @@ export const farms = [
     {
         address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000031',
-        ).bech32(),
+        ).toBech32(),
         farmedTokenID: 'MEX-123456',
         farmTokenID: 'EGLDMEXF-abcdef',
         farmingTokenID: 'EGLDMEXLP-abcdef',
@@ -28,7 +28,7 @@ export const farms = [
     {
         address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000032',
-        ).bech32(),
+        ).toBech32(),
         farmedTokenID: 'MEX-123456',
         farmTokenID: 'EGLDMEXFL-bcdefg',
         farmingTokenID: 'EGLDMEXLP-abcdef',
@@ -40,7 +40,7 @@ export const farms = [
     {
         address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000033',
-        ).bech32(),
+        ).toBech32(),
         farmedTokenID: 'TOK4-123456',
         farmTokenID: 'EGLDTOK4FL-abcdef',
         farmingTokenID: 'EGLDTOK4LP-abcdef',
@@ -52,7 +52,7 @@ export const farms = [
     {
         address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000041',
-        ).bech32(),
+        ).toBech32(),
         farmedTokenID: 'MEX-123456',
         farmTokenID: 'EGLDMEXFL-ghijkl',
         farmingTokenID: 'EGLDMEXLP-abcdef',

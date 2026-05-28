@@ -41,10 +41,6 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
     }
 
     async energyFactoryAddressRaw(): Promise<string> {
-        const contract = await this.mxProxy.getLockedTokenWrapperContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getEnergyFactoryAddress();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        return response.firstValue.valueOf().toBech32();
     }
 }

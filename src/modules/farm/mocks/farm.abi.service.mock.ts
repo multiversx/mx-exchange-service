@@ -60,7 +60,7 @@ export class FarmAbiServiceMock implements IFarmAbiService {
     async pairContractAddress(farmAddress: string): Promise<string> {
         return Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000012',
-        ).bech32();
+        ).toBech32();
     }
     lastErrorMessage(farmAddress: string): Promise<string> {
         throw new Error('Method not implemented.');

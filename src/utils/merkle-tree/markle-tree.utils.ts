@@ -85,7 +85,7 @@ export class MerkleTreeUtils {
         const votingPower: BigUIntValue = new BigUIntValue(new BigNumber(x.balance));
         const serializedPower = argSerializer.valuesToStrings([votingPower]);
 
-        const leaf = Buffer.concat([Buffer.from(address.hex(), 'hex'), Buffer.from(serializedPower[0], 'hex')]);
+        const leaf = Buffer.concat([Buffer.from(address.toHex(), 'hex'), Buffer.from(serializedPower[0], 'hex')]);
 
         return CryptoJS.SHA256(CryptoJS.enc.Hex.parse(leaf.toString('hex')));
     }

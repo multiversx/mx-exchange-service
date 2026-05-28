@@ -17,7 +17,7 @@ export class StakingProxyAddressValidationPipe implements PipeTransform {
             }
             const stakingProxyAddresses =
                 await this.remoteConfig.getStakingProxyAddresses();
-            if (!stakingProxyAddresses.includes(address.bech32())) {
+            if (!stakingProxyAddresses.includes(address.toBech32())) {
                 throw new UserInputError('Invalid staking proxy address');
             }
         }

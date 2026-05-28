@@ -91,7 +91,7 @@ describe('ProxyFarmTransactionsService', () => {
         ]);
 
         const transactions = await service.migrateTotalFarmPosition(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             'erd1qqqqqqqqqqqqqpgqt6ltx52ukss9d2qag2k67at28a36xc9lkp2sr06394',
         );
 
@@ -123,7 +123,7 @@ describe('ProxyFarmTransactionsService', () => {
         ]);
 
         const transactions = await service.migrateTotalFarmPosition(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             'erd1qqqqqqqqqqqqqpgqt6ltx52ukss9d2qag2k67at28a36xc9lkp2sr06394',
         );
 

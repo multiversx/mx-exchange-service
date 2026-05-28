@@ -127,7 +127,7 @@ describe('FarmService', () => {
             attributes: attributes,
             liquidity: liquidity,
             vmQuery: true,
-            user: Address.Zero().bech32(),
+            user: Address.Zero().toBech32(),
         });
 
         expect(rewards).toEqual(
@@ -224,7 +224,7 @@ describe('FarmService', () => {
                     attributes:
                         'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
                     vmQuery: false,
-                    user: Address.Zero().bech32(),
+                    user: Address.Zero().toBech32(),
                 },
             ]);
 
@@ -254,7 +254,7 @@ describe('FarmService', () => {
             attributes:
                 'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
             vmQuery: false,
-            user: Address.Zero().bech32(),
+            user: Address.Zero().toBech32(),
         });
         expect(tokensForExitFarm).toEqual({
             farmingTokens: '999000000000000000',

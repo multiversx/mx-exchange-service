@@ -1,5 +1,5 @@
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
-import { Address, AddressValue, Interaction } from '@multiversx/sdk-core';
+import { Address, AddressValue } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { EsdtTokenPaymentModel } from 'src/modules/tokens/models/esdt.token.payment.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
@@ -66,11 +66,7 @@ export class TokenUnstakeAbiService
     }
 
     async feesCollectorAddressRaw(): Promise<string> {
-        const contract = await this.mxProxy.getTokenUnstakeContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getFeesCollectorAddress();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        return response.firstValue.valueOf().toBech32();
     }
 
     @ErrorLoggerAsync()
@@ -84,11 +80,7 @@ export class TokenUnstakeAbiService
     }
 
     async getEnergyFactoryAddressRaw(): Promise<string> {
-        const contract = await this.mxProxy.getTokenUnstakeContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getEnergyFactoryAddress();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        return response.firstValue.valueOf().toBech32();
     }
 
     @ErrorLoggerAsync({ logArgs: true })

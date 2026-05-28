@@ -65,22 +65,22 @@ describe('RouterService', () => {
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             ),
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',
-                ).bech32(),
+                ).toBech32(),
             ),
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000015',
-                ).bech32(),
+                ).toBech32(),
             ),
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000019',
-                ).bech32(),
+                ).toBech32(),
             ),
         ]);
     });
@@ -102,7 +102,7 @@ describe('RouterService', () => {
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000015',
-                ).bech32(),
+                ).toBech32(),
             ),
         ]);
     });
@@ -124,37 +124,37 @@ describe('RouterService', () => {
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             ),
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',
-                ).bech32(),
+                ).toBech32(),
             ),
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000014',
-                ).bech32(),
+                ).toBech32(),
             ),
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000015',
-                ).bech32(),
+                ).toBech32(),
             ),
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000017',
-                ).bech32(),
+                ).toBech32(),
             ),
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000018',
-                ).bech32(),
+                ).toBech32(),
             ),
             PairsData(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000019',
-                ).bech32(),
+                ).toBech32(),
             ),
         ]);
     });

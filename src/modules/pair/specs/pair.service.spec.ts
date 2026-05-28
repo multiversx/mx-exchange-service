@@ -54,7 +54,7 @@ describe('PairService', () => {
         const amountIn = await service.getAmountIn(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
             'WEGLD-123456',
             '1000000000000000000',
         );
@@ -67,7 +67,7 @@ describe('PairService', () => {
         const amountOut = await service.getAmountOut(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
             'WEGLD-123456',
             '1000000000000000000',
         );
@@ -80,7 +80,7 @@ describe('PairService', () => {
         const equivalent = await service.getEquivalentForLiquidity(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
             'WEGLD-123456',
             '1000000000000000000',
         );
@@ -93,7 +93,7 @@ describe('PairService', () => {
         const liquidityPosition = await service.getLiquidityPosition(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
             '1',
         );
         expect(liquidityPosition).toEqual({
@@ -108,7 +108,7 @@ describe('PairService', () => {
         const liquidityPositionUSD = await service.getLiquidityPositionUSD(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
 
             '1000000000000000000',
         );
@@ -124,7 +124,7 @@ describe('PairService', () => {
         expect(address).toEqual(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
         );
     });
 });

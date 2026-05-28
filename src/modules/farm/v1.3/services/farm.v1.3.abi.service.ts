@@ -47,10 +47,7 @@ export class FarmAbiServiceV1_3
             const contract = await this.mxProxy.getFarmSmartContract(
                 farmAddress,
             );
-            const interaction: Interaction =
-                contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
-            const response = await this.getGenericData(interaction);
-            return response.firstValue.valueOf().bech32();
+            return response.firstValue.valueOf().toBech32();
         } catch (error) {
             return undefined;
         }
@@ -82,7 +79,7 @@ export class FarmAbiServiceV1_3
 
             return new FarmMigrationConfig({
                 migrationRole: decodedResponse.migration_role.name,
-                oldFarmAddress: decodedResponse.old_farm_address.bech32(),
+                oldFarmAddress: decodedResponse.old_farm_address.toBech32(),
                 oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
             });
         } catch (error) {

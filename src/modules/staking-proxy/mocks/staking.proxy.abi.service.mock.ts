@@ -4,13 +4,13 @@ import { StakingProxyAbiService } from '../services/staking.proxy.abi.service';
 
 export class StakingProxyAbiServiceMock implements IStakingProxyAbiService {
     async lpFarmAddress(stakingProxyAddress: string): Promise<string> {
-        return Address.Zero().bech32();
+        return Address.Zero().toBech32();
     }
     async stakingFarmAddress(stakingProxyAddress: string): Promise<string> {
-        return Address.Zero().bech32();
+        return Address.Zero().toBech32();
     }
     async pairAddress(stakingProxyAddress: string): Promise<string> {
-        return Address.Zero().bech32();
+        return Address.Zero().toBech32();
     }
     async stakingTokenID(stakingProxyAddress: string): Promise<string> {
         return 'WEGLD-123456';

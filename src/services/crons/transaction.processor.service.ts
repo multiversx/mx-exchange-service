@@ -147,10 +147,10 @@ export class TransactionProcessorService {
     }
 
     private ESDTNFTTransferReceiver(functionArgs: string[]): string {
-        return new Address(functionArgs[3]).bech32();
+        return new Address(functionArgs[3]).toBech32();
     }
 
     private MultiESDTNFTTransferReceiver(functionArgs: string[]): string {
-        return new Address(functionArgs[0]).bech32();
+        return new Address(functionArgs[0]).toBech32();
     }
 }

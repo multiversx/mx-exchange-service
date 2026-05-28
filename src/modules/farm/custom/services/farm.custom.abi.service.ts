@@ -1,4 +1,4 @@
-import { Address, Interaction } from '@multiversx/sdk-core';
+import { Address } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { FarmAbiService } from '../../base-module/services/farm.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
@@ -31,6 +31,6 @@ export class FarmCustomAbiService
 
         return response.firstValue
             .valueOf()
-            .map((address: Address) => address.bech32());
+            .map((address: Address) => address.toBech32());
     }
 }

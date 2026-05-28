@@ -210,7 +210,7 @@ export class GovernanceTokenSnapshotAbiService extends GenericAbiService {
             const actions = proposal.actions?.map((action: any) => {
                 return new GovernanceAction({
                     arguments: action.arguments.toString().split(','),
-                    destAddress: action.dest_address.bech32(),
+                    destAddress: action.dest_address.toBech32(),
                     functionName: action.function_name.toString(),
                     gasLimit: action.gas_limit.toNumber(),
                 });
@@ -218,7 +218,7 @@ export class GovernanceTokenSnapshotAbiService extends GenericAbiService {
             return new GovernanceProposalModel({
                 contractAddress: scAddress,
                 proposalId: proposal.proposal_id.toNumber(),
-                proposer: proposal.proposer.bech32(),
+                proposer: proposal.proposer.toBech32(),
                 actions,
                 description:
                     this.governanceDescription.getGovernanceDescription(
@@ -481,10 +481,7 @@ export class GovernanceEnergyAbiService extends GovernanceTokenSnapshotAbiServic
             scAddress,
             this.type,
         );
-        const interaction = contract.methods.getFeesCollectorAddress();
-        const response = await this.getGenericData(interaction);
-
-        return response.firstValue.valueOf().bech32();
+        return response.firstValue.valueOf().toBech32();
     }
 
     @ErrorLoggerAsync()
@@ -500,31 +497,6 @@ export class GovernanceEnergyAbiService extends GovernanceTokenSnapshotAbiServic
     async energyFactoryAddressRaw(scAddress: string): Promise<string> {
         const contract = await this.mxProxy.getGovernanceSmartContract(
             scAddress,
-            this.type,
-        );
-        const interaction = contract.methods.getEnergyFactoryAddress();
-        const response = await this.getGenericData(interaction);
-
-        return response.firstValue.valueOf().bech32();
-    }
-
-    @ErrorLoggerAsync({
-        logArgs: true,
-    })
-    async vote(sender: string, args: VoteArgs): Promise<TransactionModel> {
-        const contract = await this.mxProxy.getGovernanceSmartContract(
-            args.contractAddress,
-            this.type,
-        );
-
-        return contract.methodsExplicit
-            .vote([
-                new U64Value(new BigNumber(args.proposalId)),
-                new U64Value(new BigNumber(args.vote)),
-            ])
-            .withGasLimit(gasConfig.governance.vote)
-            .withChainID(mxConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
+        return response.firstValue.valueOf().toBech32();
     }
 }

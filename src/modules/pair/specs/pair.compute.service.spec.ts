@@ -108,7 +108,7 @@ describe('PairService', () => {
         const service = module.get<PairComputeService>(PairComputeService);
         const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenPrice = await service.computeSecondTokenPrice(pairAddress);
         expect(tokenPrice).toEqual(PairsData(pairAddress).secondTokenPrice);
     });
@@ -117,7 +117,7 @@ describe('PairService', () => {
         const service = module.get<PairComputeService>(PairComputeService);
         const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenPriceUSD = await service.computeFirstTokenPriceUSD(
             pairAddress,
         );
@@ -130,7 +130,7 @@ describe('PairService', () => {
         const service = module.get<PairComputeService>(PairComputeService);
         const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenPriceUSD = await service.computeSecondTokenPriceUSD(
             pairAddress,
         );
@@ -143,7 +143,7 @@ describe('PairService', () => {
         const service = module.get<PairComputeService>(PairComputeService);
         const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenLockedValueUSD =
             await service.computeFirstTokenLockedValueUSD(pairAddress);
         expect(tokenLockedValueUSD.toFixed()).toEqual(
@@ -155,7 +155,7 @@ describe('PairService', () => {
         const service = module.get<PairComputeService>(PairComputeService);
         const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenLockedValueUSD =
             await service.computeSecondTokenLockedValueUSD(pairAddress);
         expect(tokenLockedValueUSD.toFixed()).toEqual(
@@ -167,7 +167,7 @@ describe('PairService', () => {
         const service = module.get<PairComputeService>(PairComputeService);
         const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenLockedValueUSD = await service.computeLockedValueUSD(
             pairAddress,
         );
@@ -182,14 +182,14 @@ describe('PairService', () => {
         let lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(lpTokenPriceUSD).toEqual('20');
 
         lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000013',
-            ).bech32(),
+            ).toBech32(),
         );
 
         expect(lpTokenPriceUSD).toEqual('2000000000000');
@@ -218,7 +218,7 @@ describe('PairService', () => {
         );
 
         const lockedValueUSD = await service.computePermanentLockedValueUSD(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             new BigNumber('1000'),
             new BigNumber('500000000'),
         );
@@ -246,7 +246,7 @@ describe('PairService', () => {
         );
 
         const lockedValueUSD = await service.computePermanentLockedValueUSD(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             new BigNumber('50000000000000000000000'),
             new BigNumber('500000000'),
         );

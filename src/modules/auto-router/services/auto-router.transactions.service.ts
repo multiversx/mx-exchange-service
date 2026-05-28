@@ -443,7 +443,7 @@ export class AutoRouterTransactionService {
             const amountOutMin = args[index + 3];
 
             swaps.push(
-                new BytesValue(Buffer.from(pairAddress.valueOf().hex(), 'hex')),
+                new BytesValue(Buffer.from(pairAddress.valueOf().toHex(), 'hex')),
             );
             swaps.push(BytesValue.fromUTF8(functionName.valueOf()));
             swaps.push(BytesValue.fromUTF8(tokenOutID.valueOf()));

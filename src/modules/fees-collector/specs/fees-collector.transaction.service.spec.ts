@@ -156,10 +156,10 @@ describe('FeesCollectorTransactionService', () => {
             [
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000002',
-                ).bech32(),
+                ).toBech32(),
             ],
             true,
         );
@@ -178,9 +178,9 @@ describe('FeesCollectorTransactionService', () => {
                 data: encodeTransactionData(
                     `removeKnownContracts@${Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000001',
-                    ).bech32()}@${Address.newFromHex(
+                    ).toBech32()}@${Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000002',
-                    ).bech32()}`,
+                    ).toBech32()}`,
                 ),
                 options: undefined,
                 signature: undefined,

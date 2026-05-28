@@ -18,7 +18,7 @@ export class StakeAddressValidationPipe implements PipeTransform {
             } catch (error) {
                 throw new UserInputError('Invalid address');
             }
-            if (!stakingAddresses.includes(address.bech32())) {
+            if (!stakingAddresses.includes(address.toBech32())) {
                 throw new UserInputError('Invalid staking address');
             }
         }

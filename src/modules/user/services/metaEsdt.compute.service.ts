@@ -162,7 +162,7 @@ export class UserMetaEsdtComputeService {
                     tokenPriceUSD,
                 ).toFixed(),
                 decodedAttributes: decodedFarmAttributes,
-                pairAddress: Address.Zero().bech32(),
+                pairAddress: Address.Zero().toBech32(),
             });
         }
         const farmTokenBalanceUSD =

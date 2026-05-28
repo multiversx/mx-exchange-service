@@ -95,12 +95,7 @@ export class FarmAbiServiceV2
             return undefined;
         }
 
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockingScAddress();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        return response.firstValue.valueOf().toBech32();
     }
 
     @ErrorLoggerAsync({
@@ -276,12 +271,7 @@ export class FarmAbiServiceV2
     }
 
     async getEnergyFactoryAddressRaw(farmAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getEnergyFactoryAddress();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        return response.firstValue.valueOf().toBech32();
     }
 
     async calculateRewardsForGivenPosition(

@@ -23,13 +23,13 @@ export class EscrowHandlerService {
 
     async handleEscrowLockFundsEvent(event: EscrowLockFundsEvent) {
         await this.handleEscrowEvent(
-            event.sender.bech32(),
-            event.receiver.bech32(),
+            event.sender.toBech32(),
+            event.receiver.toBech32(),
         );
 
         const invalidatedKeys = await Promise.all([
             this.escrowSetter.setSenderLastTransferEpoch(
-                event.sender.bech32(),
+                event.sender.toBech32(),
                 event.lockedFunds.lockedEpoch,
             ),
         ]);
@@ -42,13 +42,13 @@ export class EscrowHandlerService {
 
     async handleEscrowWithdrawEvent(event: EscrowWithdrawEvent): Promise<void> {
         await this.handleEscrowEvent(
-            event.sender.bech32(),
-            event.receiver.bech32(),
+            event.sender.toBech32(),
+            event.receiver.toBech32(),
         );
 
         const invalidatedKeys = await Promise.all([
             this.escrowSetter.setReceiverLastTransferEpoch(
-                event.receiver.bech32(),
+                event.receiver.toBech32(),
                 event.lockedFunds.lockedEpoch,
             ),
         ]);
@@ -64,13 +64,13 @@ export class EscrowHandlerService {
         event: EscrowCancelTransferEvent,
     ): Promise<void> {
         await this.handleEscrowEvent(
-            event.sender.bech32(),
-            event.receiver.bech32(),
+            event.sender.toBech32(),
+            event.receiver.toBech32(),
         );
 
         const invalidatedKeys = await Promise.all([
             this.escrowSetter.setSenderLastTransferEpoch(
-                event.sender.bech32(),
+                event.sender.toBech32(),
                 0,
             ),
         ]);

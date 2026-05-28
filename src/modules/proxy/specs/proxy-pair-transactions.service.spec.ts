@@ -98,7 +98,7 @@ describe('TransactionProxyPairService', () => {
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
             {
-                pairAddress: Address.Zero().bech32(),
+                pairAddress: Address.Zero().toBech32(),
                 tokens: [
                     {
                         tokenID: 'EGLD',
@@ -149,7 +149,7 @@ describe('TransactionProxyPairService', () => {
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
             {
-                pairAddress: Address.Zero().bech32(),
+                pairAddress: Address.Zero().toBech32(),
                 tokens: [
                     {
                         tokenID: 'LKMEX-123456',

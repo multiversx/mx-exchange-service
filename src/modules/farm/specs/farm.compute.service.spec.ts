@@ -72,7 +72,7 @@ describe('FarmService', () => {
         const farmedTokenPriceUSD = await service.farmedTokenPriceUSD(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(farmedTokenPriceUSD).toEqual('0.01');
     });
@@ -84,7 +84,7 @@ describe('FarmService', () => {
         const farmingTokenPriceUSD = await service.computeFarmingTokenPriceUSD(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(farmingTokenPriceUSD).toEqual('20');
     });
@@ -103,7 +103,7 @@ describe('FarmService', () => {
         const calculateRewardsArgs = new CalculateRewardsArgs();
         calculateRewardsArgs.farmAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000021',
-        ).bech32();
+        ).toBech32();
         calculateRewardsArgs.liquidity = '2000000000000000000';
         const farmRewardsForPosition =
             await service.computeFarmRewardsForPosition(
@@ -120,7 +120,7 @@ describe('FarmService', () => {
         const anualRewardsUSD = await service.computeAnualRewardsUSD(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(anualRewardsUSD).toEqual('52560');
     });

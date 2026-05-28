@@ -112,7 +112,7 @@ export class RouterHandlerService {
     async handlePairSwapEnabledEvent(
         event: PairSwapEnabledEvent,
     ): Promise<void> {
-        const pairAddress = event.getPairAddress().bech32();
+        const pairAddress = event.getPairAddress().toBech32();
         const state = await this.pairAbi.getStateRaw(pairAddress);
         const cacheKey = await this.pairSetter.setState(pairAddress, state);
 

@@ -1,4 +1,4 @@
-import { Address, AddressValue, Interaction } from '@multiversx/sdk-core';
+import { Address, AddressValue } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';

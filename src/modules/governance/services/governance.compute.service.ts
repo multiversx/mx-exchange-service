@@ -32,7 +32,7 @@ export class GovernanceComputeService {
 
         const voteEvents = await this.elasticEventsService.getGovernanceVotes(
             scAddress,
-            Address.newFromBech32(userAddress).hex(),
+            Address.newFromBech32(userAddress).toHex(),
             decimalToHex(proposalId),
         );
 

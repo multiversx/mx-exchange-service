@@ -125,7 +125,7 @@ export class UserMetaEsdtService {
         rawNfts?: NftToken[],
     ): Promise<UserFarmToken[]> {
         const farmTokenIDs = await this.farmAbiFactory
-            .useAbi(Address.Zero().bech32())
+            .useAbi(Address.Zero().toBech32())
             .getAllFarmTokenIds(farmsAddresses());
         const nfts = rawNfts
             ? rawNfts.filter((nft) => farmTokenIDs.includes(nft.collection))
@@ -731,7 +731,7 @@ export class UserMetaEsdtService {
         }
 
         const farmTokenIDs = await this.farmAbiFactory
-            .useAbi(Address.Zero().bech32())
+            .useAbi(Address.Zero().toBech32())
             .getAllFarmTokenIds(farmsAddresses());
         if (farmTokenIDs.find((farmTokenID) => farmTokenID === tokenID)) {
             return NftTokenType.FarmToken;

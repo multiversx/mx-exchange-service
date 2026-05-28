@@ -100,7 +100,7 @@ export class FeesCollectorAbiService
         const response = await this.getGenericData(interaction);
         return response.firstValue
             .valueOf()
-            .map((value: TypedValue) => value.valueOf().bech32());
+            .map((value: TypedValue) => value.valueOf().toBech32());
     }
 
     @ErrorLoggerAsync()

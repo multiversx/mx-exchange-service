@@ -232,7 +232,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
                     BytesValue.fromUTF8(args.oldFarmTokenID),
                     new AddressValue(Address.newFromBech32(args.newFarmAddress)),
                     BytesValue.fromHex(
-                        Address.newFromBech32(args.newLockedFarmAddress).hex(),
+                        Address.newFromBech32(args.newLockedFarmAddress).toHex(),
                     ),
                 ],
             }),

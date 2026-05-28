@@ -61,7 +61,7 @@ export class EscrowAbiService
         return response.firstValue.valueOf().map(
             (rawValue: TypedValue) =>
                 new ScheduledTransferModel({
-                    sender: rawValue.valueOf().sender.bech32(),
+                    sender: rawValue.valueOf().sender.toBech32(),
                     lockedFunds: {
                         funds: rawValue
                             .valueOf()
@@ -100,7 +100,7 @@ export class EscrowAbiService
         const response = await this.getGenericData(interaction);
         return response.firstValue
             .valueOf()
-            .map((rawAddress: AddressValue) => rawAddress.valueOf().bech32());
+            .map((rawAddress: AddressValue) => rawAddress.valueOf().toBech32());
     }
 
     @ErrorLoggerAsync({
@@ -126,12 +126,12 @@ export class EscrowAbiService
             if (
                 key.includes(allSendersHex) &&
                 key.includes(itemHex) &&
-                Address.newFromHex(value).bech32() === senderAddress
+                Address.newFromHex(value).toBech32() === senderAddress
             ) {
                 const receiverHex = key
                     .split(allSendersHex)[1]
                     .split(itemHex)[0];
-                receivers.push(Address.newFromHex(receiverHex).bech32());
+                receivers.push(Address.newFromHex(receiverHex).toBech32());
             }
         }
 
@@ -191,7 +191,7 @@ export class EscrowAbiService
             scAddress.escrow,
             ['energyFactoryAddress'],
         );
-        return Address.newFromHex(hexValue).bech32();
+        return Address.newFromHex(hexValue).toBech32();
     }
 
     @ErrorLoggerAsync()
@@ -311,7 +311,7 @@ export class EscrowAbiService
         Object.keys(hexValues).forEach((key) => {
             if (key.includes(permissionsHex)) {
                 const addressHex = key.split(permissionsHex)[1];
-                addresses.push(Address.newFromHex(addressHex).bech32());
+                addresses.push(Address.newFromHex(addressHex).toBech32());
             }
         });
 

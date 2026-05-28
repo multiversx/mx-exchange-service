@@ -72,7 +72,7 @@ describe('FarmService', () => {
         const farmAPR = await service.computeFarmAPR(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000031',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(farmAPR).toEqual('2638');
     });

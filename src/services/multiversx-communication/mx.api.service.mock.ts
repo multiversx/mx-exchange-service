@@ -50,7 +50,7 @@ export class MXApiServiceMock {
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                 creator: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 nonce: 1,
                 royalties: 0,
                 timestamp: 0,

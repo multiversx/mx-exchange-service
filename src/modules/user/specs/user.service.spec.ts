@@ -173,7 +173,7 @@ describe('UserService', () => {
             await userEsdts.getAllEsdtTokens(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 {
                     offset: 0,
                     limit: 10,
@@ -187,7 +187,7 @@ describe('UserService', () => {
                 type: 'FungibleESDT',
                 owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 supply: '2000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -221,7 +221,7 @@ describe('UserService', () => {
             await userMetaEsdts.getAllNftTokens(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 {
                     offset: 0,
                     limit: 10,
@@ -239,13 +239,13 @@ describe('UserService', () => {
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                 creator: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 nonce: 1,
                 royalties: 0,
                 valueUSD: '20',
                 pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
                 decodedAttributes: new FarmTokenAttributesModelV1_2({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',

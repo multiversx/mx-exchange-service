@@ -124,8 +124,8 @@ describe('FarmServiceV2', () => {
         const accumulatedRewards = await service.computeUserRewardsForWeek(
             Address.newFromBech32(
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
-            ).bech32(),
-            Address.Zero().bech32(),
+            ).toBech32(),
+            Address.Zero().toBech32(),
             1,
         );
 

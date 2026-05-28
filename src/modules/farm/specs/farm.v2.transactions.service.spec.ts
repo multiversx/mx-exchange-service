@@ -82,8 +82,8 @@ describe('FarmTransactionsServiceV2', () => {
         const transactions = await service.migrateTotalFarmPosition(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000041',
-            ).bech32(),
-            Address.Zero().bech32(),
+            ).toBech32(),
+            Address.Zero().toBech32(),
         );
 
         expect(transactions.length).toEqual(0);
@@ -114,15 +114,15 @@ describe('FarmTransactionsServiceV2', () => {
         const transactions = await service.migrateTotalFarmPosition(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000041',
-            ).bech32(),
-            Address.Zero().bech32(),
+            ).toBech32(),
+            Address.Zero().toBech32(),
         );
 
         expect(transactions[0].data).toEqual(
             encodeTransactionData(
                 `ESDTNFTTransfer@EGLDMEXFL-ghijkl@01@12120193336145595@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000041',
-                ).bech32()}@claimRewards`,
+                ).toBech32()}@claimRewards`,
             ),
         );
     });

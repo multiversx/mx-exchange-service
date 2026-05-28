@@ -41,11 +41,7 @@ export class FarmAbiServiceV1_2
     async getLockedAssetFactoryAddressRaw(
         farmAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        return response.firstValue.valueOf().toBech32();
     }
 
     @ErrorLoggerAsync({
@@ -158,11 +154,11 @@ export class FarmAbiServiceV1_2
 
         return new FarmMigrationConfig({
             migrationRole: decodedResponse.migration_role.name,
-            oldFarmAddress: decodedResponse.old_farm_address.bech32(),
+            oldFarmAddress: decodedResponse.old_farm_address.toBech32(),
             oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
-            newFarmAddress: decodedResponse.new_farm_address.bech32(),
+            newFarmAddress: decodedResponse.new_farm_address.toBech32(),
             newLockedFarmAddress:
-                decodedResponse.new_farm_with_lock_address.bech32(),
+                decodedResponse.new_farm_with_lock_address.toBech32(),
         });
     }
 }

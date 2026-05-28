@@ -72,7 +72,7 @@ describe('FarmService', () => {
         const farmLockedValueUSD = await service.computeFarmLockedValueUSD(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(farmLockedValueUSD).toEqual('30');
     });
@@ -86,7 +86,7 @@ describe('FarmService', () => {
             await service.computeLockedFarmingTokenReserve(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
             );
         expect(lockedFarmingTokenReserve).toEqual('500000000000000000');
     });
@@ -100,7 +100,7 @@ describe('FarmService', () => {
             await service.computeUnlockedFarmingTokenReserve(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
             );
         expect(unlockedFarmingTokenReserve).toEqual('1000000000000000000');
     });
@@ -114,7 +114,7 @@ describe('FarmService', () => {
             await service.computeLockedFarmingTokenReserveUSD(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
             );
         expect(lockedFarmingTokenReserveUSD).toEqual('10');
     });
@@ -128,7 +128,7 @@ describe('FarmService', () => {
             await service.computeUnlockedFarmingTokenReserveUSD(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
             );
         expect(unlockedFarmingTokenReserveUSD).toEqual('20');
     });
@@ -142,7 +142,7 @@ describe('FarmService', () => {
             await service.computeVirtualValueLockedUSD(
                 Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
             );
         expect(virtualValueLockedUSD).toEqual('40');
     });
@@ -155,7 +155,7 @@ describe('FarmService', () => {
         const unlockedRewardsAPR = await service.computeUnlockedRewardsAPR(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(unlockedRewardsAPR).toEqual('1324');
     });
@@ -168,7 +168,7 @@ describe('FarmService', () => {
         const lockedRewardsAPR = await service.computeLockedRewardsAPR(
             Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(lockedRewardsAPR).toEqual('2638');
     });

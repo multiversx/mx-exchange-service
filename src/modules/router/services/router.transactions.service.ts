@@ -178,7 +178,7 @@ export class RouterTransactionService {
                 chainID: mxConfig.chainID,
                 gasLimit: gasConfig.router.setLocalRoles,
                 function: 'setLocalRoles',
-                arguments: [BytesValue.fromHex(new Address(pairAddress).hex())],
+                arguments: [BytesValue.fromHex(new Address(pairAddress).toHex())],
             }),
         );
     }

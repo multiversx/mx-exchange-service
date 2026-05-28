@@ -275,7 +275,7 @@ describe('UserEnergyComputeService', () => {
 
         const outdatedContracts =
             await service.computeFeesCollectorOutdatedContract(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
             );
 
         expect(outdatedContracts).toEqual({
@@ -317,7 +317,7 @@ describe('UserEnergyComputeService', () => {
 
         const outdatedContracts =
             await service.computeFeesCollectorOutdatedContract(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
             );
 
         expect(outdatedContracts).toEqual({});

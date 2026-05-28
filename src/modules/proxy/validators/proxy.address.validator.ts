@@ -16,7 +16,7 @@ export class ProxyAddressValidationPipe implements PipeTransform {
         const proxAddresses: string[] = Object.values(
             scAddress.proxyDexAddress,
         );
-        if (!proxAddresses.includes(address.bech32())) {
+        if (!proxAddresses.includes(address.toBech32())) {
             throw new UserInputError('Invalid proxy address');
         }
 

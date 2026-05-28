@@ -43,7 +43,7 @@ export class RouterAbiServiceMock implements IRouterAbiService {
     async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
         return new EnableSwapByUserConfig({
             lockingSC: new SimpleLockModel({
-                address: Address.Zero().bech32(),
+                address: Address.Zero().toBech32(),
             }),
             commonTokenID: 'USDC-123456',
             lockedTokenID: 'LKESDT-123456',

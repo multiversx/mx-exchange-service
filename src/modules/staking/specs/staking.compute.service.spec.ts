@@ -149,7 +149,7 @@ describe('StakingComputeService', () => {
         );
 
         const extraRewardsBounded = await service.computeExtraRewardsBounded(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             new BigNumber(100000000),
         );
         expect(extraRewardsBounded).toEqual(
@@ -173,7 +173,7 @@ describe('StakingComputeService', () => {
             async () => '2500',
         );
 
-        const apr = await service.computeStakeFarmAPR(Address.Zero().bech32());
+        const apr = await service.computeStakeFarmAPR(Address.Zero().toBech32());
         expect(apr).toEqual('0.25');
     });
 
@@ -192,7 +192,7 @@ describe('StakingComputeService', () => {
             async () => '2500',
         );
 
-        const apr = await service.computeStakeFarmAPR(Address.Zero().bech32());
+        const apr = await service.computeStakeFarmAPR(Address.Zero().toBech32());
         expect(apr).toEqual('0.21749328');
     });
 
@@ -203,7 +203,7 @@ describe('StakingComputeService', () => {
         jest.spyOn(service, 'stakeFarmAPR').mockResolvedValue('0.10');
         const optimalCompoundFrequency =
             await service.computeOptimalCompoundFrequency(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 '1000000000000000000000',
                 365,
             );
@@ -226,7 +226,7 @@ describe('StakingComputeService', () => {
         jest.spyOn(service, 'stakeFarmAPR').mockResolvedValue('0.10');
         const optimalCompoundFrequency =
             await service.computeOptimalCompoundFrequency(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 '100000000000000000',
                 365,
             );
@@ -253,7 +253,7 @@ describe('StakingComputeService', () => {
         jest.spyOn(stakingAbi, 'perBlockRewardsAmount').mockResolvedValue('1');
 
         const rewardsRemainingDays = await service.computeRewardsRemainingDays(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
         );
         expect(rewardsRemainingDays).toEqual(1);
     });

@@ -55,7 +55,7 @@ describe('EscrowAbiService', () => {
 
         const address = Address.Zero();
         const permissions = await service.getAddressPermissionRaw(
-            address.bech32(),
+            address.toBech32(),
         );
         expect(permissions).toEqual([SCPermissions.NONE]);
     });
@@ -70,7 +70,7 @@ describe('EscrowAbiService', () => {
 
         const address = Address.Zero();
         const permissions = await service.getAddressPermissionRaw(
-            address.bech32(),
+            address.toBech32(),
         );
         expect(permissions).toEqual([SCPermissions.ADMIN]);
     });
@@ -85,7 +85,7 @@ describe('EscrowAbiService', () => {
 
         const address = Address.Zero();
         const permissions = await service.getAddressPermissionRaw(
-            address.bech32(),
+            address.toBech32(),
         );
         expect(permissions).toEqual([SCPermissions.OWNER, SCPermissions.ADMIN]);
     });
@@ -94,7 +94,7 @@ describe('EscrowAbiService', () => {
         const sender = Address.Zero();
 
         jest.spyOn(mxGateway, 'getSCStorageKeys').mockResolvedValue({});
-        let receivers = await service.getAllReceiversRaw(sender.bech32());
+        let receivers = await service.getAllReceiversRaw(sender.toBech32());
         expect(receivers).toEqual([]);
 
         jest.spyOn(mxGateway, 'getSCStorageKeys').mockResolvedValue({
@@ -108,7 +108,7 @@ describe('EscrowAbiService', () => {
                 '1139',
         });
 
-        receivers = await service.getAllReceiversRaw(sender.bech32());
+        receivers = await service.getAllReceiversRaw(sender.toBech32());
         expect(receivers).toEqual([]);
 
         jest.spyOn(mxGateway, 'getSCStorageKeys').mockResolvedValue({
@@ -120,7 +120,7 @@ describe('EscrowAbiService', () => {
                 '01',
         });
 
-        receivers = await service.getAllReceiversRaw(sender.bech32());
+        receivers = await service.getAllReceiversRaw(sender.toBech32());
         expect(receivers).toEqual([]);
         await cachingService.deleteInCache(`escrow.scKeys`);
     });
@@ -130,13 +130,13 @@ describe('EscrowAbiService', () => {
             '616c6c53656e646572736e593caf5c21cd2e419c8249101e20eb53770d6b2512ee9f19b971fd3c0a0e892e696e646578344abc44119cfcace253de05e33c01796c12f96f3bcc52b504b9bc2b96927ceb':
                 '01',
             '616c6c53656e646572736e593caf5c21cd2e419c8249101e20eb53770d6b2512ee9f19b971fd3c0a0e892e6974656d00000001':
-                Address.Zero().hex(),
+                Address.Zero().toHex(),
             '616c6c53656e646572736e593caf5c21cd2e419c8249101e20eb53770d6b2512ee9f19b971fd3c0a0e892e6c656e':
                 '01',
         });
 
         const sender = Address.Zero();
-        const receivers = await service.getAllReceiversRaw(sender.bech32());
+        const receivers = await service.getAllReceiversRaw(sender.toBech32());
         expect(receivers).toEqual([
             'erd1devnet6uy8xjusvusfy3q83qadfhwrtty5fwa8ceh9cl60q2p6ysra7aaa',
         ]);
@@ -148,19 +148,19 @@ describe('EscrowAbiService', () => {
             '616c6c53656e646572736e593caf5c21cd2e419c8249101e20eb53770d6b2512ee9f19b971fd3c0a0e892e696e646578344abc44119cfcace253de05e33c01796c12f96f3bcc52b504b9bc2b96927ceb':
                 '01',
             '616c6c53656e646572736e593caf5c21cd2e419c8249101e20eb53770d6b2512ee9f19b971fd3c0a0e892e6974656d00000001':
-                Address.Zero().hex(),
+                Address.Zero().toHex(),
             '616c6c53656e646572736e593caf5c21cd2e419c8249101e20eb53770d6b2512ee9f19b971fd3c0a0e892e6c656e':
                 '01',
             '616c6c53656e646572732c5594ae2f77a913119bc9db52833245a5879674cd4aeaedcd92f6f9e7edf17d2e696e646578344abc44119cfcace253de05e33c01796c12f96f3bcc52b504b9bc2b96927ceb':
                 '01',
             '616c6c53656e646572732c5594ae2f77a913119bc9db52833245a5879674cd4aeaedcd92f6f9e7edf17d2e6974656d00000001':
-                Address.Zero().hex(),
+                Address.Zero().toHex(),
             '616c6c53656e646572732c5594ae2f77a913119bc9db52833245a5879674cd4aeaedcd92f6f9e7edf17d2e6c656e':
                 '01',
         });
 
         const sender = Address.Zero();
-        const receivers = await service.getAllReceiversRaw(sender.bech32());
+        const receivers = await service.getAllReceiversRaw(sender.toBech32());
         expect(receivers).toEqual([
             'erd1devnet6uy8xjusvusfy3q83qadfhwrtty5fwa8ceh9cl60q2p6ysra7aaa',
             'erd1932eft30w753xyvme8d49qejgkjc09n5e49w4mwdjtm0neld797su0dlxp',

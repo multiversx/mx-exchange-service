@@ -65,7 +65,7 @@ export class TaskRunnerTransactionService implements OnModuleInit {
     async broadcastTransaction(tx: TransactionModel): Promise<BroadcastStatus> {
         try {
             const { nonce } = await this.mxApi.getAccountStats(
-                this.accountSigner.getAddress().bech32(),
+                this.accountSigner.getAddress().toBech32(),
             );
 
             const transaction = new Transaction({

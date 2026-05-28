@@ -39,7 +39,7 @@ function decodeBigNumber(bignumber: string) {
 
 function encodeAddress(str: string): string | undefined {
     try {
-        return new Address(str).hex();
+        return new Address(str).toHex();
     } catch {
         return undefined;
     }
