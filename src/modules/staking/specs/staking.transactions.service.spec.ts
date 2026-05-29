@@ -58,8 +58,8 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.stakeFarm(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             [
                 new InputTokenModel({
                     tokenID: 'WEGLD-123456',
@@ -92,8 +92,8 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.unstakeFarm(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             new InputTokenModel({
                 tokenID: 'STAKETOK-111111',
                 nonce: 1,
@@ -124,8 +124,8 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.unbondFarm(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             new InputTokenModel({
                 tokenID: 'STAKETOK-111111',
                 nonce: 1,
@@ -156,8 +156,8 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.claimRewards(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             new InputTokenModel({
                 tokenID: 'STAKETOK-111111',
                 nonce: 1,
@@ -188,8 +188,8 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.compoundRewards(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             new InputTokenModel({
                 tokenID: 'STAKETOK-111111',
                 nonce: 1,
@@ -219,14 +219,14 @@ describe('StakingTransactionService', () => {
             StakingTransactionService,
         );
         const transaction = await service.claimBoostedRewards(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
         );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
-            receiver: Address.Zero().bech32(),
-            sender: Address.Zero().bech32(),
+            receiver: Address.Zero().toBech32(),
+            sender: Address.Zero().toBech32(),
             senderUsername: undefined,
             receiverUsername: undefined,
             gasPrice: 1000000000,
@@ -255,7 +255,7 @@ describe('StakingTransactionService', () => {
                 nonce: 1,
                 type: 'MetaESDT',
                 name: 'STAKETOK',
-                creator: Address.Zero().bech32(),
+                creator: Address.Zero().toBech32(),
                 balance: '1000000000000000000',
                 decimals: 18,
                 ticker: 'STAKETOK',
@@ -263,8 +263,8 @@ describe('StakingTransactionService', () => {
         ]);
 
         const transactions = await service.migrateTotalStakingPosition(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
         );
 
         expect(transactions).toEqual([
@@ -298,7 +298,7 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.topUpRewards(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             new InputTokenModel({
                 tokenID: 'WEGLD-123456',
                 nonce: 0,
@@ -333,8 +333,8 @@ describe('StakingTransactionService', () => {
         );
 
         const transaction = await service.mergeFarmTokens(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             [
                 new InputTokenModel({
                     tokenID: 'EGLDMEXFL-abcdef',
@@ -373,8 +373,8 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setAddressWhitelist(
             senderAddress,
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             true,
         );
         expect(transaction).toEqual({
@@ -406,8 +406,8 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setAddressWhitelist(
             senderAddress,
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             false,
         );
         expect(transaction).toEqual({
@@ -439,7 +439,7 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setState(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             false,
         );
         expect(transaction).toEqual({
@@ -469,7 +469,7 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setState(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             true,
         );
         expect(transaction).toEqual({
@@ -499,7 +499,7 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.registerFarmToken(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             'TokenToRegisterName',
             'TokenToRegisterID',
             18,
@@ -533,8 +533,8 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setLocalRolesFarmToken(
             senderAddress,
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
         );
         expect(transaction).toEqual({
             nonce: 0,
@@ -565,7 +565,7 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setPerSecondRewardAmount(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             '100',
         );
         expect(transaction).toEqual({
@@ -595,7 +595,7 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setMaxApr(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             100,
         );
         expect(transaction).toEqual({
@@ -625,7 +625,7 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setMinUnbondEpochs(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             100,
         );
         expect(transaction).toEqual({
@@ -655,7 +655,7 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setRewardsState(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             true,
         );
         expect(transaction).toEqual({
@@ -685,7 +685,7 @@ describe('StakingTransactionService', () => {
 
         const transaction = await service.setRewardsState(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             false,
         );
         expect(transaction).toEqual({

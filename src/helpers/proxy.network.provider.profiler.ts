@@ -1,13 +1,13 @@
 import {
-    ContractQueryResponse,
+    NetworkProviderConfig,
     ProxyNetworkProvider,
-} from '@multiversx/sdk-network-providers';
+    SmartContractQuery,
+    SmartContractQueryResponse,
+} from '@multiversx/sdk-core';
 import { PerformanceProfiler } from '../utils/performance.profiler';
 import { MetricsCollector } from '../utils/metrics.collector';
-import { IContractQuery } from '@multiversx/sdk-network-providers/out/interface';
 import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 import { ApiConfigService } from './api.config.service';
-import { NetworkProviderConfig } from '@multiversx/sdk-core/out/networkProviders/networkProviderConfig';
 
 export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
     constructor(
@@ -18,7 +18,9 @@ export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
         super(url, config);
     }
 
-    async queryContract(query: IContractQuery): Promise<ContractQueryResponse> {
+    async queryContract(
+        query: SmartContractQuery,
+    ): Promise<SmartContractQueryResponse> {
         const profiler = new PerformanceProfiler();
 
         const result = await super.queryContract(query);
@@ -27,7 +29,7 @@ export class ProxyNetworkProviderProfiler extends ProxyNetworkProvider {
 
         MetricsCollector.setExternalCall(
             'vm.query',
-            query.func.toString(),
+            query.function,
             profiler.duration,
         );
 

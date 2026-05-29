@@ -54,7 +54,7 @@ import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.
 import { StakingProxyAbiService } from '../../staking-proxy/services/staking.proxy.abi.service';
 import { UserEnergyComputeService } from '../services/userEnergy/user.energy.compute.service';
 import { MXProxyServiceProvider } from '../../../services/multiversx-communication/mx.proxy.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { gasConfig, mxConfig, scAddress } from 'src/config';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
@@ -179,15 +179,15 @@ describe('UserEnergyTransactionService', () => {
             UserEnergyComputeService,
         );
 
-        const farmAddress = Address.fromHex(
+        const farmAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000041',
-        ).bech32();
+        ).toBech32();
         jest.spyOn(userEnergyCompute, 'userActiveFarmsV2').mockResolvedValue([
             farmAddress,
         ]);
 
         const transaction = await service.updateFarmsEnergyForUser(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             true,
         );
 
@@ -198,10 +198,10 @@ describe('UserEnergyTransactionService', () => {
                 gasLimit: gasConfig.energyUpdate.updateFarmsEnergyForUser * 2,
                 gasPrice: 1000000000,
                 value: '0',
-                sender: Address.Zero().bech32(),
+                sender: Address.Zero().toBech32(),
                 receiver: scAddress.energyUpdate,
                 data: encodeTransactionData(
-                    `updateFarmsEnergyForUser@${Address.Zero().bech32()}@${farmAddress}@${
+                    `updateFarmsEnergyForUser@${Address.Zero().toBech32()}@${farmAddress}@${
                         scAddress.feesCollector
                     }`,
                 ),
@@ -235,7 +235,7 @@ describe('UserEnergyTransactionService', () => {
         });
 
         const transaction = await service.updateFarmsEnergyForUser(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             false,
         );
 
@@ -246,10 +246,10 @@ describe('UserEnergyTransactionService', () => {
                 gasLimit: gasConfig.energyUpdate.updateFarmsEnergyForUser,
                 gasPrice: 1000000000,
                 value: '0',
-                sender: Address.Zero().bech32(),
+                sender: Address.Zero().toBech32(),
                 receiver: scAddress.energyUpdate,
                 data: encodeTransactionData(
-                    `updateFarmsEnergyForUser@${Address.Zero().bech32()}@${
+                    `updateFarmsEnergyForUser@${Address.Zero().toBech32()}@${
                         scAddress.feesCollector
                     }`,
                 ),

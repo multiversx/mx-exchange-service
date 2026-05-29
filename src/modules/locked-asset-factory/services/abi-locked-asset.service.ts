@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
+import { scAddress } from 'src/config';
 import { UnlockMileStoneModel } from '../models/locked-asset.model';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
@@ -11,29 +11,32 @@ export class AbiLockedAssetService extends GenericAbiService {
     }
 
     async getAssetTokenID(): Promise<string> {
-        const contract =
-            await this.mxProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getAssetTokenId();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getLockedAssetFactoryAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.lockedAssetAddress,
+            'getAssetTokenId',
+        );
         return response.firstValue.valueOf().toString();
     }
 
     async getLockedTokenID(): Promise<string> {
-        const contract =
-            await this.mxProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedAssetTokenId();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getLockedAssetFactoryAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.lockedAssetAddress,
+            'getLockedAssetTokenId',
+        );
         return response.firstValue.valueOf().toString();
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
-        const contract =
-            await this.mxProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getDefaultUnlockPeriod();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getLockedAssetFactoryAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.lockedAssetAddress,
+            'getDefaultUnlockPeriod',
+        );
         return response.firstValue
             .valueOf()
             .unlock_milestones.map((unlockMilestone) => {
@@ -45,20 +48,22 @@ export class AbiLockedAssetService extends GenericAbiService {
     }
 
     async getInitEpoch(): Promise<number> {
-        const contract =
-            await this.mxProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getInitEpoch();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getLockedAssetFactoryAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.lockedAssetAddress,
+            'getInitEpoch',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
     async getExtendedAttributesActivationNonce(): Promise<number> {
-        const contract =
-            await this.mxProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getExtendedAttributesActivationNonce();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getLockedAssetFactoryAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.lockedAssetAddress,
+            'getExtendedAttributesActivationNonce',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 }

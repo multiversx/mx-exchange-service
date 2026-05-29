@@ -1,7 +1,7 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from '@nestjs/apollo';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 @Injectable()
 export class StakingProxyAddressValidationPipe implements PipeTransform {
@@ -11,13 +11,13 @@ export class StakingProxyAddressValidationPipe implements PipeTransform {
         for (const item of value) {
             let address: Address;
             try {
-                address = Address.fromBech32(item);
+                address = Address.newFromBech32(item);
             } catch (error) {
                 throw new UserInputError('Invalid address');
             }
             const stakingProxyAddresses =
                 await this.remoteConfig.getStakingProxyAddresses();
-            if (!stakingProxyAddresses.includes(address.bech32())) {
+            if (!stakingProxyAddresses.includes(address.toBech32())) {
                 throw new UserInputError('Invalid staking proxy address');
             }
         }

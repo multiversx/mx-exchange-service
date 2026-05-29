@@ -1,6 +1,6 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { UserInputError } from '@nestjs/apollo';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { scAddress } from 'src/config';
 
 @Injectable()
@@ -8,7 +8,7 @@ export class ProxyAddressValidationPipe implements PipeTransform {
     async transform(value: string, metadata: ArgumentMetadata) {
         let address: Address;
         try {
-            address = Address.fromBech32(value);
+            address = Address.newFromBech32(value);
         } catch (error) {
             throw new UserInputError('Invalid address format');
         }
@@ -16,7 +16,7 @@ export class ProxyAddressValidationPipe implements PipeTransform {
         const proxAddresses: string[] = Object.values(
             scAddress.proxyDexAddress,
         );
-        if (!proxAddresses.includes(address.bech32())) {
+        if (!proxAddresses.includes(address.toBech32())) {
             throw new UserInputError('Invalid proxy address');
         }
 

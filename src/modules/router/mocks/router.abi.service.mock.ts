@@ -5,7 +5,7 @@ import { IRouterAbiService } from '../services/interfaces';
 import { pairs } from 'src/modules/pair/mocks/pair.constants';
 import { RouterAbiService } from '../services/router.abi.service';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 export class RouterAbiServiceMock implements IRouterAbiService {
     async pairsAddress(): Promise<string[]> {
@@ -43,7 +43,7 @@ export class RouterAbiServiceMock implements IRouterAbiService {
     async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
         return new EnableSwapByUserConfig({
             lockingSC: new SimpleLockModel({
-                address: Address.Zero().bech32(),
+                address: Address.Zero().toBech32(),
             }),
             commonTokenID: 'USDC-123456',
             lockedTokenID: 'LKESDT-123456',

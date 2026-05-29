@@ -1,4 +1,3 @@
-import { Interaction } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { FarmMigrationConfig } from '../../models/farm.model';
 import { FarmAbiService } from '../../base-module/services/farm.abi.service';
@@ -44,13 +43,13 @@ export class FarmAbiServiceV1_3
         farmAddress: string,
     ): Promise<string | undefined> {
         try {
-            const contract = await this.mxProxy.getFarmSmartContract(
+            const abi = await this.mxProxy.getFarmAbi(farmAddress);
+            const response = await this.getGenericData(
+                abi,
                 farmAddress,
+                'getLockedAssetFactoryManagedAddress',
             );
-            const interaction: Interaction =
-                contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
-            const response = await this.getGenericData(interaction);
-            return response.firstValue.valueOf().bech32();
+            return response.firstValue.valueOf().toBech32();
         } catch (error) {
             return undefined;
         }
@@ -72,17 +71,18 @@ export class FarmAbiServiceV1_3
     async getFarmMigrationConfigurationRaw(
         farmAddress: string,
     ): Promise<FarmMigrationConfig | undefined> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
         try {
-            const interaction: Interaction =
-                contract.methodsExplicit.getFarmMigrationConfiguration();
-            const response = await this.getGenericData(interaction);
+            const abi = await this.mxProxy.getFarmAbi(farmAddress);
+            const response = await this.getGenericData(
+                abi,
+                farmAddress,
+                'getFarmMigrationConfiguration',
+            );
             const decodedResponse = response.firstValue.valueOf();
 
             return new FarmMigrationConfig({
                 migrationRole: decodedResponse.migration_role.name,
-                oldFarmAddress: decodedResponse.old_farm_address.bech32(),
+                oldFarmAddress: decodedResponse.old_farm_address.toBech32(),
                 oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
             });
         } catch (error) {
@@ -91,10 +91,12 @@ export class FarmAbiServiceV1_3
     }
 
     async getBurnGasLimitRaw(farmAddress: string): Promise<string | undefined> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getBurnGasLimit();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getBurnGasLimit',
+        );
         return response.firstValue.valueOf().toFixed();
     }
 }

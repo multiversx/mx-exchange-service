@@ -9,7 +9,7 @@ import {
     XoxnoPathModel,
     XoxnoSwapModel,
 } from '../models/xoxno-aggregator.model';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 

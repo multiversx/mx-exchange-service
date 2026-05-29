@@ -9,7 +9,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { ComposableTaskType } from '../models/composable.tasks.model';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 describe('Composable Tasks Transaction', () => {
     let module: TestingModule;
@@ -78,7 +78,7 @@ describe('Composable Tasks Transaction', () => {
             guardianSignature: undefined,
             nonce: 0,
             options: undefined,
-            receiver: Address.Zero().bech32(),
+            receiver: Address.Zero().toBech32(),
             receiverUsername: undefined,
             sender: senderAddress,
             senderUsername: undefined,
@@ -110,7 +110,7 @@ describe('Composable Tasks Transaction', () => {
             guardianSignature: undefined,
             nonce: 0,
             options: undefined,
-            receiver: Address.Zero().bech32(),
+            receiver: Address.Zero().toBech32(),
             receiverUsername: undefined,
             sender: senderAddress,
             senderUsername: undefined,
@@ -145,7 +145,7 @@ describe('Composable Tasks Transaction', () => {
             guardianSignature: undefined,
             nonce: 0,
             options: undefined,
-            receiver: Address.Zero().bech32(),
+            receiver: Address.Zero().toBech32(),
             receiverUsername: undefined,
             sender: senderAddress,
             senderUsername: undefined,

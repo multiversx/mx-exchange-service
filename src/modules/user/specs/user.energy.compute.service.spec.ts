@@ -54,7 +54,7 @@ import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.
 import { StakingProxyAbiService } from '../../staking-proxy/services/staking.proxy.abi.service';
 import { UserEnergyComputeService } from '../services/userEnergy/user.energy.compute.service';
 import { MXProxyServiceProvider } from '../../../services/multiversx-communication/mx.proxy.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { scAddress } from 'src/config';
 import { ContractType } from '../models/user.model';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
@@ -275,7 +275,7 @@ describe('UserEnergyComputeService', () => {
 
         const outdatedContracts =
             await service.computeFeesCollectorOutdatedContract(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
             );
 
         expect(outdatedContracts).toEqual({
@@ -317,7 +317,7 @@ describe('UserEnergyComputeService', () => {
 
         const outdatedContracts =
             await service.computeFeesCollectorOutdatedContract(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
             );
 
         expect(outdatedContracts).toEqual({});

@@ -87,14 +87,13 @@ describe('StakingService', () => {
         const rewards = await service.getRewardsForPosition(
             stakingFarm,
             {
-                farmAddress:
-                    Address.Zero().bech32(),
+                farmAddress: Address.Zero().bech32(),
                 liquidity: '1000000000000000',
                 identifier: 'MEXFARML-772223-14',
                 attributes:
                     'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
                 vmQuery: false,
-                user: Address.Zero().bech32(),
+                user: Address.Zero().toBech32(),
             },
             currentNonce,
         );

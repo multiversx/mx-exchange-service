@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EscrowTransactionService } from '../services/escrow.transaction.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { gasConfig, mxConfig, scAddress } from 'src/config';

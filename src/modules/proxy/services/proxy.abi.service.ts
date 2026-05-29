@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
@@ -29,12 +28,12 @@ export class ProxyAbiService
     }
 
     async getAssetTokenIDRaw(proxyAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
+        const abi = await this.mxProxy.getProxyDexAbi(proxyAddress);
+        const response = await this.getGenericData(
+            abi,
             proxyAddress,
+            'getAssetTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getAssetTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -51,12 +50,12 @@ export class ProxyAbiService
     }
 
     async getLockedAssetTokenIDRaw(proxyAddress: string): Promise<string[]> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
+        const abi = await this.mxProxy.getProxyDexAbi(proxyAddress);
+        const response = await this.getGenericData(
+            abi,
             proxyAddress,
+            'getLockedAssetTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedAssetTokenId();
-        const response = await this.getGenericData(interaction);
         return [response.firstValue.valueOf().toString()];
     }
 }

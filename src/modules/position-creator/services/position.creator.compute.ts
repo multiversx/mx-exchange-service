@@ -1,4 +1,4 @@
-import { TypedValue } from '@multiversx/sdk-core/out';
+import { TypedValue } from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import { Injectable } from '@nestjs/common';

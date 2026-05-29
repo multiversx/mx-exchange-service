@@ -10,7 +10,7 @@ import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { ApiNetworkProvider } from '@multiversx/sdk-network-providers/out';
+import { ApiNetworkProvider } from '@multiversx/sdk-core';
 import {
     isEsdtToken,
     isEsdtTokenValid,

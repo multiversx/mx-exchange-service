@@ -53,7 +53,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 enum NftTokenType {
     FarmToken,
@@ -125,7 +125,7 @@ export class UserMetaEsdtService {
         rawNfts?: NftToken[],
     ): Promise<UserFarmToken[]> {
         const farmTokenIDs = await this.farmAbiFactory
-            .useAbi(Address.Zero().bech32())
+            .useAbi(Address.Zero().toBech32())
             .getAllFarmTokenIds(farmsAddresses());
         const nfts = rawNfts
             ? rawNfts.filter((nft) => farmTokenIDs.includes(nft.collection))
@@ -731,7 +731,7 @@ export class UserMetaEsdtService {
         }
 
         const farmTokenIDs = await this.farmAbiFactory
-            .useAbi(Address.Zero().bech32())
+            .useAbi(Address.Zero().toBech32())
             .getAllFarmTokenIds(farmsAddresses());
         if (farmTokenIDs.find((farmTokenID) => farmTokenID === tokenID)) {
             return NftTokenType.FarmToken;

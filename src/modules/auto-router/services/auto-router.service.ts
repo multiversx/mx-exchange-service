@@ -46,7 +46,7 @@ import {
     XoxnoPathModel,
 } from '../models/xoxno-aggregator.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 @Injectable()
 export class AutoRouterService {

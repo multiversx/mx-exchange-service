@@ -1,4 +1,4 @@
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import {
     LockedFundsModel,
     ScheduledTransferModel,
@@ -24,7 +24,7 @@ class EscrowAbiServiceMock implements EscrowAbiServiceInterface {
     ): Promise<ScheduledTransferModel[]> {
         return [
             new ScheduledTransferModel({
-                sender: Address.Zero().bech32(),
+                sender: Address.Zero().toBech32(),
                 lockedFunds: new LockedFundsModel({
                     funds: [
                         {

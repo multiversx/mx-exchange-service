@@ -1,4 +1,4 @@
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { scAddress } from 'src/config';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -10,9 +10,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 identifier: 'WEGLD-123456',
                 ticker: 'WEGLD',
                 name: 'WrappedEgld',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 supply: '1000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -40,9 +40,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 identifier: 'MEX-123456',
                 name: 'MEX',
                 ticker: 'MEX',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 supply: '2000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -69,9 +69,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 identifier: 'USDC-123456',
                 name: 'CircleUSD',
                 ticker: 'USDC',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 supply: '1000000000000',
                 decimals: 6,
                 isPaused: false,
@@ -98,9 +98,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 identifier: 'USDT-123456',
                 name: 'TetherUSD',
                 ticker: 'USDT',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 supply: '1000000000000',
                 decimals: 6,
                 isPaused: false,
@@ -126,9 +126,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
             return new EsdtToken({
                 identifier: 'TOK4-123456',
                 name: 'Token4',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 ticker: 'TOK4',
                 supply: '1000000000000000000',
                 decimals: 18,
@@ -153,9 +153,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
             return new EsdtToken({
                 identifier: 'TOK5-123456',
                 name: 'Token5',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 ticker: 'TOK5',
                 supply: '1000000000000000000',
                 decimals: 18,
@@ -180,9 +180,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
             return new EsdtToken({
                 identifier: 'TOK6-123456',
                 name: 'Token6',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 ticker: 'TOK6',
                 supply: '1000000000000000000',
                 decimals: 18,
@@ -219,9 +219,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 canFreeze: true,
                 canWipe: true,
                 type: 'FungibleESDT-LP',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000013',
-                ).bech32(),
+                ).toBech32(),
                 minted: '1',
                 burnt: '1',
                 circulatingSupply: '1',
@@ -238,9 +238,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'EGLDMEXLPToken',
                 ticker: 'EGLDMEXLP',
                 type: 'FungibleESDT-LP',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
                 owner: scAddress.routerAddress,
                 supply: '0',
                 decimals: 18,
@@ -265,9 +265,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'EGLDTOK4LP',
                 ticker: 'EGLDTOK4LP',
                 type: 'FungibleESDT-LP',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000014',
-                ).bech32(),
+                ).toBech32(),
                 owner: scAddress.routerAddress,
                 supply: '1000000000000000000000000',
                 decimals: 18,
@@ -295,9 +295,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'EGLDTOK5LP',
                 ticker: 'EGLDTOK5LP',
                 type: 'FungibleESDT-LP',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000015',
-                ).bech32(),
+                ).toBech32(),
                 owner: scAddress.routerAddress,
                 supply: '1000000000000000000000000',
                 decimals: 18,
@@ -325,9 +325,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'TOK5TOK6LP',
                 ticker: 'TOK5TOK6LP',
                 type: 'FungibleESDT-LP',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000016',
-                ).bech32(),
+                ).toBech32(),
                 owner: scAddress.routerAddress,
                 supply: '1000000000000000000000000',
                 decimals: 18,
@@ -355,9 +355,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'TOK5USDCLP',
                 ticker: 'TOK5USDCLP',
                 type: 'FungibleESDT-LP',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000017',
-                ).bech32(),
+                ).toBech32(),
                 owner: scAddress.routerAddress,
                 supply: '1000000000000000000000000',
                 decimals: 18,
@@ -385,9 +385,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'TOK5USDTLP',
                 ticker: 'TOK5USDTLP',
                 type: 'FungibleESDT-LP',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000018',
-                ).bech32(),
+                ).toBech32(),
                 owner: scAddress.routerAddress,
                 supply: '1000000000000000000000000',
                 decimals: 18,
@@ -415,9 +415,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'EGLDUSDTLP',
                 ticker: 'EGLDUSDTLP',
                 type: 'FungibleESDT-LP',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000019',
-                ).bech32(),
+                ).toBech32(),
                 owner: scAddress.routerAddress,
                 supply: '1000000000000000000000000',
                 decimals: 18,
@@ -445,9 +445,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'EGLDMEXLPStaked',
                 ticker: 'EGLDMEXFL',
                 type: 'FungibleESDT',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 derivedEGLD: '0',
                 supply: '10000000000000000000000000000',
                 decimals: 18,
@@ -475,9 +475,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'EGLDMEXLPStaked',
                 ticker: 'EGLDMEXF',
                 type: 'FungibleESDT',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000022',
-                ).bech32(),
+                ).toBech32(),
                 derivedEGLD: '0',
                 supply: '10000000000000000000000000000',
                 decimals: 18,
@@ -505,9 +505,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'EGLDMEXLPStaked',
                 ticker: 'EGLDMEXFL',
                 type: 'FungibleESDT',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000023',
-                ).bech32(),
+                ).toBech32(),
                 derivedEGLD: '0',
                 supply: '10000000000000000000000000000',
                 decimals: 18,
@@ -535,9 +535,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 name: 'EGLDTOK4LPStaked',
                 ticker: 'EGLDTOK4FL',
                 type: 'FungibleESDT',
-                owner: Address.fromHex(
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000024',
-                ).bech32(),
+                ).toBech32(),
                 derivedEGLD: '0',
                 supply: '0',
                 decimals: 18,
@@ -566,9 +566,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
 
 export const pairs = [
     {
-        address: Address.fromHex(
+        address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000012',
-        ).bech32(),
+        ).toBech32(),
         firstToken: Tokens('WEGLD-123456'),
         firstTokenId: 'WEGLD-123456',
         secondToken: Tokens('MEX-123456'),
@@ -597,9 +597,9 @@ export const pairs = [
         hasDualFarms: false,
     },
     {
-        address: Address.fromHex(
+        address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32(),
+        ).toBech32(),
         firstToken: Tokens('WEGLD-123456'),
         firstTokenId: 'WEGLD-123456',
         secondToken: Tokens('USDC-123456'),
@@ -628,9 +628,9 @@ export const pairs = [
         hasDualFarms: false,
     },
     {
-        address: Address.fromHex(
+        address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000014',
-        ).bech32(),
+        ).toBech32(),
         firstToken: Tokens('TOK4-123456'),
         firstTokenId: 'TOK4-123456',
         secondToken: Tokens('WEGLD-123456'),
@@ -659,9 +659,9 @@ export const pairs = [
         hasDualFarms: false,
     },
     {
-        address: Address.fromHex(
+        address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000015',
-        ).bech32(),
+        ).toBech32(),
         firstToken: Tokens('WEGLD-123456'),
         firstTokenId: 'WEGLD-123456',
         secondToken: Tokens('TOK5-123456'),
@@ -690,9 +690,9 @@ export const pairs = [
         hasDualFarms: true,
     },
     {
-        address: Address.fromHex(
+        address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000016',
-        ).bech32(),
+        ).toBech32(),
         firstToken: Tokens('TOK6-123456'),
         firstTokenId: 'TOK6-123456',
         secondToken: Tokens('TOK5-123456'),
@@ -721,9 +721,9 @@ export const pairs = [
         hasDualFarms: false,
     },
     {
-        address: Address.fromHex(
+        address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000017',
-        ).bech32(),
+        ).toBech32(),
         firstToken: Tokens('TOK5-123456'),
         firstTokenId: 'TOK5-123456',
         secondToken: Tokens('USDC-123456'),
@@ -752,9 +752,9 @@ export const pairs = [
         hasDualFarms: false,
     },
     {
-        address: Address.fromHex(
+        address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000018',
-        ).bech32(),
+        ).toBech32(),
         firstToken: Tokens('TOK5-123456'),
         firstTokenId: 'TOK5-123456',
         secondToken: Tokens('USDT-123456'),
@@ -783,9 +783,9 @@ export const pairs = [
         hasDualFarms: true,
     },
     {
-        address: Address.fromHex(
+        address: Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000019',
-        ).bech32(),
+        ).toBech32(),
         firstToken: Tokens('WEGLD-123456'),
         firstTokenId: 'WEGLD-123456',
         secondToken: Tokens('USDT-123456'),

@@ -25,7 +25,7 @@ export class StakingHandlerService {
         const userTotalFarmPosition =
             await this.stakingAbi.getUserTotalStakePositionRaw(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
             );
         const cacheKeys = await Promise.all([
             this.stakingSetter.setFarmTokenSupply(
@@ -34,7 +34,7 @@ export class StakingHandlerService {
             ),
             this.stakingSetter.setUserTotalStakePosition(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
                 userTotalFarmPosition,
             ),
         ]);
@@ -46,7 +46,7 @@ export class StakingHandlerService {
         const userTotalFarmPosition =
             await this.stakingAbi.getUserTotalStakePositionRaw(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
             );
         const cacheKeys = await Promise.all([
             this.stakingSetter.setFarmTokenSupply(
@@ -55,7 +55,7 @@ export class StakingHandlerService {
             ),
             this.stakingSetter.setUserTotalStakePosition(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
                 userTotalFarmPosition,
             ),
         ]);
@@ -67,7 +67,7 @@ export class StakingHandlerService {
         const userTotalFarmPosition =
             await this.stakingAbi.getUserTotalStakePositionRaw(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
             );
         const cacheKeys = await Promise.all([
             this.stakingSetter.setFarmTokenSupply(
@@ -76,7 +76,7 @@ export class StakingHandlerService {
             ),
             this.stakingSetter.setUserTotalStakePosition(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
                 userTotalFarmPosition,
             ),
         ]);

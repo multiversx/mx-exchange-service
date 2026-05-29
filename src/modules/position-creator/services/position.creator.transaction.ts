@@ -617,7 +617,7 @@ export class PositionCreatorTransactionService {
         const endpointArgs = isLockedToken
             ? [new BigUIntValue(amount0Min), new BigUIntValue(amount1Min)]
             : [
-                  new AddressValue(Address.fromBech32(farmAddress)),
+                  new AddressValue(Address.newFromBech32(farmAddress)),
                   new BigUIntValue(amount0Min),
                   new BigUIntValue(amount1Min),
               ];

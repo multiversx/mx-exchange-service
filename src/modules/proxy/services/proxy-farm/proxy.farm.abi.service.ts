@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { Constants } from '@multiversx/sdk-nestjs-common';
-import { AddressValue } from '@multiversx/sdk-core/out';
+import { AddressValue } from '@multiversx/sdk-core';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { IProxyFarmAbiService } from '../interfaces';
 
@@ -31,12 +30,12 @@ export class ProxyFarmAbiService
     }
 
     async getWrappedFarmTokenIDRaw(proxyAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
+        const abi = await this.mxProxy.getProxyDexAbi(proxyAddress);
+        const response = await this.getGenericData(
+            abi,
             proxyAddress,
+            'getWrappedFarmTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getWrappedFarmTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -52,13 +51,12 @@ export class ProxyFarmAbiService
     }
 
     async getIntermediatedFarmsRaw(proxyAddress: string): Promise<string[]> {
-        const contract = await this.mxProxy.getProxyDexSmartContract(
+        const abi = await this.mxProxy.getProxyDexAbi(proxyAddress);
+        const response = await this.getGenericData(
+            abi,
             proxyAddress,
+            'getIntermediatedFarms',
         );
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getIntermediatedFarms();
-        const response = await this.getGenericData(interaction);
         return response.firstValue
             .valueOf()
             .map((farmAddress: AddressValue) => {

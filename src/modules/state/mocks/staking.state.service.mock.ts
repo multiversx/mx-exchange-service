@@ -8,7 +8,7 @@ export class StakingStateServiceMock {
     async getAllStakingFarms(): Promise<StakingModel[]> {
         return [
             new StakingModel({
-                address: Address.Zero().bech32(),
+                address: Address.Zero().toBech32(),
                 farmingTokenId: 'WEGLD-123456',
                 farmTokenCollection: 'STAKETOK-111111',
                 rewardTokenId: 'rewardTokenID',
@@ -32,7 +32,7 @@ export class StakingStateServiceMock {
     async getStakingFarms(addresses: string[]): Promise<StakingModel[]> {
         return [
             new StakingModel({
-                address: Address.Zero().bech32(),
+                address: Address.Zero().toBech32(),
                 farmingTokenId: 'WEGLD-123456',
                 farmTokenCollection: 'STAKETOK-111111',
                 rewardTokenId: 'rewardTokenID',
