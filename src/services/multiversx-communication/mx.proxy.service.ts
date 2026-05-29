@@ -184,7 +184,7 @@ export class MXProxyService {
 
     async getProxyDexAbi(proxyAddress: string): Promise<AbiRegistry> {
         const version = proxyVersion(proxyAddress);
-        return this.getAbi(abiConfig.proxy[version], 'ProxyDexImpl');
+        return this.getAbi(abiConfig.proxy[version], `ProxyDexImpl_${version}`);
     }
 
     async getProxyDexSmartContractTransaction(
@@ -196,7 +196,7 @@ export class MXProxyService {
         return this.getSmartContractTransaction(
             proxyAddress,
             abiConfig.proxy[version],
-            'ProxyDexImpl',
+            `ProxyDexImpl_${version}`,
             options,
         );
     }
