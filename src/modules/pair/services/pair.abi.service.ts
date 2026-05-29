@@ -268,9 +268,8 @@ export class PairAbiService
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
     async specialFeePercent(pairAddress: string): Promise<number> {
-        const specialFeePercent = await this.getSpecialFeePercentRaw(
-            pairAddress,
-        );
+        const specialFeePercent =
+            await this.getSpecialFeePercentRaw(pairAddress);
         return new BigNumber(specialFeePercent)
             .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
             .toNumber();
@@ -330,6 +329,7 @@ export class PairAbiService
                 'getInitialLiquidtyAdder',
             );
             if (
+                queryResponse.returnMessage === undefined ||
                 queryResponse.returnMessage.includes(
                     VmQueryError.BAD_ARRAY_LENGTH,
                 )
