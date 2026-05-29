@@ -33,7 +33,8 @@ import { CacheService } from 'src/services/caching/cache.service';
 @Injectable()
 export class FarmAbiServiceV2
     extends FarmAbiService
-    implements IFarmAbiServiceV2 {
+    implements IFarmAbiServiceV2
+{
     constructor(
         protected readonly mxProxy: MXProxyService,
         protected readonly gatewayService: MXGatewayService,
@@ -68,10 +69,12 @@ export class FarmAbiServiceV2
     }
 
     async getRewardsPerSecondRaw(farmAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getPerSecondRewardAmount();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getPerSecondRewardAmount',
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -88,10 +91,12 @@ export class FarmAbiServiceV2
     }
 
     async getLastRewardTimestampRaw(farmAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastRewardTimestamp();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getLastRewardTimestamp',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
