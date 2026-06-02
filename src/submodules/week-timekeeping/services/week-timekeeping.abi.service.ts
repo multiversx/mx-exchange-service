@@ -1,4 +1,4 @@
-import { Interaction, SmartContract } from '@multiversx/sdk-core';
+import { AbiRegistry } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { scAddress } from 'src/config';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
@@ -34,10 +34,12 @@ export class WeekTimekeepingAbiService
     }
 
     async getCurrentWeekRaw(scAddress: string): Promise<number> {
-        const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getCurrentWeek();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.getAbiHandler(scAddress);
+        const response = await this.getGenericData(
+            abi,
+            scAddress,
+            'getCurrentWeek',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -54,25 +56,27 @@ export class WeekTimekeepingAbiService
     }
 
     async firstWeekStartEpochRaw(scAddress: string): Promise<number> {
-        const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getFirstWeekStartEpoch();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.getAbiHandler(scAddress);
+        const response = await this.getGenericData(
+            abi,
+            scAddress,
+            'getFirstWeekStartEpoch',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
-    private async getContractHandler(
+    private async getAbiHandler(
         contractAddress: string,
-    ): Promise<SmartContract> {
+    ): Promise<AbiRegistry> {
         if (scAddress.feesCollector === contractAddress) {
-            return this.mxProxy.getFeesCollectorContract();
+            return this.mxProxy.getFeesCollectorAbi();
         }
 
         const stakingAddresses = await this.remoteConfig.getStakingAddresses();
         if (stakingAddresses.includes(contractAddress)) {
-            return this.mxProxy.getStakingSmartContract(contractAddress);
+            return this.mxProxy.getStakingAbi();
         }
 
-        return this.mxProxy.getFarmSmartContract(contractAddress);
+        return this.mxProxy.getFarmAbi(contractAddress);
     }
 }

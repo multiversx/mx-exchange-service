@@ -13,7 +13,7 @@ export class TokenUnstakeHandlerService {
 
     async handleUnlockedTokens(event: UserUnlockedTokensEvent): Promise<void> {
         const cacheKey = await this.tokenUnstakeSetter.setUnlockedTokensForUser(
-            event.decodedTopics.caller.bech32(),
+            event.decodedTopics.caller.toBech32(),
             event.unstakeTokens.map(
                 (unstakePair) => new UnstakePairModel(unstakePair.toJSON()),
             ),

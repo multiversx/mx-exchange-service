@@ -133,7 +133,7 @@ export class FarmResolver {
     @ResolveField()
     async pair(parent: BaseFarmModel): Promise<PairModel> {
         const address = await this.farmAbi.pairContractAddress(parent.address);
-        return Address.fromString(address).equals(Address.Zero())
+        return Address.newFromBech32(address).equals(Address.Zero())
             ? undefined
             : new PairModel({ address });
     }

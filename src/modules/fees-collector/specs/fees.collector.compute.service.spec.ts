@@ -13,7 +13,7 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
@@ -115,8 +115,8 @@ describe('FeesCollectorComputeService', () => {
             ).mockReturnValue(Promise.resolve(expectedEnergy));
 
             const rewards = await service.computeUserRewardsForWeek(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 1,
             );
             expect(rewards).toEqual([]);
@@ -156,8 +156,8 @@ describe('FeesCollectorComputeService', () => {
         ).mockReturnValue(Promise.resolve(expectedEnergy));
 
         const rewards = await service.computeUserRewardsForWeek(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             1,
         );
         expect(rewards).toEqual([]);
@@ -202,8 +202,8 @@ describe('FeesCollectorComputeService', () => {
             ).mockReturnValue(Promise.resolve(expectedEnergy));
 
             const rewards = await service.computeUserRewardsForWeek(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 1,
             );
 
@@ -275,7 +275,7 @@ describe('FeesCollectorComputeService', () => {
             );
 
             const apr = await service.computeUserRewardsAPR(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user1,
             );
 
@@ -342,7 +342,7 @@ describe('FeesCollectorComputeService', () => {
             );
 
             const apr = await service.computeUserRewardsAPR(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user1,
                 new BigNumber(totalEnergyForWeek).dividedBy(4).toFixed(),
             );
@@ -413,7 +413,7 @@ describe('FeesCollectorComputeService', () => {
             );
 
             const apr = await service.computeUserRewardsAPR(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user1,
                 new BigNumber(totalEnergyForWeek).dividedBy(4).toFixed(),
                 new BigNumber(totalLockedTokensForWeek).dividedBy(2).toFixed(),
@@ -435,7 +435,7 @@ describe('FeesCollectorComputeService', () => {
             );
 
             let apr = await service.computeUserRewardsAPR(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user1,
                 new BigNumber(0).toFixed(),
                 new BigNumber(0).toFixed(),
@@ -444,7 +444,7 @@ describe('FeesCollectorComputeService', () => {
             expect(apr.toFixed()).toEqual('0');
 
             apr = await service.computeUserRewardsAPR(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user1,
                 new BigNumber('1440000000000000000000').toFixed(),
                 new BigNumber(0).toFixed(),
@@ -453,7 +453,7 @@ describe('FeesCollectorComputeService', () => {
             expect(apr.toFixed()).toEqual('0');
 
             apr = await service.computeUserRewardsAPR(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user1,
                 new BigNumber(0).toFixed(),
                 new BigNumber('1000000000000000000').toFixed(),

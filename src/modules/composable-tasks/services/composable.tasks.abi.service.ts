@@ -1,4 +1,3 @@
-import { Interaction } from '@multiversx/sdk-core';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
@@ -7,7 +6,7 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { IComposableTasksAbiService } from '../interfaces';
 import BigNumber from 'bignumber.js';
-import { constantsConfig } from 'src/config';
+import { constantsConfig, scAddress } from 'src/config';
 import { CacheService } from 'src/services/caching/cache.service';
 
 @Injectable()
@@ -36,11 +35,12 @@ export class ComposableTasksAbiService
     }
 
     async getSmartSwapFeePercentageRaw(): Promise<number> {
-        const contract = await this.mxProxy.getComposableTasksSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getSmartSwapFeePercentage();
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getComposableTasksAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.composableTasks,
+            'getSmartSwapFeePercentage',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 }

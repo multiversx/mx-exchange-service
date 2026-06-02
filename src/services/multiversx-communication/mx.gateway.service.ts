@@ -7,7 +7,7 @@ import Agent, { HttpsAgent } from 'agentkeepalive';
 import axios, { AxiosRequestConfig } from 'axios';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { MetricsCollector } from 'src/utils/metrics.collector';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 @Injectable()
 export class MXGatewayService {
@@ -56,7 +56,7 @@ export class MXGatewayService {
                     break;
                 case 'object':
                     if (key instanceof Address) {
-                        fullKey = fullKey.concat(key.hex());
+                        fullKey = fullKey.concat(key.toHex());
                         break;
                     }
                     break;

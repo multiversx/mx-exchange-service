@@ -1,4 +1,4 @@
-import { Interaction, TypedValue } from '@multiversx/sdk-core';
+import { TypedValue } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
@@ -29,13 +29,12 @@ export class SimpleLockAbiService
     }
 
     async getlockedTokenIDRaw(simpleLockAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getSimpleLockSmartContract(
+        const abi = await this.mxProxy.getSimpleLockAbi();
+        const response = await this.getGenericData(
+            abi,
             simpleLockAddress,
+            'getLockedTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedTokenId();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -52,13 +51,12 @@ export class SimpleLockAbiService
     }
 
     async getLpProxyTokenIDRaw(simpleLockAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getSimpleLockSmartContract(
+        const abi = await this.mxProxy.getSimpleLockAbi();
+        const response = await this.getGenericData(
+            abi,
             simpleLockAddress,
+            'getLpProxyTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLpProxyTokenId();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -75,13 +73,12 @@ export class SimpleLockAbiService
     }
 
     async getFarmProxyTokenIDRaw(simpleLockAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getSimpleLockSmartContract(
+        const abi = await this.mxProxy.getSimpleLockAbi();
+        const response = await this.getGenericData(
+            abi,
             simpleLockAddress,
+            'getFarmProxyTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmProxyTokenId();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -100,13 +97,12 @@ export class SimpleLockAbiService
     async getIntermediatedPairsRaw(
         simpleLockAddress: string,
     ): Promise<string[]> {
-        const contract = await this.mxProxy.getSimpleLockSmartContract(
+        const abi = await this.mxProxy.getSimpleLockAbi();
+        const response = await this.getGenericData(
+            abi,
             simpleLockAddress,
+            'getKnownLiquidityPools',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getKnownLiquidityPools();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((pairAddress: TypedValue) => {
             return pairAddress.valueOf().toString();
         });
@@ -127,13 +123,12 @@ export class SimpleLockAbiService
     async getIntermediatedFarmsRaw(
         simpleLockAddress: string,
     ): Promise<string[]> {
-        const contract = await this.mxProxy.getSimpleLockSmartContract(
+        const abi = await this.mxProxy.getSimpleLockAbi();
+        const response = await this.getGenericData(
+            abi,
             simpleLockAddress,
+            'getKnownFarms',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getKnownFarms();
-
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((farmAddress: TypedValue) => {
             return farmAddress.valueOf().toString();
         });

@@ -68,7 +68,7 @@ export class WeeklyRewardsSplittingHandlerService {
 
     async handleUpdateUserEnergy(event: UpdateUserEnergyEvent): Promise<void> {
         const topics = event.getTopics();
-        const userAddress = topics.caller.bech32();
+        const userAddress = topics.caller.toBech32();
         const contractAddress = event.address;
 
         const keys = await Promise.all([
@@ -143,7 +143,7 @@ export class WeeklyRewardsSplittingHandlerService {
         const keys = await Promise.all([
             setter.userRewardsForWeek(
                 event.address,
-                topics.caller.bech32(),
+                topics.caller.toBech32(),
                 topics.currentWeek,
                 [],
             ),

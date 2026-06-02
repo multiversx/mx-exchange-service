@@ -1,8 +1,7 @@
 import {
+    AbiRegistry,
     Address,
     AddressValue,
-    Interaction,
-    SmartContract,
     U32Value,
 } from '@multiversx/sdk-core';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
@@ -12,7 +11,7 @@ import { Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { VmQueryError } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@multiversx/sdk-exchange';
-import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
+import { ReturnCode } from '@multiversx/sdk-core';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { scAddress } from 'src/config';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
@@ -49,12 +48,13 @@ export class WeeklyRewardsSplittingAbiService
         scAddress: string,
         user: string,
     ): Promise<ClaimProgress> {
-        const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getCurrentClaimProgress([
-                new AddressValue(Address.fromString(user)),
-            ]);
-        const response = await this.getGenericData(interaction);
+        const abi = await this.getAbiHandler(scAddress);
+        const response = await this.getGenericData(
+            abi,
+            scAddress,
+            'getCurrentClaimProgress',
+            [new AddressValue(Address.newFromBech32(user))],
+        );
         if (
             (response.returnCode.equals(ReturnCode.UserError) &&
                 response.returnMessage === VmQueryError.INPUT_TOO_SHORT) ||
@@ -93,17 +93,20 @@ export class WeeklyRewardsSplittingAbiService
         user: string,
         week: number,
     ): Promise<EnergyType> {
-        const contract = await this.getContractHandler(scAddress);
+        const abi = await this.getAbiHandler(scAddress);
         const endEpochForWeek = await this.weekTimekeepCompute.endEpochForWeek(
             scAddress,
             week,
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getUserEnergyForWeek([
-                new AddressValue(Address.fromString(user)),
+        const response = await this.getGenericData(
+            abi,
+            scAddress,
+            'getUserEnergyForWeek',
+            [
+                new AddressValue(Address.newFromBech32(user)),
                 new U32Value(new BigNumber(week)),
-            ]);
-        const response = await this.getGenericData(interaction);
+            ],
+        );
         if (
             (response.returnCode.equals(ReturnCode.UserError) &&
                 response.returnMessage === VmQueryError.INPUT_TOO_SHORT) ||
@@ -158,12 +161,13 @@ export class WeeklyRewardsSplittingAbiService
         scAddress: string,
         user: string,
     ): Promise<number> {
-        const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastActiveWeekForUser([
-                new AddressValue(Address.fromString(user)),
-            ]);
-        const response = await this.getGenericData(interaction);
+        const abi = await this.getAbiHandler(scAddress);
+        const response = await this.getGenericData(
+            abi,
+            scAddress,
+            'getLastActiveWeekForUser',
+            [new AddressValue(Address.newFromBech32(user))],
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -180,10 +184,12 @@ export class WeeklyRewardsSplittingAbiService
     }
 
     async lastGlobalUpdateWeekRaw(scAddress: string): Promise<number> {
-        const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastGlobalUpdateWeek();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.getAbiHandler(scAddress);
+        const response = await this.getGenericData(
+            abi,
+            scAddress,
+            'getLastGlobalUpdateWeek',
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -206,12 +212,13 @@ export class WeeklyRewardsSplittingAbiService
         scAddress: string,
         week: number,
     ): Promise<EsdtTokenPayment[]> {
-        const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getTotalRewardsForWeek([
-                new U32Value(new BigNumber(week)),
-            ]);
-        const response = await this.getGenericData(interaction);
+        const abi = await this.getAbiHandler(scAddress);
+        const response = await this.getGenericData(
+            abi,
+            scAddress,
+            'getTotalRewardsForWeek',
+            [new U32Value(new BigNumber(week))],
+        );
         const rewards = response.firstValue.valueOf().map((raw) => {
             const nonce = raw.token_nonce.toNumber();
             const discriminant = nonce != 0 ? 3 : 1;
@@ -241,12 +248,13 @@ export class WeeklyRewardsSplittingAbiService
         scAddress: string,
         week: number,
     ): Promise<string> {
-        const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getTotalEnergyForWeek([
-                new U32Value(new BigNumber(week)),
-            ]);
-        const response = await this.getGenericData(interaction);
+        const abi = await this.getAbiHandler(scAddress);
+        const response = await this.getGenericData(
+            abi,
+            scAddress,
+            'getTotalEnergyForWeek',
+            [new U32Value(new BigNumber(week))],
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -269,27 +277,28 @@ export class WeeklyRewardsSplittingAbiService
         scAddress: string,
         week: number,
     ): Promise<string> {
-        const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction =
-            contract.methodsExplicit.getTotalLockedTokensForWeek([
-                new U32Value(new BigNumber(week)),
-            ]);
-        const response = await this.getGenericData(interaction);
+        const abi = await this.getAbiHandler(scAddress);
+        const response = await this.getGenericData(
+            abi,
+            scAddress,
+            'getTotalLockedTokensForWeek',
+            [new U32Value(new BigNumber(week))],
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
-    private async getContractHandler(
+    private async getAbiHandler(
         contractAddress: string,
-    ): Promise<SmartContract> {
+    ): Promise<AbiRegistry> {
         if (scAddress.feesCollector === contractAddress) {
-            return this.mxProxy.getFeesCollectorContract();
+            return this.mxProxy.getFeesCollectorAbi();
         }
 
         const stakingAddresses = await this.remoteConfig.getStakingAddresses();
         if (stakingAddresses.includes(contractAddress)) {
-            return this.mxProxy.getStakingSmartContract(contractAddress);
+            return this.mxProxy.getStakingAbi();
         }
 
-        return this.mxProxy.getFarmSmartContract(contractAddress);
+        return this.mxProxy.getFarmAbi(contractAddress);
     }
 }

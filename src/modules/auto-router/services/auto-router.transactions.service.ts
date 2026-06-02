@@ -203,7 +203,7 @@ export class AutoRouterTransactionService {
 
             swaps.push(
                 ...[
-                    new AddressValue(Address.fromString(address)),
+                    new AddressValue(Address.newFromBech32(address)),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(amountOutMin),
@@ -272,7 +272,7 @@ export class AutoRouterTransactionService {
 
             swaps.push(
                 ...[
-                    new AddressValue(Address.fromString(address)),
+                    new AddressValue(Address.newFromBech32(address)),
                     BytesValue.fromUTF8('swapTokensFixedOutput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(new BigNumber(amountOut)),
@@ -302,7 +302,7 @@ export class AutoRouterTransactionService {
 
                 swaps.push(
                     ...[
-                        new AddressValue(Address.fromString(address)),
+                        new AddressValue(Address.newFromBech32(address)),
                         BytesValue.fromUTF8('swapTokensFixedInput'),
                         BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                         new BigUIntValue(
@@ -314,7 +314,7 @@ export class AutoRouterTransactionService {
                 console.log('swapTokensFixedOutput');
                 swaps.push(
                     ...[
-                        new AddressValue(Address.fromString(address)),
+                        new AddressValue(Address.newFromBech32(address)),
                         BytesValue.fromUTF8('swapTokensFixedOutput'),
                         BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                         new BigUIntValue(
@@ -443,7 +443,7 @@ export class AutoRouterTransactionService {
             const amountOutMin = args[index + 3];
 
             swaps.push(
-                new BytesValue(Buffer.from(pairAddress.valueOf().hex(), 'hex')),
+                new BytesValue(Buffer.from(pairAddress.valueOf().toHex(), 'hex')),
             );
             swaps.push(BytesValue.fromUTF8(functionName.valueOf()));
             swaps.push(BytesValue.fromUTF8(tokenOutID.valueOf()));

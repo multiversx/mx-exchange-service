@@ -3,7 +3,6 @@ import {
     AddressValue,
     BigUIntValue,
     BytesValue,
-    Interaction,
     ReturnCode,
     TypedValue,
     U32Value,
@@ -50,12 +49,12 @@ export class StakingAbiService
     }
 
     async getFarmTokenIDRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getFarmTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -82,12 +81,12 @@ export class StakingAbiService
     }
 
     async getFarmingTokenIDRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getFarmingTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmingTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -114,12 +113,12 @@ export class StakingAbiService
     }
 
     async getRewardTokenIDRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getRewardTokenId',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getRewardTokenId();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -136,12 +135,12 @@ export class StakingAbiService
     }
 
     async getFarmTokenSupplyRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getFarmTokenSupply',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmTokenSupply();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -158,12 +157,12 @@ export class StakingAbiService
     }
 
     async getRewardPerShareRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getRewardPerShare',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getRewardPerShare();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -180,12 +179,12 @@ export class StakingAbiService
     }
 
     async getAccumulatedRewardsRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getAccumulatedRewards',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getAccumulatedRewards();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -214,12 +213,12 @@ export class StakingAbiService
     }
 
     async getRewardCapacityRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getRewardCapacity',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getRewardCapacity();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -246,12 +245,12 @@ export class StakingAbiService
     }
 
     async getAnnualPercentageRewardsRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getAnnualPercentageRewards',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getAnnualPercentageRewards();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -268,12 +267,12 @@ export class StakingAbiService
     }
 
     async getMinUnbondEpochsRaw(stakeAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getMinUnbondEpochs',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getMinUnbondEpochs();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -290,12 +289,12 @@ export class StakingAbiService
     }
 
     async getPerBlockRewardsAmountRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getPerBlockRewardAmount',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getPerBlockRewardAmount();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -312,12 +311,12 @@ export class StakingAbiService
     }
 
     async getLastRewardBlockNonceRaw(stakeAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getLastRewardBlockNonce',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastRewardBlockNonce();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -334,12 +333,12 @@ export class StakingAbiService
     }
 
     async getDivisionSafetyConstantRaw(stakeAddress: string): Promise<number> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getDivisionSafetyConstant',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getDivisionSafetyConstant();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -388,11 +387,12 @@ export class StakingAbiService
     }
 
     async getStateRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getState',
         );
-        const interaction: Interaction = contract.methodsExplicit.getState([]);
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().name;
     }
 
@@ -401,17 +401,18 @@ export class StakingAbiService
         amount: string,
         attributes: string,
     ): Promise<BigNumber> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
-        );
-        const interaction: Interaction =
-            contract.methodsExplicit.calculateRewardsForGivenPosition([
+            'calculateRewardsForGivenPosition',
+            [
                 new BigUIntValue(new BigNumber(amount)),
                 BytesValue.fromHex(
                     Buffer.from(attributes, 'base64').toString('hex'),
                 ),
-            ]);
-        const response = await this.getGenericData(interaction);
+            ],
+        );
         return response.firstValue.valueOf();
     }
 
@@ -430,13 +431,13 @@ export class StakingAbiService
         stakeAddress: string,
     ): Promise<string> {
         try {
-            const contract = await this.mxProxy.getStakingSmartContract(
+            const abi = await this.mxProxy.getStakingAbi();
+            const response = await this.getGenericData(
+                abi,
                 stakeAddress,
+                'getLockedAssetFactoryManagedAddress',
             );
-            const interaction: Interaction =
-                contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
-            const response = await this.getGenericData(interaction);
-            return response.firstValue.valueOf().hex32();
+            return response.firstValue.valueOf().toHex();
         } catch {
             return undefined;
         }
@@ -460,15 +461,16 @@ export class StakingAbiService
         stakeAddress: string,
         scAddress: string,
     ): Promise<boolean> {
-        const contract = await this.mxProxy.getStakingSmartContract(
-            stakeAddress,
-        );
+        const abi = await this.mxProxy.getStakingAbi();
         const transactionArgs: TypedValue[] = [
-            new AddressValue(Address.fromString(scAddress)),
+            new AddressValue(Address.newFromBech32(scAddress)),
         ];
-        const interaction: Interaction =
-            contract.methodsExplicit.isWhitelisted(transactionArgs);
-        const response = await this.getGenericData(interaction);
+        const response = await this.getGenericData(
+            abi,
+            stakeAddress,
+            'isWhitelisted',
+            transactionArgs,
+        );
         return response.firstValue.valueOf();
     }
 
@@ -484,12 +486,12 @@ export class StakingAbiService
     }
 
     async getLastErrorMessageRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getLastErrorMessage',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastErrorMessage();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -506,14 +508,13 @@ export class StakingAbiService
     }
 
     async getEnergyFactoryAddressRaw(stakeAddress: string): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getEnergyFactoryAddress',
         );
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getEnergyFactoryAddress();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        return response.firstValue.valueOf().toBech32();
     }
 
     @ErrorLoggerAsync({
@@ -533,13 +534,12 @@ export class StakingAbiService
     async getBoostedYieldsRewardsPercenatageRaw(
         stakeAddress: string,
     ): Promise<number> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getBoostedYieldsRewardsPercentage',
         );
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getBoostedYieldsRewardsPercentage();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -560,12 +560,12 @@ export class StakingAbiService
     async getBoostedYieldsFactorsRaw(
         stakeAddress: string,
     ): Promise<BoostedYieldsFactors> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getBoostedYieldsFactors',
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getBoostedYieldsFactors();
-        const response = await this.getGenericData(interaction);
         const rawBoostedYieldsFactors = response.firstValue.valueOf();
         return new BoostedYieldsFactors({
             maxRewardsFactor:
@@ -599,14 +599,13 @@ export class StakingAbiService
         stakeAddress: string,
         week: number,
     ): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getAccumulatedRewardsForWeek',
+            [new U32Value(new BigNumber(week))],
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getAccumulatedRewardsForWeek([
-                new U32Value(new BigNumber(week)),
-            ]);
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().integerValue().toFixed();
     }
 
@@ -625,13 +624,12 @@ export class StakingAbiService
     async getUndistributedBoostedRewardsRaw(
         stakeAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getUndistributedBoostedRewards',
         );
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getUndistributedBoostedRewards();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -674,14 +672,13 @@ export class StakingAbiService
         stakeAddress: string,
         week: number,
     ): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getRemainingBoostedRewardsToDistribute',
+            [new U32Value(new BigNumber(week))],
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getRemainingBoostedRewardsToDistribute([
-                new U32Value(new BigNumber(week)),
-            ]);
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -704,14 +701,13 @@ export class StakingAbiService
         farmAddress: string,
         week: number,
     ): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             farmAddress,
+            'getFarmSupplyForWeek',
+            [new U32Value(new BigNumber(week))],
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmSupplyForWeek([
-                new U32Value(new BigNumber(week)),
-            ]);
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -734,14 +730,13 @@ export class StakingAbiService
         stakeAddress: string,
         userAddress: string,
     ): Promise<string> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getUserTotalFarmPosition',
+            [new AddressValue(Address.newFromBech32(userAddress))],
         );
-        const interaction: Interaction =
-            contract.methodsExplicit.getUserTotalFarmPosition([
-                new AddressValue(Address.fromString(userAddress)),
-            ]);
-        const response = await this.getGenericData(interaction);
 
         if (
             response.returnCode.equals(ReturnCode.FunctionNotFound) ||
@@ -768,13 +763,12 @@ export class StakingAbiService
     async getFarmPositionMigrationNonceRaw(
         stakeAddress: string,
     ): Promise<number> {
-        const contract = await this.mxProxy.getStakingSmartContract(
+        const abi = await this.mxProxy.getStakingAbi();
+        const response = await this.getGenericData(
+            abi,
             stakeAddress,
+            'getFarmPositionMigrationNonce',
         );
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmPositionMigrationNonce();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 

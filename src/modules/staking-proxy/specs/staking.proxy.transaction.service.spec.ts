@@ -23,7 +23,7 @@ import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/s
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { StakingServiceMock } from 'src/modules/staking/mocks/staking.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';
@@ -121,9 +121,9 @@ describe('StakingProxyTransactionService', () => {
         );
 
         const transaction = await service.stakeFarmTokens(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             {
-                proxyStakingAddress: Address.Zero().bech32(),
+                proxyStakingAddress: Address.Zero().toBech32(),
                 payments: [
                     {
                         tokenID: 'EGLDTOK4FL-abcdef',
@@ -141,10 +141,10 @@ describe('StakingProxyTransactionService', () => {
                 gasLimit: gasConfig.stakeProxy.stakeFarmTokens.default,
                 gasPrice: 1000000000,
                 value: '0',
-                sender: Address.Zero().bech32(),
-                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().toBech32(),
+                receiver: Address.Zero().toBech32(),
                 data: encodeTransactionData(
-                    `ESDTNFTTransfer@EGLDTOK4FL-abcdef@01@1@${Address.Zero().bech32()}@stakeFarmTokens`,
+                    `ESDTNFTTransfer@EGLDTOK4FL-abcdef@01@1@${Address.Zero().toBech32()}@stakeFarmTokens`,
                 ),
                 options: undefined,
                 signature: undefined,
@@ -159,9 +159,9 @@ describe('StakingProxyTransactionService', () => {
         );
 
         const transaction = await service.stakeFarmTokens(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             {
-                proxyStakingAddress: Address.Zero().bech32(),
+                proxyStakingAddress: Address.Zero().toBech32(),
                 payments: [
                     {
                         tokenID: 'EGLDTOK4FL-abcdef',
@@ -184,10 +184,10 @@ describe('StakingProxyTransactionService', () => {
                 gasLimit: gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge,
                 gasPrice: 1000000000,
                 value: '0',
-                sender: Address.Zero().bech32(),
-                receiver: Address.Zero().bech32(),
+                sender: Address.Zero().toBech32(),
+                receiver: Address.Zero().toBech32(),
                 data: encodeTransactionData(
-                    `MultiESDTNFTTransfer@${Address.Zero().bech32()}@02@EGLDTOK4FL-abcdef@01@1@METASTAKE-123456@01@1@stakeFarmTokens`,
+                    `MultiESDTNFTTransfer@${Address.Zero().toBech32()}@02@EGLDTOK4FL-abcdef@01@1@METASTAKE-123456@01@1@stakeFarmTokens`,
                 ),
                 options: undefined,
                 signature: undefined,
@@ -202,8 +202,8 @@ describe('StakingProxyTransactionService', () => {
         );
 
         try {
-            await service.stakeFarmTokens(Address.Zero().bech32(), {
-                proxyStakingAddress: Address.Zero().bech32(),
+            await service.stakeFarmTokens(Address.Zero().toBech32(), {
+                proxyStakingAddress: Address.Zero().toBech32(),
                 payments: [
                     {
                         tokenID: 'TOK2TOK4LPStaked',
@@ -225,8 +225,8 @@ describe('StakingProxyTransactionService', () => {
             );
 
             try {
-                await service.stakeFarmTokens(Address.Zero().bech32(), {
-                    proxyStakingAddress: Address.Zero().bech32(),
+                await service.stakeFarmTokens(Address.Zero().toBech32(), {
+                    proxyStakingAddress: Address.Zero().toBech32(),
                     payments: [
                         {
                             tokenID: 'EGLDTOK4FL-abcdef',
@@ -284,7 +284,7 @@ describe('StakingProxyTransactionService', () => {
                     nonce: 1,
                     type: 'MetaESDT',
                     name: 'MetaStaked',
-                    creator: Address.Zero().bech32(),
+                    creator: Address.Zero().toBech32(),
                     balance: '1000000000000000000',
                     decimals: 18,
                     ticker: 'METASTAKE-123456',
@@ -293,8 +293,8 @@ describe('StakingProxyTransactionService', () => {
 
             const transactions =
                 await service.migrateTotalDualFarmTokenPosition(
-                    Address.Zero().bech32(),
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
+                    Address.Zero().toBech32(),
                 );
 
             expect(transactions).toEqual([expectedTransactionStub]);
@@ -314,7 +314,7 @@ describe('StakingProxyTransactionService', () => {
                     nonce: 1,
                     type: 'MetaESDT',
                     name: 'MetaStaked',
-                    creator: Address.Zero().bech32(),
+                    creator: Address.Zero().toBech32(),
                     balance: '1000000000000000000',
                     decimals: 18,
                     ticker: 'METASTAKE-123456',
@@ -323,8 +323,8 @@ describe('StakingProxyTransactionService', () => {
 
             const transactions =
                 await service.migrateTotalDualFarmTokenPosition(
-                    Address.Zero().bech32(),
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
+                    Address.Zero().toBech32(),
                 );
 
             expect(transactions).toEqual([expectedTransactionStub]);
@@ -344,7 +344,7 @@ describe('StakingProxyTransactionService', () => {
                     nonce: 1,
                     type: 'MetaESDT',
                     name: 'MetaStaked',
-                    creator: Address.Zero().bech32(),
+                    creator: Address.Zero().toBech32(),
                     balance: '1000000000000000000',
                     decimals: 18,
                     ticker: 'METASTAKE-123456',
@@ -353,8 +353,8 @@ describe('StakingProxyTransactionService', () => {
 
             const transactions =
                 await service.migrateTotalDualFarmTokenPosition(
-                    Address.Zero().bech32(),
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
+                    Address.Zero().toBech32(),
                 );
 
             expect(transactions).toEqual([expectedTransactionStub]);

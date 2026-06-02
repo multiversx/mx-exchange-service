@@ -3,7 +3,7 @@ import { XoxnoAggregatorService } from '../services/xoxno-aggregator.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import axios from 'axios';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -131,7 +131,7 @@ describe('XoxnoAggregatorService', () => {
                 transaction: {
                     nonce: 0,
                     value: '0',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     receiver: 'erd1router',
                     gasPrice: 1000000000,
                     gasLimit: 8000000,

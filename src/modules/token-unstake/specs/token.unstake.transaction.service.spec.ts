@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TokenUnstakeTransactionService } from '../services/token.unstake.transaction.service';
 import { TokenUnstakeAbiServiceProvider } from '../mocks/token.unstake.abi.service.mock';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import { mxConfig, scAddress } from 'src/config';
 import { encodeTransactionData } from 'src/helpers/helpers';

@@ -1,4 +1,4 @@
-import { Address, Interaction } from '@multiversx/sdk-core';
+import { Address } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
 import { FarmAbiService } from '../../base-module/services/farm.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
@@ -23,14 +23,15 @@ export class FarmCustomAbiService
     }
 
     async getWhitelistRaw(farmAddress: string): Promise<string[]> {
-        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getWhitelist();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getWhitelist',
+        );
 
         return response.firstValue
             .valueOf()
-            .map((address: Address) => address.bech32());
+            .map((address: Address) => address.toBech32());
     }
 }

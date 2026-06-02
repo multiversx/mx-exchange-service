@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
-import { Interaction } from '@multiversx/sdk-core';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { scAddress } from 'src/config';
 
 @Injectable()
 export class LockedTokenWrapperAbiService extends GenericAbiService {
@@ -23,10 +23,12 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
     }
 
     async wrappedTokenIdRaw(): Promise<string> {
-        const contract = await this.mxProxy.getLockedTokenWrapperContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getWrappedTokenId();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getLockedTokenWrapperAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.lockedTokenWrapper,
+            'getWrappedTokenId',
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -41,10 +43,12 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
     }
 
     async energyFactoryAddressRaw(): Promise<string> {
-        const contract = await this.mxProxy.getLockedTokenWrapperContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getEnergyFactoryAddress();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
+        const abi = await this.mxProxy.getLockedTokenWrapperAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.lockedTokenWrapper,
+            'getEnergyFactoryAddress',
+        );
+        return response.firstValue.valueOf().toBech32();
     }
 }

@@ -11,11 +11,11 @@ export class RemoteConfigGetterServiceMock {
     }
 
     async getStakingAddresses(): Promise<string[]> {
-        return [Address.Zero().bech32()];
+        return [Address.Zero().toBech32()];
     }
 
     async getStakingProxyAddresses(): Promise<string[]> {
-        return [Address.Zero().bech32(), Address.Zero().bech32()];
+        return [Address.Zero().toBech32(), Address.Zero().toBech32()];
     }
 
     async getAnalyticsAWSTimestreamWriteFlagValue(): Promise<boolean> {

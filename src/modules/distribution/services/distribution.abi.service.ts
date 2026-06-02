@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Address, AddressValue, Interaction } from '@multiversx/sdk-core';
+import { Address, AddressValue } from '@multiversx/sdk-core';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import BigNumber from 'bignumber.js';
 import { CommunityDistributionModel } from '../models/distribution.model';
@@ -7,6 +7,7 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
+import { scAddress } from 'src/config';
 
 @Injectable()
 export class DistributionAbiService extends GenericAbiService {
@@ -25,10 +26,12 @@ export class DistributionAbiService extends GenericAbiService {
     }
 
     async getCommunityDistributionRaw(): Promise<CommunityDistributionModel> {
-        const contract = await this.mxProxy.getDistributionSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastCommunityDistributionAmountAndEpoch();
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getDistributionAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.distributionAddress,
+            'getLastCommunityDistributionAmountAndEpoch',
+        );
         return new CommunityDistributionModel({
             amount: response.values[0].valueOf(),
             epoch: response.values[1].valueOf(),
@@ -48,13 +51,13 @@ export class DistributionAbiService extends GenericAbiService {
     async getDistributedLockedAssetsRaw(
         userAddress: string,
     ): Promise<BigNumber> {
-        const contract = await this.mxProxy.getDistributionSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.calculateLockedAssets([
-                new AddressValue(Address.fromString(userAddress)),
-            ]);
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getDistributionAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.distributionAddress,
+            'calculateLockedAssets',
+            [new AddressValue(Address.newFromBech32(userAddress))],
+        );
         return response.firstValue.valueOf();
     }
 }

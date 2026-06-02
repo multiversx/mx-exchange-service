@@ -344,7 +344,7 @@ describe('RouterService', () => {
         const transaction = await service.setFee(
             senderAddress,
             pairAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             'WEGLD-123456',
             true,
         );
@@ -378,7 +378,7 @@ describe('RouterService', () => {
 
         const transaction = await service.setLocalRolesOwner(senderAddress, {
             tokenID: 'WEGLD-123456',
-            address: Address.Zero().bech32(),
+            address: Address.Zero().toBech32(),
             roles: [EsdtLocalRole.Mint],
         });
         expect(transaction).toEqual({
@@ -563,7 +563,7 @@ describe('RouterService', () => {
 
         const transaction = await service.setPairTemplateAddress(
             senderAddress,
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
         );
         expect(transaction).toEqual({
             nonce: 0,
@@ -634,7 +634,7 @@ describe('RouterService', () => {
 
             await expect(
                 service.setSwapEnabledByUser(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new InputTokenModel({
                         tokenID: 'LKESDT-123456',
                         nonce: 1,
@@ -657,7 +657,7 @@ describe('RouterService', () => {
 
             await expect(
                 service.setSwapEnabledByUser(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new InputTokenModel({
                         tokenID: 'LKESDT-abcdef',
                         nonce: 1,
@@ -680,7 +680,7 @@ describe('RouterService', () => {
 
             await expect(
                 service.setSwapEnabledByUser(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new InputTokenModel({
                         tokenID: 'LKESDT-abcdef',
                         nonce: 1,
@@ -702,7 +702,7 @@ describe('RouterService', () => {
 
             await expect(
                 service.setSwapEnabledByUser(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new InputTokenModel({
                         tokenID: 'LKESDT-123456',
                         nonce: 1,
@@ -725,7 +725,7 @@ describe('RouterService', () => {
 
             await expect(
                 service.setSwapEnabledByUser(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new InputTokenModel({
                         tokenID: 'LKESDT-123456',
                         nonce: 1,

@@ -1,4 +1,4 @@
-import { EnumType, EnumVariantDefinition } from '@multiversx/sdk-core/out';
+import { EnumType, EnumVariantDefinition } from '@multiversx/sdk-core';
 import { Field, ObjectType } from '@nestjs/graphql';
 
 export enum ComposableTaskType {

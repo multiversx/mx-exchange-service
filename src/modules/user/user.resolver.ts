@@ -87,7 +87,7 @@ export class UserResolver {
         tokens: EsdtTokenInput[],
     ): Promise<UserToken[]> {
         return this.userEsdt.getAllEsdtTokens(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             pagination,
             tokens,
         );
@@ -99,7 +99,7 @@ export class UserResolver {
         @Args('nfts', { type: () => [NftTokenInput] }) nfts: NftTokenInput[],
     ): Promise<UserNftToken[]> {
         return this.userMetaEsdt.getAllNftTokens(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             pagination,
             nfts,
         );

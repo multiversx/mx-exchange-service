@@ -94,7 +94,7 @@ describe('StakingService', () => {
                 attributes:
                     'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
                 vmQuery: false,
-                user: Address.Zero().bech32(),
+                user: Address.Zero().toBech32(),
             },
             currentNonce,
         );
@@ -125,7 +125,7 @@ describe('StakingService', () => {
                 attributes:
                     'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
                 vmQuery: false,
-                user: Address.Zero().bech32(),
+                user: Address.Zero().toBech32(),
             },
         ]);
         expect(batchRewards).toEqual([

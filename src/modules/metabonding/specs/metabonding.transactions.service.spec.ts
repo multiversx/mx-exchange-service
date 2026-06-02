@@ -3,7 +3,7 @@ import { MetabondingTransactionService } from '../services/metabonding.transacti
 import { Test, TestingModule } from '@nestjs/testing';
 import { MetabondingAbiServiceMockProvider } from '../mocks/metabonding.abi.service.mock';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { gasConfig, mxConfig, scAddress } from 'src/config';

@@ -19,7 +19,7 @@ export class RabbitMQMetabondingHandlerService {
         const caller = event.getTopics().getCaller();
 
         const invalidatedKeys = await this.metabondingSetter.setUserEntry(
-            caller.bech32(),
+            caller.toBech32(),
             userEntry,
         );
         await this.deleteCacheKeys([invalidatedKeys]);

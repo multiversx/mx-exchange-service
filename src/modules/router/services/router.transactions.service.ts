@@ -178,7 +178,7 @@ export class RouterTransactionService {
                 chainID: mxConfig.chainID,
                 gasLimit: gasConfig.router.setLocalRoles,
                 function: 'setLocalRoles',
-                arguments: [BytesValue.fromHex(new Address(pairAddress).hex())],
+                arguments: [BytesValue.fromHex(new Address(pairAddress).toHex())],
             }),
         );
     }
@@ -347,7 +347,6 @@ export class RouterTransactionService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const contract = await this.mxProxy.getRouterSmartContract();
 
         const wrapTransaction = await this.wrapIfNeeded(
             sender,
@@ -364,7 +363,7 @@ export class RouterTransactionService {
                 .integerValue();
             endpointArgs.push(
                 ...[
-                    new AddressValue(Address.fromString(address)),
+                    new AddressValue(Address.newFromBech32(address)),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(amountOutMin),
@@ -373,21 +372,29 @@ export class RouterTransactionService {
         }
 
         transactions.push(
-            contract.methodsExplicit
-                .multiPairSwap(endpointArgs)
-                .withSingleESDTTransfer(
-                    TokenTransfer.fungibleFromBigInteger(
-                        args.tokenRoute[0],
-                        args.intermediaryAmounts[0],
-                    ),
-                )
-                .withGasLimit(
-                    args.addressRoute.length *
+            await this.mxProxy.getRouterSmartContractTransaction(
+                new TransactionOptions({
+                    sender,
+                    chainID: mxConfig.chainID,
+                    gasLimit:
+                        args.addressRoute.length *
                         gasConfig.router.multiPairSwapMultiplier,
-                )
-                .withChainID(mxConfig.chainID)
-                .buildTransaction()
-                .toPlainObject(),
+                    function: 'multiPairSwap',
+                    arguments: endpointArgs,
+                    tokenTransfers: [
+                        new TokenTransfer({
+                            token: new Token({
+                                identifier: args.tokenRoute[0],
+                            }),
+                            amount: BigInt(
+                                new BigNumber(
+                                    args.intermediaryAmounts[0],
+                                ).toFixed(0),
+                            ),
+                        }),
+                    ],
+                }),
+            ),
         );
 
         const unwrapTransaction = await this.unwrapIfNeeded(

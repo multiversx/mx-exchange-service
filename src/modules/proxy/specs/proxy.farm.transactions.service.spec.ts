@@ -19,7 +19,7 @@ import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.moc
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
@@ -91,7 +91,7 @@ describe('ProxyFarmTransactionsService', () => {
         ]);
 
         const transactions = await service.migrateTotalFarmPosition(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             'erd1qqqqqqqqqqqqqpgqt6ltx52ukss9d2qag2k67at28a36xc9lkp2sr06394',
         );
 
@@ -123,7 +123,7 @@ describe('ProxyFarmTransactionsService', () => {
         ]);
 
         const transactions = await service.migrateTotalFarmPosition(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             'erd1qqqqqqqqqqqqqpgqt6ltx52ukss9d2qag2k67at28a36xc9lkp2sr06394',
         );
 

@@ -6,7 +6,7 @@ import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
 import { PairComputeServiceProvider } from '../mocks/pair.compute.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -52,9 +52,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const amountIn = await service.getAmountIn(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
             'WEGLD-123456',
             '1000000000000000000',
         );
@@ -65,9 +65,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const amountOut = await service.getAmountOut(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
             'WEGLD-123456',
             '1000000000000000000',
         );
@@ -78,9 +78,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const equivalent = await service.getEquivalentForLiquidity(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
             'WEGLD-123456',
             '1000000000000000000',
         );
@@ -91,9 +91,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const liquidityPosition = await service.getLiquidityPosition(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
             '1',
         );
         expect(liquidityPosition).toEqual({
@@ -106,9 +106,9 @@ describe('PairService', () => {
         const service = module.get<PairService>(PairService);
 
         const liquidityPositionUSD = await service.getLiquidityPositionUSD(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
 
             '1000000000000000000',
         );
@@ -122,9 +122,9 @@ describe('PairService', () => {
             'EGLDMEXLP-abcdef',
         );
         expect(address).toEqual(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
         );
     });
 });

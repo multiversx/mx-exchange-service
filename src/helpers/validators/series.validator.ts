@@ -10,7 +10,7 @@ import {
 export class IsValidSeriesConstraint implements ValidatorConstraintInterface {
     validate(series: any): boolean {
         try {
-            return !Address.fromBech32(series).isEmpty();
+            return !Address.newFromBech32(series).isEmpty();
         } catch (error) {
             if (this.isValidTokenIdentifier(series)) {
                 return true;
