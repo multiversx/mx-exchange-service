@@ -433,13 +433,13 @@ export class ApiConfigService {
         return notificationsModuleActive === 'true';
     }
 
-    isGraphqlPlaygroundEnabled(): boolean {
-        const playgrounEnabled =
+    isIntrospectionEnabled(): boolean {
+        const introspectionEnabled =
             this.configService.get<string>('ENABLE_PLAYGROUND');
-        if (!playgrounEnabled) {
+        if (!introspectionEnabled) {
             return false;
         }
-        return playgrounEnabled === 'true';
+        return introspectionEnabled === 'true';
     }
 
     isTaskRunnerModuleActive(): boolean {
