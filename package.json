@@ -31,6 +31,7 @@
     },
     "dependencies": {
         "@apollo/server": "^5.0.0",
+        "@as-integrations/express5": "^1.0.0",
         "@datastructures-js/priority-queue": "^6.3.5",
         "@elastic/elasticsearch": "^7.17.14",
         "@golevelup/nestjs-rabbitmq": "^5.7.0",
