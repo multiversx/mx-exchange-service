@@ -57,7 +57,11 @@ import { ApiConfigService } from './helpers/api.config.service';
                 apiConfig: ApiConfigService,
             ) => ({
                 autoSchemaFile: 'schema.gql',
-                installSubscriptionHandlers: true,
+                subscriptions: {
+                    'graphql-ws': {
+                        path: '/graphql',
+                    },
+                },
                 parseOptions: {
                     maxTokens: 1000,
                 },
@@ -81,7 +85,7 @@ import { ApiConfigService } from './helpers/api.config.service';
                     };
                 },
                 fieldResolverEnhancers: ['guards'],
-                playground: apiConfig.isGraphqlPlaygroundEnabled(),
+                introspection: apiConfig.isIntrospectionEnabled(),
             }),
             inject: [WINSTON_MODULE_NEST_PROVIDER, ApiConfigService],
         }),

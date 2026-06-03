@@ -1,12 +1,12 @@
-import { createParamDecorator } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { UserAuthResult } from './user.auth.result';
 
-export const AuthUser = createParamDecorator((key, req): UserAuthResult => {
-    let authUser: UserAuthResult = req.args[0]?.auth;
+export const AuthUser = createParamDecorator((key, ctx: ExecutionContext): UserAuthResult => {
+    let authUser: UserAuthResult = ctx.getArgs()[0]?.auth;
     if (!authUser) {
-        const ctx = GqlExecutionContext.create(req);
-        authUser = ctx.getContext().req?.auth;
+        const gqlCtx = GqlExecutionContext.create(ctx);
+        authUser = gqlCtx.getContext().req?.auth;
     }
 
     if (!authUser) {

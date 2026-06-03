@@ -14,7 +14,8 @@
         "outDir": "./dist",
         "baseUrl": "./",
         "incremental": true,
-        "allowJs": true
+        "allowJs": true,
+        "types": ["jest", "node"]
     },
     "include": ["src/**/*.ts", "test/**/*.ts"],
     "exclude": ["node_modules", "dist"]
