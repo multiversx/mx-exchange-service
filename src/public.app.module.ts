@@ -85,7 +85,7 @@ import { ApiConfigService } from './helpers/api.config.service';
                     };
                 },
                 fieldResolverEnhancers: ['guards'],
-                introspection: apiConfig.isIntrospectionEnabled(),
+                playground: apiConfig.isGraphqlPlaygroundEnabled(),
             }),
             inject: [WINSTON_MODULE_NEST_PROVIDER, ApiConfigService],
         }),
