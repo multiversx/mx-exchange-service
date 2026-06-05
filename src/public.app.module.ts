@@ -61,7 +61,15 @@ import { ApiConfigService } from './helpers/api.config.service';
                     'graphql-ws': {
                         path: '/graphql',
                     },
+                    'subscriptions-transport-ws': {
+                        path: '/graphql',
+                    },
                 },
+                context: async (contextData: any) => ({
+                    req:
+                        contextData.req ??
+                        contextData.extra?.request,
+                }),
                 parseOptions: {
                     maxTokens: 1000,
                 },
