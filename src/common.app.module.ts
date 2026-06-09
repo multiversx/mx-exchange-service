@@ -5,13 +5,12 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as winston from 'winston';
-import * as Transport from 'winston-transport';
 import { ApiConfigService } from './helpers/api.config.service';
 import { RedisPubSubModule } from './services/redis.pubSub.module';
 
 const loglevel = !!process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 'error';
 
-const logTransports: Transport[] = [
+const logTransports: winston.transport[] = [
     new winston.transports.Console({
         format: winston.format.combine(
             winston.format.timestamp(),

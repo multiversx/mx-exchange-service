@@ -57,7 +57,19 @@ import { ApiConfigService } from './helpers/api.config.service';
                 apiConfig: ApiConfigService,
             ) => ({
                 autoSchemaFile: 'schema.gql',
-                installSubscriptionHandlers: true,
+                subscriptions: {
+                    'graphql-ws': {
+                        path: '/graphql',
+                    },
+                    'subscriptions-transport-ws': {
+                        path: '/graphql',
+                    },
+                },
+                context: async (contextData: any) => ({
+                    req:
+                        contextData.req ??
+                        contextData.extra?.request,
+                }),
                 parseOptions: {
                     maxTokens: 1000,
                 },
