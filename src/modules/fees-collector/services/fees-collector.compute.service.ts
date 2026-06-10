@@ -97,9 +97,8 @@ export class FeesCollectorComputeService {
         userAddress: string,
         additionalUserEnergy = '0',
     ): Promise<string> {
-        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
-            scAddress,
-        );
+        const currentWeek =
+            await this.weekTimekeepingAbi.currentWeek(scAddress);
         const lastWeek = currentWeek - 1;
         const [totalRewardsForWeekUSD, userEnergyForWeek] = await Promise.all([
             this.weeklyRewardsSplittingCompute.totalRewardsForWeekUSD(
@@ -191,31 +190,37 @@ export class FeesCollectorComputeService {
     }
 
     async computeAccumulatedFeesUSD(week: number): Promise<string> {
-        const allTokens = await this.feesCollectorAbi.allTokens();
+        const [baseAssetTokenID, lockedTokenID, allTokens] = await Promise.all([
+            this.energyAbi.baseAssetTokenID(),
+            this.energyAbi.lockedTokenID(),
+            this.feesCollectorAbi.allTokens(),
+        ]);
 
-        const tokensMetadata = await this.tokenService.getAllTokensMetadata(
-            allTokens,
+        // the locked token has no derived price; value it at the base asset price
+        const tokenIDs = allTokens.map((tokenID) =>
+            tokenID === lockedTokenID ? baseAssetTokenID : tokenID,
         );
-        const tokenData = await Promise.all(
-            allTokens.map(async (tokenId) => ({
-                amount: await this.feesCollectorAbi.accumulatedFees(
-                    week,
-                    tokenId,
+
+        const [tokensMetadata, tokensPriceUSD, accumulatedFees] =
+            await Promise.all([
+                this.tokenService.getAllTokensMetadata(tokenIDs),
+                this.tokenCompute.getAllTokensPriceDerivedUSD(tokenIDs),
+                Promise.all(
+                    allTokens.map((tokenID) =>
+                        this.feesCollectorAbi.accumulatedFees(week, tokenID),
+                    ),
                 ),
-                price: await this.tokenCompute.tokenPriceDerivedUSD(tokenId),
-            })),
-        );
+            ]);
 
-        const usdValues = allTokens.map((tokenId, index) => {
-            return computeValueUSD(
-                tokenData[index].amount,
-                tokensMetadata[index].decimals,
-                tokenData[index].price,
-            );
-        });
-
-        const totalUsdValue = usdValues.reduce(
-            (sum, value) => sum.plus(value),
+        const totalUsdValue = allTokens.reduce(
+            (sum, _tokenID, index) =>
+                sum.plus(
+                    computeValueUSD(
+                        accumulatedFees[index],
+                        tokensMetadata[index].decimals,
+                        tokensPriceUSD[index],
+                    ),
+                ),
             new BigNumber(0),
         );
 
