@@ -27,23 +27,23 @@ export class EnergyHandler {
         const cachedKeys = [];
         cachedKeys.push(
             await this.energySetter.setEnergyEntryForUser(
-                caller.bech32(),
+                caller.toBech32(),
                 event.newEnergyEntry.toJSON(),
             ),
         );
 
         const activeFarms = await this.userEnergyCompute.userActiveFarmsV2(
-            caller.bech32(),
+            caller.toBech32(),
         );
         const promises = activeFarms.map((farm) =>
             this.userEnergyCompute.computeUserOutdatedContract(
-                caller.bech32(),
+                caller.toBech32(),
                 farm,
             ),
         );
         promises.push(
             this.userEnergyCompute.computeUserOutdatedContract(
-                caller.bech32(),
+                caller.toBech32(),
                 scAddress.feesCollector,
             ),
         );
@@ -53,7 +53,7 @@ export class EnergyHandler {
             if (contract.address) {
                 cachedKeys.push(
                     await this.userEnergySetter.setUserOutdatedContract(
-                        caller.bech32(),
+                        caller.toBech32(),
                         contract.address,
                         contract,
                     ),

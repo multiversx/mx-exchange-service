@@ -26,10 +26,12 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('FarmServiceV2', () => {
     let module: TestingModule;
@@ -48,6 +50,7 @@ describe('FarmServiceV2', () => {
                 MXApiServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 TokenServiceProvider,
@@ -65,6 +68,7 @@ describe('FarmServiceV2', () => {
                 FarmServiceV2,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                FarmsStateServiceProvider,
             ],
         }).compile();
     });
@@ -76,22 +80,6 @@ describe('FarmServiceV2', () => {
         );
         const expectedTotal = new BigNumber('4000').integerValue().toFixed(); // 4 weeks * 1000
         expect(result).toEqual(expectedTotal);
-    });
-
-    it('should compute blocks in week', async () => {
-        const service = module.get<FarmComputeServiceV2>(FarmComputeServiceV2);
-        const contextGetter =
-            module.get<ContextGetterService>(ContextGetterService);
-        jest.spyOn(contextGetter, 'getCurrentEpoch').mockResolvedValue(256);
-
-        const blocksInWeek = await service.computeBlocksInWeek(
-            Address.fromBech32(
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
-            ).bech32(),
-            1,
-        );
-
-        expect(blocksInWeek).toEqual(10 * 60 * 24 * 7);
     });
 
     it('should compute user accumulated rewards', async () => {
@@ -134,10 +122,10 @@ describe('FarmServiceV2', () => {
         jest.spyOn(farmAbi, 'userTotalFarmPosition').mockResolvedValue('2');
 
         const accumulatedRewards = await service.computeUserRewardsForWeek(
-            Address.fromBech32(
+            Address.newFromBech32(
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
-            ).bech32(),
-            Address.Zero().bech32(),
+            ).toBech32(),
+            Address.Zero().toBech32(),
             1,
         );
 

@@ -31,6 +31,7 @@ export enum SWAP_IDENTIFIER {
 export class SwapEventHandler {
     constructor(
         private readonly pairAbi: PairAbiService,
+        @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
         private readonly pairSetter: PairSetterService,
         @Inject(forwardRef(() => PairComputeService))

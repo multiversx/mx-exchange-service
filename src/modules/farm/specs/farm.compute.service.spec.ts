@@ -13,7 +13,7 @@ import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { FarmAbiServiceProviderV1_2 } from '../mocks/farm.v1.2.abi.service.mock';
 import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
@@ -22,6 +22,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -40,6 +41,7 @@ describe('FarmService', () => {
                 MXApiServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 TokenServiceProvider,
@@ -68,9 +70,9 @@ describe('FarmService', () => {
             FarmComputeServiceV1_2,
         );
         const farmedTokenPriceUSD = await service.farmedTokenPriceUSD(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(farmedTokenPriceUSD).toEqual('0.01');
     });
@@ -80,9 +82,9 @@ describe('FarmService', () => {
             FarmComputeServiceV1_2,
         );
         const farmingTokenPriceUSD = await service.computeFarmingTokenPriceUSD(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(farmingTokenPriceUSD).toEqual('20');
     });
@@ -99,9 +101,9 @@ describe('FarmService', () => {
         ).mockResolvedValue(2);
 
         const calculateRewardsArgs = new CalculateRewardsArgs();
-        calculateRewardsArgs.farmAddress = Address.fromHex(
+        calculateRewardsArgs.farmAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000021',
-        ).bech32();
+        ).toBech32();
         calculateRewardsArgs.liquidity = '2000000000000000000';
         const farmRewardsForPosition =
             await service.computeFarmRewardsForPosition(
@@ -116,9 +118,9 @@ describe('FarmService', () => {
             FarmComputeServiceV1_2,
         );
         const anualRewardsUSD = await service.computeAnualRewardsUSD(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000021',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(anualRewardsUSD).toEqual('52560');
     });

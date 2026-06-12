@@ -12,7 +12,7 @@ import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
 import { FarmAbiServiceProviderV1_3 } from '../mocks/farm.v1.3.abi.service.mock';
 import { FarmServiceV1_3 } from '../v1.3/services/farm.v1.3.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -20,6 +20,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -41,6 +42,7 @@ describe('FarmService', () => {
                 MXApiServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 TokenServiceProvider,
@@ -68,9 +70,9 @@ describe('FarmService', () => {
         );
 
         const farmAPR = await service.computeFarmAPR(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000031',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(farmAPR).toEqual('2638');
     });

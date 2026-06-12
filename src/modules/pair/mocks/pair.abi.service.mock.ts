@@ -4,7 +4,7 @@ import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { PairInfoModel } from '../models/pair-info.model';
 import { FeeDestination } from '../models/pair.model';
 import { PairsData } from './pair.constants';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { PairAbiService } from '../services/pair.abi.service';
 
 export class PairAbiServiceMock implements IPairAbiService {
@@ -65,7 +65,7 @@ export class PairAbiServiceMock implements IPairAbiService {
         return PairsData(pairAddress).feeState;
     }
     async lockingScAddress(pairAddress: string): Promise<string> {
-        return Address.Zero().bech32();
+        return Address.Zero().toBech32();
     }
     async unlockEpoch(pairAddress: string): Promise<number> {
         return 1;

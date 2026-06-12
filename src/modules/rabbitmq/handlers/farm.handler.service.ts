@@ -141,7 +141,7 @@ export class FarmHandlerService {
         const userTotalFarmPosition =
             await this.farmAbiV2.getUserTotalFarmPositionRaw(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
             );
         const cacheKeys = await Promise.all([
             this.farmSetterFactory
@@ -149,7 +149,7 @@ export class FarmHandlerService {
                 .setFarmTokenSupply(event.address, event.farmSupply.toFixed()),
             this.farmSetterV2.setUserTotalFarmPosition(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
                 userTotalFarmPosition,
             ),
         ]);
@@ -160,7 +160,7 @@ export class FarmHandlerService {
         const userTotalFarmPosition =
             await this.farmAbiV2.getUserTotalFarmPositionRaw(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
             );
         const cacheKeys = await Promise.all([
             this.farmSetterFactory
@@ -168,7 +168,7 @@ export class FarmHandlerService {
                 .setFarmTokenSupply(event.address, event.farmSupply.toFixed()),
             this.farmSetterV2.setUserTotalFarmPosition(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
                 userTotalFarmPosition,
             ),
         ]);
@@ -181,7 +181,7 @@ export class FarmHandlerService {
         const userTotalFarmPosition =
             await this.farmAbiV2.getUserTotalFarmPositionRaw(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
             );
         const cacheKeys = await Promise.all([
             this.farmSetterFactory
@@ -189,7 +189,7 @@ export class FarmHandlerService {
                 .setFarmTokenSupply(event.address, event.farmSupply.toFixed()),
             this.farmSetterV2.setUserTotalFarmPosition(
                 event.address,
-                event.decodedTopics.caller.bech32(),
+                event.decodedTopics.caller.toBech32(),
                 userTotalFarmPosition,
             ),
         ]);

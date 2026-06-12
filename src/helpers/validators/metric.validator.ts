@@ -46,7 +46,7 @@ export class IsValidMetricConstraint implements ValidatorConstraintInterface {
 }
 
 export function IsValidMetric(validationOptions?: ValidationOptions) {
-    return (object: Object, propertyName: string) => {
+    return (object: object, propertyName: string) => {
         registerDecorator({
             target: object.constructor,
             propertyName: propertyName,

@@ -11,10 +11,7 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { RouterAbiService } from '../../router/services/router.abi.service';
 import { RouterSetterService } from '../../router/services/router.setter.service';
-import { CreateTokenDto } from '../../tokens/dto/create.token.dto';
-import { TokenRepositoryService } from '../../tokens/services/token.repository.service';
 import { TokenService } from '../../tokens/services/token.service';
-import { TokenSetterService } from '../../tokens/services/token.setter.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import BigNumber from 'bignumber.js';
@@ -22,6 +19,12 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { SwapEventPairData } from 'src/modules/trading-contest/types';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { StateTasksService } from 'src/modules/state/services/state.tasks.service';
+import {
+    StateTasks,
+    TaskDto,
+} from 'src/modules/state/entities/state.tasks.entities';
 
 @Injectable()
 export class RouterHandlerService {
@@ -31,62 +34,22 @@ export class RouterHandlerService {
         private readonly pairAbi: PairAbiService,
         private readonly pairSetter: PairSetterService,
         private readonly tokenService: TokenService,
-        private readonly tokenSetter: TokenSetterService,
-        private readonly tokenRepository: TokenRepositoryService,
         private readonly tokenCompute: TokenComputeService,
         private readonly dataApi: MXDataApiService,
+        private readonly stateTasks: StateTasksService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     async handleCreatePairEvent(event: CreatePairEvent): Promise<void> {
-        const [firstTokenID, secondTokenID] = [
-            event.toJSON().firstTokenID,
-            event.toJSON().secondTokenID,
-        ];
-        const [
-            pairsMetadata,
-            pairsAddresses,
-            firstTokenType,
-            secondTokenType,
-            uniqueTokens,
-            commonTokens,
-        ] = await Promise.all([
-            this.routerAbiService.getPairsMetadataRaw(),
-            this.routerAbiService.getAllPairsAddressRaw(),
-            this.tokenService.getEsdtTokenType(firstTokenID),
-            this.tokenService.getEsdtTokenType(secondTokenID),
-            this.tokenService.getUniqueTokenIDs(true),
-            this.routerAbiService.commonTokensForUserPairs(),
-        ]);
+        const { pairAddress, firstTokenID, secondTokenID } = event.toJSON();
 
-        if (
-            commonTokens.includes(firstTokenID) ||
-            commonTokens.includes(secondTokenID)
-        ) {
-            if (firstTokenType === 'Unlisted') {
-                const createTokenDto: CreateTokenDto = {
-                    tokenID: firstTokenID,
-                    type: 'Experimental',
-                };
-                await this.tokenRepository.create(createTokenDto);
-                await this.tokenSetter.setEsdtTokenType(
-                    createTokenDto.tokenID,
-                    createTokenDto.type,
-                );
-            }
-
-            if (secondTokenType === 'Unlisted') {
-                const createTokenDto: CreateTokenDto = {
-                    tokenID: secondTokenID,
-                    type: 'Experimental',
-                };
-                await this.tokenRepository.create(createTokenDto);
-                await this.tokenSetter.setEsdtTokenType(
-                    createTokenDto.tokenID,
-                    createTokenDto.type,
-                );
-            }
-        }
+        const [pairsMetadata, pairsAddresses, uniqueTokens] = await Promise.all(
+            [
+                this.routerAbiService.getPairsMetadataRaw(),
+                this.routerAbiService.getAllPairsAddressRaw(),
+                this.tokenService.getUniqueTokenIDs(true),
+            ],
+        );
 
         const keys = await Promise.all([
             this.routerSetterService.setPairsMetadata(pairsMetadata),
@@ -123,6 +86,24 @@ export class RouterHandlerService {
 
         await this.deleteCacheKeys(keys);
 
+        const taskArgs = [
+            JSON.stringify(
+                new PairMetadata({
+                    address: pairAddress,
+                    firstTokenID,
+                    secondTokenID,
+                }),
+            ),
+            event.getTimestamp().toFixed(),
+        ];
+
+        await this.stateTasks.queueTasks([
+            new TaskDto({
+                name: StateTasks.INDEX_PAIR,
+                args: taskArgs,
+            }),
+        ]);
+
         await this.pubSub.publish(ROUTER_EVENTS.CREATE_PAIR, {
             createPairEvent: event,
         });
@@ -131,7 +112,7 @@ export class RouterHandlerService {
     async handlePairSwapEnabledEvent(
         event: PairSwapEnabledEvent,
     ): Promise<void> {
-        const pairAddress = event.getPairAddress().bech32();
+        const pairAddress = event.getPairAddress().toBech32();
         const state = await this.pairAbi.getStateRaw(pairAddress);
         const cacheKey = await this.pairSetter.setState(pairAddress, state);
 

@@ -2,7 +2,7 @@ import MerkleTree from 'merkletreejs';
 import CryptoJS from 'crypto-js';
 import BigNumber from 'bignumber.js';
 import { Address, ArgSerializer } from '@multiversx/sdk-core';
-import { BigUIntValue } from '@multiversx/sdk-core/out/smartcontracts/typesystem';
+import { BigUIntValue } from '@multiversx/sdk-core';
 
 export class AddressVotingPower {
     address: string;
@@ -85,7 +85,7 @@ export class MerkleTreeUtils {
         const votingPower: BigUIntValue = new BigUIntValue(new BigNumber(x.balance));
         const serializedPower = argSerializer.valuesToStrings([votingPower]);
 
-        const leaf = Buffer.concat([Buffer.from(address.hex(), 'hex'), Buffer.from(serializedPower[0], 'hex')]);
+        const leaf = Buffer.concat([Buffer.from(address.toHex(), 'hex'), Buffer.from(serializedPower[0], 'hex')]);
 
         return CryptoJS.SHA256(CryptoJS.enc.Hex.parse(leaf.toString('hex')));
     }

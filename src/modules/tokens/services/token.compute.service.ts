@@ -25,7 +25,6 @@ import {
 import moment from 'moment';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { CacheService } from 'src/services/caching/cache.service';
-import { TokenService } from './token.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 
@@ -41,8 +40,6 @@ export class TokenComputeService implements ITokenComputeService {
     >;
 
     constructor(
-        @Inject(forwardRef(() => TokenService))
-        private readonly tokenService: TokenService,
         private readonly pairAbi: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,

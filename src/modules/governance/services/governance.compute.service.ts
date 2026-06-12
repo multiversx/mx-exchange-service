@@ -4,7 +4,7 @@ import { VoteType } from '../models/governance.proposal.model';
 import { GetOrSetCache } from '../../../helpers/decorators/caching.decorator';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { GovernanceSetterService } from './governance.setter.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { decimalToHex } from '../../../utils/token.converters';
 import { toVoteType } from '../../../utils/governance';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
@@ -32,7 +32,7 @@ export class GovernanceComputeService {
 
         const voteEvents = await this.elasticEventsService.getGovernanceVotes(
             scAddress,
-            Address.fromString(userAddress).hex(),
+            Address.newFromBech32(userAddress).toHex(),
             decimalToHex(proposalId),
         );
 

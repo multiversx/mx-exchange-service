@@ -10,7 +10,7 @@ import {
 export class IsValidSeriesConstraint implements ValidatorConstraintInterface {
     validate(series: any): boolean {
         try {
-            return !Address.fromBech32(series).isEmpty();
+            return !Address.newFromBech32(series).isEmpty();
         } catch (error) {
             if (this.isValidTokenIdentifier(series)) {
                 return true;
@@ -31,7 +31,7 @@ export class IsValidSeriesConstraint implements ValidatorConstraintInterface {
 }
 
 export function IsValidSeries(validationOptions?: ValidationOptions) {
-    return (object: Object, propertyName: string) => {
+    return (object: object, propertyName: string) => {
         registerDecorator({
             target: object.constructor,
             propertyName: propertyName,

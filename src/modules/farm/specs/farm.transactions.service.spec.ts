@@ -22,6 +22,7 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -44,6 +45,7 @@ describe('FarmService', () => {
                 MXApiService,
                 ContextGetterServiceProvider,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 TokenComputeService,
@@ -74,7 +76,7 @@ describe('FarmService', () => {
         );
 
         const transaction = await transactionV1_2.enterFarm(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             {
                 farmAddress:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
@@ -112,7 +114,7 @@ describe('FarmService', () => {
         );
 
         const transaction = await transactionV1_2.exitFarm(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             {
                 farmAddress:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
@@ -149,7 +151,7 @@ describe('FarmService', () => {
         );
 
         const transaction = await transactionV1_2.claimRewards(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             {
                 farmAddress:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqes9lzxht',
@@ -186,7 +188,7 @@ describe('FarmService', () => {
 
         let error: any;
         try {
-            await transactionV1_2.compoundRewards(Address.Zero().bech32(), {
+            await transactionV1_2.compoundRewards(Address.Zero().toBech32(), {
                 farmAddress:
                     'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
                 farmTokenID: 'farmTokenID',
@@ -206,7 +208,7 @@ describe('FarmService', () => {
         );
 
         const transaction = await transactionV1_2.migrateToNewFarm(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             {
                 farmAddress:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
@@ -246,8 +248,8 @@ describe('FarmService', () => {
                 oldFarmAddress:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 oldFarmTokenID: 'EGLDMEXFL-abcdef',
-                newFarmAddress: Address.Zero().bech32(),
-                newLockedFarmAddress: Address.Zero().bech32(),
+                newFarmAddress: Address.Zero().toBech32(),
+                newLockedFarmAddress: Address.Zero().toBech32(),
             },
         );
         expect(transaction).toEqual({
@@ -771,7 +773,7 @@ describe('FarmService', () => {
         let error = null;
         try {
             await transactionV1_2.mergeFarmTokens(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
                 [
                     {
@@ -792,7 +794,7 @@ describe('FarmService', () => {
         expect(error).toBeDefined();
 
         const transaction = await transactionV1_2.mergeFarmTokens(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqssfuwnk5',
             [
                 {

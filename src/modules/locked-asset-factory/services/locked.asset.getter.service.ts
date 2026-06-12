@@ -43,7 +43,7 @@ export class LockedAssetGetterService extends GenericGetterService {
 
     async getAssetToken(): Promise<EsdtToken> {
         const assetTokenID = await this.getAssetTokenID();
-        return this.tokenService.tokenMetadata(assetTokenID);
+        return this.tokenService.tokenMetadataFromState(assetTokenID);
     }
 
     async getLockedToken(): Promise<NftCollection> {

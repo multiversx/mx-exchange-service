@@ -144,6 +144,19 @@ export class CacheService {
         return this.redisCacheService.zincrby(key, member, increment);
     }
 
+    zAdd(
+        key: string,
+        member: string,
+        value: number,
+        options?: string[],
+    ): Promise<string | number> {
+        return this.redisCacheService.zadd(key, member, value, options);
+    }
+
+    zPopMin(key: string): Promise<string[]> {
+        return this.redisCacheService['redis'].zpopmin(key);
+    }
+
     zRangeByScoreRemote(
         key: string,
         from: number,

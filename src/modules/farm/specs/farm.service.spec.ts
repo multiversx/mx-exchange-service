@@ -41,6 +41,8 @@ import winston from 'winston';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('FarmService', () => {
     let module: TestingModule;
@@ -86,6 +88,7 @@ describe('FarmService', () => {
                 TokenComputeService,
                 TokenServiceProvider,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 WrapAbiServiceProvider,
@@ -99,6 +102,7 @@ describe('FarmService', () => {
                 MXDataApiServiceProvider,
                 AnalyticsQueryServiceProvider,
                 ApiConfigService,
+                FarmsStateServiceProvider,
             ],
         }).compile();
     });
@@ -123,7 +127,7 @@ describe('FarmService', () => {
             attributes: attributes,
             liquidity: liquidity,
             vmQuery: true,
-            user: Address.Zero().bech32(),
+            user: Address.Zero().toBech32(),
         });
 
         expect(rewards).toEqual(
@@ -137,7 +141,7 @@ describe('FarmService', () => {
 
     it('should get farms', async () => {
         const factory = module.get<FarmFactoryService>(FarmFactoryService);
-        const farms = factory.getFarms();
+        const farms = await factory.getFarms();
         expect(farms).toEqual([
             {
                 address:
@@ -168,6 +172,12 @@ describe('FarmService', () => {
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqsdtp6mh',
                 rewardType: 'lockedRewards',
                 version: 'v2',
+                farmedTokenId: 'MEX-123456',
+                farmTokenCollection: 'EGLDMEXFL-ghijkl',
+                farmingTokenId: 'EGLDMEXLP-abcdef',
+                farmTokenSupply: '1000000000000000000',
+                perBlockRewards: '2000000000000000000',
+                rewardPerShare: '0',
             },
         ]);
     });
@@ -214,7 +224,7 @@ describe('FarmService', () => {
                     attributes:
                         'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
                     vmQuery: false,
-                    user: Address.Zero().bech32(),
+                    user: Address.Zero().toBech32(),
                 },
             ]);
 
@@ -244,7 +254,7 @@ describe('FarmService', () => {
             attributes:
                 'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
             vmQuery: false,
-            user: Address.Zero().bech32(),
+            user: Address.Zero().toBech32(),
         });
         expect(tokensForExitFarm).toEqual({
             farmingTokens: '999000000000000000',

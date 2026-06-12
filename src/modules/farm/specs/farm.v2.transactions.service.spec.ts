@@ -16,8 +16,9 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { TokenServiceProvider } from 'src/modules/tokens/mocks/token.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('FarmTransactionsServiceV2', () => {
     let module: TestingModule;
@@ -37,6 +38,7 @@ describe('FarmTransactionsServiceV2', () => {
                 MXApiServiceProvider,
                 FarmAbiServiceProviderV2,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 RouterAbiServiceProvider,
@@ -78,10 +80,10 @@ describe('FarmTransactionsServiceV2', () => {
         ]);
 
         const transactions = await service.migrateTotalFarmPosition(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000041',
-            ).bech32(),
-            Address.Zero().bech32(),
+            ).toBech32(),
+            Address.Zero().toBech32(),
         );
 
         expect(transactions.length).toEqual(0);
@@ -110,17 +112,17 @@ describe('FarmTransactionsServiceV2', () => {
         ]);
 
         const transactions = await service.migrateTotalFarmPosition(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000041',
-            ).bech32(),
-            Address.Zero().bech32(),
+            ).toBech32(),
+            Address.Zero().toBech32(),
         );
 
         expect(transactions[0].data).toEqual(
             encodeTransactionData(
-                `ESDTNFTTransfer@EGLDMEXFL-ghijkl@01@12120193336145595@${Address.fromHex(
+                `ESDTNFTTransfer@EGLDMEXFL-ghijkl@01@12120193336145595@${Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000041',
-                ).bech32()}@claimRewards`,
+                ).toBech32()}@claimRewards`,
             ),
         );
     });

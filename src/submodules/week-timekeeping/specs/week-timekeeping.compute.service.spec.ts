@@ -6,7 +6,7 @@ import {
 } from '../errors';
 import { WeekTimekeepingAbiServiceProvider } from '../mocks/week.timekeeping.abi.service.mock';
 import { WeekTimekeepingAbiService } from '../services/week-timekeeping.abi.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -47,13 +47,13 @@ describe('WeekTimekeepingComputeService', () => {
         const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
             WeekTimekeepingAbiService,
         );
-        const scAddress = Address.Zero().bech32();
+        const scAddress = Address.Zero().toBech32();
         const firstWeekStartEpoch =
             await weekTimekeepingAbi.firstWeekStartEpoch(scAddress);
         // epoch < firstWeekStartEpoch should error
         await expect(
             service.computeWeekForEpoch(scAddress, firstWeekStartEpoch - 1),
-        ).rejects.toThrowError(ErrInvalidEpochLowerThanFirstWeekStartEpoch);
+        ).rejects.toThrow(ErrInvalidEpochLowerThanFirstWeekStartEpoch);
         // epoch == firstWeekStartEpoch
         expect(
             await service.computeWeekForEpoch(scAddress, firstWeekStartEpoch),
@@ -81,17 +81,17 @@ describe('WeekTimekeepingComputeService', () => {
         const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
             WeekTimekeepingAbiService,
         );
-        const scAddress = Address.Zero().bech32();
+        const scAddress = Address.Zero().toBech32();
         const firstWeekStartEpoch =
             await weekTimekeepingAbi.firstWeekStartEpoch(scAddress);
         // week < 0 should error
         await expect(
             service.computeStartEpochForWeek(scAddress, -1),
-        ).rejects.toThrowError(ErrInvalidWeek);
+        ).rejects.toThrow(ErrInvalidWeek);
         //week = 0 should error
         await expect(
             service.computeStartEpochForWeek(scAddress, 0),
-        ).rejects.toThrowError(ErrInvalidWeek);
+        ).rejects.toThrow(ErrInvalidWeek);
         //week == 1 should return firstWeekStartEpoch
         expect(await service.computeStartEpochForWeek(scAddress, 1)).toEqual(
             firstWeekStartEpoch,
@@ -109,18 +109,18 @@ describe('WeekTimekeepingComputeService', () => {
         const weekTimekeepingAbi = module.get<WeekTimekeepingAbiService>(
             WeekTimekeepingAbiService,
         );
-        const scAddress = Address.Zero().bech32();
+        const scAddress = Address.Zero().toBech32();
         const firstWeekStartEpoch =
             await weekTimekeepingAbi.firstWeekStartEpoch(scAddress);
 
         // week < 0 should error
         await expect(
             service.computeEndEpochForWeek(scAddress, -1),
-        ).rejects.toThrowError(ErrInvalidWeek);
+        ).rejects.toThrow(ErrInvalidWeek);
         // week = 0 should error
         await expect(
             service.computeEndEpochForWeek(scAddress, 0),
-        ).rejects.toThrowError(ErrInvalidWeek);
+        ).rejects.toThrow(ErrInvalidWeek);
         // week == 1 should return firstWeekStartEpoch
         expect(await service.computeEndEpochForWeek(scAddress, 1)).toEqual(
             firstWeekStartEpoch + service.epochsInWeek - 1,

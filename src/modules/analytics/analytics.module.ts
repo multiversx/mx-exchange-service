@@ -26,6 +26,8 @@ import { GlobalRewardsService } from './services/global.rewards.service';
 import { GlobalRewardsResolver } from './global.rewards.resolver';
 import { FarmModuleV2 } from '../farm/v2/farm.v2.module';
 import { AnalyticsPairSetterService } from './services/analytics.pair.setter.service';
+import { StateModule } from '../state/state.module';
+import { StateDataLoaderModule } from '../state/state.dataloader.module';
 
 @Module({
     imports: [
@@ -46,6 +48,8 @@ import { AnalyticsPairSetterService } from './services/analytics.pair.setter.ser
         WeekTimekeepingModule,
         WeeklyRewardsSplittingModule,
         ElasticSearchModule,
+        StateModule,
+        StateDataLoaderModule,
     ],
     providers: [
         AnalyticsResolver,

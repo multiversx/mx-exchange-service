@@ -9,7 +9,7 @@ import { PairAbiServiceProvider } from '../mocks/pair.abi.service.mock';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { ContextGetterServiceProvider } from 'src/services/context/mocks/context.getter.service.mock';
 import { RouterAbiServiceProvider } from 'src/modules/router/mocks/router.abi.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { PairsData, Tokens } from '../mocks/pair.constants';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { ConfigModule } from '@nestjs/config';
@@ -20,8 +20,6 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import BigNumber from 'bignumber.js';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { AssetsModel } from 'src/modules/tokens/models/assets.model';
-import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { PairAbiService } from '../services/pair.abi.service';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { StakingProxyAbiServiceProvider } from 'src/modules/staking-proxy/mocks/staking.proxy.abi.service.mock';
@@ -36,8 +34,10 @@ import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewa
 import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
 import { StakingAbiServiceProvider } from 'src/modules/staking/mocks/staking.abi.service.mock';
 import { StakingService } from 'src/modules/staking/services/staking.service';
-import { StakingFilteringService } from 'src/modules/staking/services/staking.filtering.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
+import { StakingStateServiceProvider } from 'src/modules/state/mocks/staking.state.service.mock';
 
 describe('PairService', () => {
     let module: TestingModule;
@@ -55,6 +55,7 @@ describe('PairService', () => {
             providers: [
                 PairComputeService,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 WrapAbiServiceProvider,
                 TokenServiceProvider,
@@ -70,14 +71,15 @@ describe('PairService', () => {
                 StakingProxyAbiServiceProvider,
                 FarmComputeServiceV2,
                 FarmServiceV2,
+                FarmsStateServiceProvider,
                 WeekTimekeepingComputeService,
                 WeekTimekeepingAbiServiceProvider,
                 WeeklyRewardsSplittingAbiServiceProvider,
                 WeeklyRewardsSplittingComputeService,
                 StakingComputeService,
                 StakingService,
+                StakingStateServiceProvider,
                 StakingAbiServiceProvider,
-                StakingFilteringService,
                 EnergyAbiServiceProvider,
             ],
         }).compile();
@@ -104,18 +106,18 @@ describe('PairService', () => {
 
     it('compute second token price', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
-        const pairAddress = Address.fromHex(
+        const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenPrice = await service.computeSecondTokenPrice(pairAddress);
         expect(tokenPrice).toEqual(PairsData(pairAddress).secondTokenPrice);
     });
 
     it('compute first token price USD', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
-        const pairAddress = Address.fromHex(
+        const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenPriceUSD = await service.computeFirstTokenPriceUSD(
             pairAddress,
         );
@@ -126,9 +128,9 @@ describe('PairService', () => {
 
     it('compute second token price USD', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
-        const pairAddress = Address.fromHex(
+        const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenPriceUSD = await service.computeSecondTokenPriceUSD(
             pairAddress,
         );
@@ -139,9 +141,9 @@ describe('PairService', () => {
 
     it('compute first token locked value USD', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
-        const pairAddress = Address.fromHex(
+        const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenLockedValueUSD =
             await service.computeFirstTokenLockedValueUSD(pairAddress);
         expect(tokenLockedValueUSD.toFixed()).toEqual(
@@ -151,9 +153,9 @@ describe('PairService', () => {
 
     it('compute second token locked value USD', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
-        const pairAddress = Address.fromHex(
+        const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenLockedValueUSD =
             await service.computeSecondTokenLockedValueUSD(pairAddress);
         expect(tokenLockedValueUSD.toFixed()).toEqual(
@@ -163,9 +165,9 @@ describe('PairService', () => {
 
     it('compute locked value USD', async () => {
         const service = module.get<PairComputeService>(PairComputeService);
-        const pairAddress = Address.fromHex(
+        const pairAddress = Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000013',
-        ).bech32();
+        ).toBech32();
         const tokenLockedValueUSD = await service.computeLockedValueUSD(
             pairAddress,
         );
@@ -178,39 +180,19 @@ describe('PairService', () => {
         const service = module.get<PairComputeService>(PairComputeService);
 
         let lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
+            ).toBech32(),
         );
         expect(lpTokenPriceUSD).toEqual('20');
 
         lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
-            Address.fromHex(
+            Address.newFromHex(
                 '0000000000000000000000000000000000000000000000000000000000000013',
-            ).bech32(),
+            ).toBech32(),
         );
 
         expect(lpTokenPriceUSD).toEqual('2000000000000');
-    });
-
-    it('should get pair type: Core', async () => {
-        const service = module.get<PairComputeService>(PairComputeService);
-        const type = await service.computeTypeFromTokens(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000013',
-            ).bech32(),
-        );
-        expect(type).toEqual('Core');
-    });
-
-    it('should get pair type: Ecosystem', async () => {
-        const service = module.get<PairComputeService>(PairComputeService);
-        const type = await service.computeTypeFromTokens(
-            Address.fromHex(
-                '0000000000000000000000000000000000000000000000000000000000000012',
-            ).bech32(),
-        );
-        expect(type).toEqual('Ecosystem');
     });
 
     it('should compute permanent locked value USD with 0 decimals', async () => {
@@ -236,7 +218,7 @@ describe('PairService', () => {
         );
 
         const lockedValueUSD = await service.computePermanentLockedValueUSD(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             new BigNumber('1000'),
             new BigNumber('500000000'),
         );
@@ -264,7 +246,7 @@ describe('PairService', () => {
         );
 
         const lockedValueUSD = await service.computePermanentLockedValueUSD(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             new BigNumber('50000000000000000000000'),
             new BigNumber('500000000'),
         );

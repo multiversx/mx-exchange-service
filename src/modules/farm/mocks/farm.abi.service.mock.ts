@@ -4,7 +4,7 @@ import { CalculateRewardsArgs } from '../models/farm.args';
 import { FarmAbiService } from '../base-module/services/farm.abi.service';
 import { IFarmAbiService } from '../base-module/services/interfaces';
 import { farms } from './farm.constants';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 
 export class FarmAbiServiceMock implements IFarmAbiService {
     async farmedTokenID(farmAddress: string): Promise<string> {
@@ -58,9 +58,9 @@ export class FarmAbiServiceMock implements IFarmAbiService {
         throw new Error('Method not implemented.');
     }
     async pairContractAddress(farmAddress: string): Promise<string> {
-        return Address.fromHex(
+        return Address.newFromHex(
             '0000000000000000000000000000000000000000000000000000000000000012',
-        ).bech32();
+        ).toBech32();
     }
     lastErrorMessage(farmAddress: string): Promise<string> {
         throw new Error('Method not implemented.');

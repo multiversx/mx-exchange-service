@@ -25,7 +25,7 @@ import { PairTransactionService } from 'src/modules/pair/services/pair.transacti
 import { WrapTransactionsService } from 'src/modules/wrapping/services/wrap.transactions.service';
 import { WrapService } from 'src/modules/wrapping/services/wrap.service';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
@@ -36,12 +36,12 @@ import { constantsConfig, gasConfig, scAddress } from 'src/config';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { SwapRouteModel } from 'src/modules/auto-router/models/auto-route.model';
-import { PairFilteringService } from 'src/modules/pair/services/pair.filtering.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { SmartRouterServiceProvider } from 'src/modules/auto-router/mocks/smart.router.service.mock';
 import { SmartRouterEvaluationServiceProvider } from 'src/modules/smart-router-evaluation/mocks/smart.router.evaluation.service.mock';
 import { ComposableTasksAbiServiceProvider } from 'src/modules/composable-tasks/mocks/composable.tasks.abi.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
 import { XoxnoAggregatorServiceProvider } from 'src/modules/auto-router/mocks/xoxno-aggregator.service.mock';
 
 describe('PositionCreatorTransaction', () => {
@@ -66,7 +66,8 @@ describe('PositionCreatorTransaction', () => {
                 PairService,
                 PairComputeServiceProvider,
                 PairTransactionService,
-                PairFilteringService,
+                PairsStateServiceProvider,
+                TokensStateServiceProvider,
                 WrapService,
                 WrapAbiServiceProvider,
                 WrapTransactionsService,
@@ -79,7 +80,6 @@ describe('PositionCreatorTransaction', () => {
                 StakingAbiServiceProvider,
                 StakingProxyAbiServiceProvider,
                 TokenServiceProvider,
-                TokenComputeServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 ComposableTasksTransactionService,
                 ProxyFarmAbiServiceProvider,
@@ -108,10 +108,10 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createLiquidityPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'MEX-abcdef',
                         tokenNonce: 0,
@@ -119,7 +119,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                     [],
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return transaction with single token', async () => {
@@ -132,9 +132,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -145,10 +145,10 @@ describe('PositionCreatorTransaction', () => {
 
             const transactions =
                 await service.createLiquidityPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -169,7 +169,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '0',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -199,9 +199,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -212,10 +212,10 @@ describe('PositionCreatorTransaction', () => {
 
             const transactions =
                 await service.createLiquidityPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -237,7 +237,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '0',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -265,9 +265,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
                         tokenNonce: 0,
@@ -278,10 +278,10 @@ describe('PositionCreatorTransaction', () => {
 
             const transactions =
                 await service.createLiquidityPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
                         tokenNonce: 0,
@@ -303,7 +303,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '100000000000000000000',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -330,10 +330,10 @@ describe('PositionCreatorTransaction', () => {
 
             expect(
                 service.createFarmPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
-                    ).bech32(),
+                    ).toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'MEX-abcdef',
@@ -343,7 +343,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return error on farm token', async () => {
@@ -353,10 +353,10 @@ describe('PositionCreatorTransaction', () => {
 
             expect(
                 service.createFarmPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
-                    ).bech32(),
+                    ).toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'USDC-123456',
@@ -371,7 +371,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrowError('Invalid farm token payment');
+            ).rejects.toThrow('Invalid farm token payment');
         });
 
         it('should return transaction with EGLD and no merge farm tokens', async () => {
@@ -384,9 +384,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
                         tokenNonce: 0,
@@ -396,10 +396,10 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transactions = await service.createFarmPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
@@ -423,7 +423,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '100000000000000000000',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -451,9 +451,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -463,10 +463,10 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transactions = await service.createFarmPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -490,7 +490,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '0',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -518,9 +518,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
                         tokenNonce: 0,
@@ -531,9 +531,9 @@ describe('PositionCreatorTransaction', () => {
 
             const transactions = await service.createFarmPositionSingleToken(
                 senderAddress,
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
@@ -607,9 +607,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -619,10 +619,10 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transactions = await service.createFarmPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -649,8 +649,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -680,9 +680,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -692,10 +692,10 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transactions = await service.createFarmPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -720,7 +720,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '0',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -748,9 +748,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
                         tokenNonce: 0,
@@ -760,10 +760,10 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transaction = await service.createFarmPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
@@ -788,7 +788,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '100000000000000000000',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -815,8 +815,8 @@ describe('PositionCreatorTransaction', () => {
 
             expect(
                 service.createDualFarmPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
+                    Address.Zero().toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'USDC-abcdef',
@@ -826,7 +826,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return error on dual farm token', async () => {
@@ -835,8 +835,8 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createDualFarmPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
+                    Address.Zero().toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'USDC-123456',
@@ -851,7 +851,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrowError('Invalid dual yield token payment');
+            ).rejects.toThrow('Invalid dual yield token payment');
         });
 
         it('should return transaction with EGLD no merge dual farm tokens', async () => {
@@ -866,16 +866,16 @@ describe('PositionCreatorTransaction', () => {
             );
 
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
                         tokenNonce: 0,
@@ -885,8 +885,8 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transaction = await service.createDualFarmPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
@@ -910,7 +910,7 @@ describe('PositionCreatorTransaction', () => {
                     nonce: 0,
                     value: '100000000000000000000',
                     receiver: scAddress.positionCreator,
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -941,9 +941,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -953,14 +953,14 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             const transaction = await service.createDualFarmPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -985,7 +985,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '0',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1016,9 +1016,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
                         tokenNonce: 0,
@@ -1028,14 +1028,14 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             const transaction = await service.createDualFarmPositionSingleToken(
                 senderAddress,
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
@@ -1113,9 +1113,9 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeSingleTokenPairInput(
-                    Address.fromHex(
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000012',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -1125,14 +1125,14 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             const transaction = await service.createDualFarmPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
@@ -1160,8 +1160,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1187,14 +1187,14 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             const transaction = await service.createDualFarmPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLDMEXLP-abcdef',
@@ -1220,8 +1220,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1247,8 +1247,8 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createStakingPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
+                    Address.Zero().toBech32(),
                     new SwapRouteModel(),
                     [
                         new EsdtTokenPayment({
@@ -1258,7 +1258,7 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return error on staking token', async () => {
@@ -1267,8 +1267,8 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createStakingPositionSingleToken(
-                    Address.Zero().bech32(),
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
+                    Address.Zero().toBech32(),
                     new SwapRouteModel(),
                     [
                         new EsdtTokenPayment({
@@ -1283,7 +1283,7 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                 ),
-            ).rejects.toThrowError('Invalid staking token payment');
+            ).rejects.toThrow('Invalid staking token payment');
         });
 
         it('should return transaction with EGLD no merge staking tokens', async () => {
@@ -1301,7 +1301,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeStakingPositionSingleToken(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
                         tokenNonce: 0,
@@ -1311,8 +1311,8 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transaction = await service.createStakingPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 swapRoutes.swaps[0],
                 [
                     new EsdtTokenPayment({
@@ -1334,7 +1334,7 @@ describe('PositionCreatorTransaction', () => {
                     nonce: 0,
                     value: '100000000000000000000',
                     receiver: scAddress.positionCreator,
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1361,7 +1361,7 @@ describe('PositionCreatorTransaction', () => {
             );
             const swapRoutes =
                 await posCreatorCompute.computeStakingPositionSingleToken(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -1371,8 +1371,8 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transaction = await service.createStakingPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 swapRoutes.swaps[0],
                 [
                     new EsdtTokenPayment({
@@ -1395,7 +1395,7 @@ describe('PositionCreatorTransaction', () => {
                     value: '0',
                     receiver:
                         'erd1qqqqqqqqqqqqqpgqh3zcutxk3wmfvevpyymaehvc3k0knyq70n4sg6qcj6',
-                    sender: Address.Zero().bech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1428,7 +1428,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeStakingPositionSingleToken(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
                         tokenNonce: 0,
@@ -1439,7 +1439,7 @@ describe('PositionCreatorTransaction', () => {
 
             const transaction = await service.createStakingPositionSingleToken(
                 senderAddress,
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 swapRoutes.swaps[0],
                 [
                     new EsdtTokenPayment({
@@ -1512,7 +1512,7 @@ describe('PositionCreatorTransaction', () => {
 
             const swapRoutes =
                 await posCreatorCompute.computeStakingPositionSingleToken(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'USDC-123456',
                         tokenNonce: 0,
@@ -1522,8 +1522,8 @@ describe('PositionCreatorTransaction', () => {
                 );
 
             const transaction = await service.createStakingPositionSingleToken(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 swapRoutes.swaps[0],
                 [
                     new EsdtTokenPayment({
@@ -1549,8 +1549,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1576,10 +1576,10 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createFarmPositionDualTokens(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
-                    ).bech32(),
+                    ).toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'WEGLD-123456',
@@ -1594,7 +1594,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid ESDT tokens payments');
+            ).rejects.toThrow('Invalid ESDT tokens payments');
         });
 
         it('should return error on invalid farm token merge', async () => {
@@ -1603,10 +1603,10 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.createFarmPositionDualTokens(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
-                    ).bech32(),
+                    ).toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'WEGLD-123456',
@@ -1626,7 +1626,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid farm token payment');
+            ).rejects.toThrow('Invalid farm token payment');
         });
 
         it('should return transaction no merge farm tokens', async () => {
@@ -1634,10 +1634,10 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transactions = await service.createFarmPositionDualTokens(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'WEGLD-123456',
@@ -1657,8 +1657,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1681,10 +1681,10 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transactions = await service.createFarmPositionDualTokens(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'WEGLD-123456',
@@ -1709,8 +1709,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1734,9 +1734,9 @@ describe('PositionCreatorTransaction', () => {
             );
             const transactions = await service.createFarmPositionDualTokens(
                 senderAddress,
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
@@ -1807,10 +1807,10 @@ describe('PositionCreatorTransaction', () => {
 
             expect(
                 service.createFarmPositionDualTokens(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
-                    ).bech32(),
+                    ).toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'WEGLD-123456',
@@ -1825,14 +1825,14 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid locked tokens payments');
+            ).rejects.toThrow('Invalid locked tokens payments');
 
             expect(
                 service.createFarmPositionDualTokens(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
-                    ).bech32(),
+                    ).toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'ELKMEX-123456',
@@ -1847,14 +1847,14 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid locked tokens payments');
+            ).rejects.toThrow('Invalid locked tokens payments');
 
             expect(
                 service.createFarmPositionDualTokens(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
-                    ).bech32(),
+                    ).toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'ELKMEX-123456',
@@ -1869,7 +1869,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid locked tokens payments');
+            ).rejects.toThrow('Invalid locked tokens payments');
         });
 
         it('should return error on wrapped farm token', async () => {
@@ -1879,10 +1879,10 @@ describe('PositionCreatorTransaction', () => {
 
             expect(
                 service.createFarmPositionDualTokens(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
-                    ).bech32(),
+                    ).toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'ELKMEX-123456',
@@ -1902,7 +1902,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid wrapped farm token payment');
+            ).rejects.toThrow('Invalid wrapped farm token payment');
         });
 
         it('should return transaction without consolidate', async () => {
@@ -1910,10 +1910,10 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transactions = await service.createFarmPositionDualTokens(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'ELKMEX-123456',
@@ -1933,8 +1933,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -1958,10 +1958,10 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transactions = await service.createFarmPositionDualTokens(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'ELKMEX-123456',
@@ -1986,8 +1986,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -2016,15 +2016,15 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             expect(
                 service.createDualFarmPositionDualTokens(
-                    Address.Zero().bech32(),
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
+                    Address.Zero().toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'WEGLD-123456',
@@ -2039,7 +2039,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid ESDT tokens payments');
+            ).rejects.toThrow('Invalid ESDT tokens payments');
         });
 
         it('should return error on invalid farm token merge', async () => {
@@ -2050,15 +2050,15 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             expect(
                 service.createDualFarmPositionDualTokens(
-                    Address.Zero().bech32(),
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
+                    Address.Zero().toBech32(),
                     [
                         new EsdtTokenPayment({
                             tokenIdentifier: 'WEGLD-123456',
@@ -2078,7 +2078,7 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid dual farm token payment');
+            ).rejects.toThrow('Invalid dual farm token payment');
         });
 
         it('should return transaction no merge farm tokens', async () => {
@@ -2089,14 +2089,14 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             const transactions = await service.createDualFarmPositionDualTokens(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'WEGLD-123456',
@@ -2116,8 +2116,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -2144,14 +2144,14 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             const transactions = await service.createDualFarmPositionDualTokens(
                 senderAddress,
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'EGLD',
@@ -2222,14 +2222,14 @@ describe('PositionCreatorTransaction', () => {
                 StakingProxyAbiService,
             );
             jest.spyOn(stakingProxyAbi, 'pairAddress').mockResolvedValue(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
             );
 
             const transactions = await service.createDualFarmPositionDualTokens(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 [
                     new EsdtTokenPayment({
                         tokenIdentifier: 'WEGLD-123456',
@@ -2254,8 +2254,8 @@ describe('PositionCreatorTransaction', () => {
                 {
                     nonce: 0,
                     value: '0',
-                    receiver: Address.Zero().bech32(),
-                    sender: Address.Zero().bech32(),
+                    receiver: Address.Zero().toBech32(),
+                    sender: Address.Zero().toBech32(),
                     senderUsername: undefined,
                     receiverUsername: undefined,
                     gasPrice: 1000000000,
@@ -2282,10 +2282,10 @@ describe('PositionCreatorTransaction', () => {
             );
             expect(
                 service.exitFarmPositionDualTokens(
-                    Address.Zero().bech32(),
-                    Address.fromHex(
+                    Address.Zero().toBech32(),
+                    Address.newFromHex(
                         '0000000000000000000000000000000000000000000000000000000000000021',
-                    ).bech32(),
+                    ).toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'MEX-abcdef',
                         tokenNonce: 0,
@@ -2293,7 +2293,7 @@ describe('PositionCreatorTransaction', () => {
                     }),
                     0.01,
                 ),
-            ).rejects.toThrowError('Invalid farm token payment');
+            ).rejects.toThrow('Invalid farm token payment');
         });
 
         it('should return transaction', async () => {
@@ -2301,10 +2301,10 @@ describe('PositionCreatorTransaction', () => {
                 PositionCreatorTransactionService,
             );
             const transaction = await service.exitFarmPositionDualTokens(
-                Address.Zero().bech32(),
-                Address.fromHex(
+                Address.Zero().toBech32(),
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 new EsdtTokenPayment({
                     tokenIdentifier: 'EGLDMEXFL-abcdef',
                     tokenNonce: 1,
@@ -2316,8 +2316,8 @@ describe('PositionCreatorTransaction', () => {
             expect(transaction).toEqual({
                 nonce: 0,
                 value: '0',
-                receiver: Address.Zero().bech32(),
-                sender: Address.Zero().bech32(),
+                receiver: Address.Zero().toBech32(),
+                sender: Address.Zero().toBech32(),
                 senderUsername: undefined,
                 receiverUsername: undefined,
                 gasPrice: 1000000000,
@@ -2343,7 +2343,7 @@ describe('PositionCreatorTransaction', () => {
 
             expect(
                 service.createEnergyPosition(
-                    Address.Zero().bech32(),
+                    Address.Zero().toBech32(),
                     new EsdtTokenPayment({
                         tokenIdentifier: 'WEGLD-abcdef',
                         tokenNonce: 0,
@@ -2352,7 +2352,7 @@ describe('PositionCreatorTransaction', () => {
                     new SwapRouteModel(),
                     1440,
                 ),
-            ).rejects.toThrowError('Invalid ESDT token payment');
+            ).rejects.toThrow('Invalid ESDT token payment');
         });
 
         it('should return transaction with ESDT payment', async () => {
@@ -2374,7 +2374,7 @@ describe('PositionCreatorTransaction', () => {
             );
 
             const transactions = await service.createEnergyPosition(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 new EsdtTokenPayment({
                     tokenIdentifier: 'WEGLD-123456',
                     tokenNonce: 0,
@@ -2426,7 +2426,7 @@ describe('PositionCreatorTransaction', () => {
             );
 
             const transactions = await service.createEnergyPosition(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 new EsdtTokenPayment({
                     tokenIdentifier: 'EGLD',
                     tokenNonce: 0,

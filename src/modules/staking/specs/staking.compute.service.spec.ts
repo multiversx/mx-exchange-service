@@ -23,7 +23,9 @@ import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-
 import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
-import { StakingFilteringService } from '../services/staking.filtering.service';
+import { StakingStateServiceProvider } from 'src/modules/state/mocks/staking.state.service.mock';
+import { StakingStateService } from 'src/modules/state/services/staking.state.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 describe('StakingComputeService', () => {
     let module: TestingModule;
@@ -41,6 +43,7 @@ describe('StakingComputeService', () => {
                 StakingComputeService,
                 StakingService,
                 StakingAbiServiceProvider,
+                StakingStateServiceProvider,
                 EnergyAbiServiceProvider,
                 TokenServiceProvider,
                 TokenComputeServiceProvider,
@@ -52,7 +55,6 @@ describe('StakingComputeService', () => {
                 MXApiServiceProvider,
                 RemoteConfigGetterServiceProvider,
                 ApiConfigService,
-                StakingFilteringService,
             ],
         }).compile();
     });
@@ -68,18 +70,27 @@ describe('StakingComputeService', () => {
         const service = module.get<StakingComputeService>(
             StakingComputeService,
         );
+        const stateService =
+            module.get<StakingStateService>(StakingStateService);
+        const contextGetter =
+            module.get<ContextGetterService>(ContextGetterService);
 
-        const stakeRewardsForPosition =
-            await service.computeStakeRewardsForPosition(
-                Address.Zero().bech32(),
-                '10000000000',
-                new StakingTokenAttributesModel({
-                    type: StakingFarmTokenType.STAKING_FARM_TOKEN,
-                    rewardPerShare: '1000',
-                    compoundedReward: '1000000',
-                    currentFarmAmount: '1000000000',
-                }),
-            );
+        const [currentNonce, [stakingFarm]] = await Promise.all([
+            contextGetter.getShardCurrentBlockNonce(1),
+            stateService.getAllStakingFarms(),
+        ]);
+
+        const stakeRewardsForPosition = service.computeStakeRewardsForPosition(
+            stakingFarm,
+            '10000000000',
+            new StakingTokenAttributesModel({
+                type: StakingFarmTokenType.STAKING_FARM_TOKEN,
+                rewardPerShare: '1000',
+                compoundedReward: '1000000',
+                currentFarmAmount: '1000000000',
+            }),
+            currentNonce,
+        );
         expect(stakeRewardsForPosition.toFixed()).toEqual(
             '1500000000000000000.46423135464231354642',
         );
@@ -89,9 +100,20 @@ describe('StakingComputeService', () => {
         const service = module.get<StakingComputeService>(
             StakingComputeService,
         );
+        const stateService =
+            module.get<StakingStateService>(StakingStateService);
+        const contextGetter =
+            module.get<ContextGetterService>(ContextGetterService);
 
-        const futureRewardsPerShare =
-            await service.computeFutureRewardsPerShare(Address.Zero().bech32());
+        const [currentNonce, [stakingFarm]] = await Promise.all([
+            contextGetter.getShardCurrentBlockNonce(1),
+            stateService.getAllStakingFarms(),
+        ]);
+
+        const futureRewardsPerShare = service.computeFutureRewardsPerShare(
+            stakingFarm,
+            currentNonce,
+        );
         expect(futureRewardsPerShare.toFixed()).toEqual(
             '150000000000000001046.42313546423135464231',
         );
@@ -101,10 +123,20 @@ describe('StakingComputeService', () => {
         const service = module.get<StakingComputeService>(
             StakingComputeService,
         );
+        const stateService =
+            module.get<StakingStateService>(StakingStateService);
+        const contextGetter =
+            module.get<ContextGetterService>(ContextGetterService);
+
+        const [currentNonce, [stakingFarm]] = await Promise.all([
+            contextGetter.getShardCurrentBlockNonce(1),
+            stateService.getAllStakingFarms(),
+        ]);
 
         const extraRewardsSinceLastAllocation =
-            await service.computeExtraRewardsSinceLastAllocation(
-                Address.Zero().bech32(),
+            service.computeExtraRewardsSinceLastAllocation(
+                stakingFarm,
+                currentNonce,
             );
         expect(extraRewardsSinceLastAllocation).toEqual(
             new BigNumber(5500000000),
@@ -117,7 +149,7 @@ describe('StakingComputeService', () => {
         );
 
         const extraRewardsBounded = await service.computeExtraRewardsBounded(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             new BigNumber(100000000),
         );
         expect(extraRewardsBounded).toEqual(
@@ -141,7 +173,7 @@ describe('StakingComputeService', () => {
             async () => '2500',
         );
 
-        const apr = await service.computeStakeFarmAPR(Address.Zero().bech32());
+        const apr = await service.computeStakeFarmAPR(Address.Zero().toBech32());
         expect(apr).toEqual('0.25');
     });
 
@@ -160,7 +192,7 @@ describe('StakingComputeService', () => {
             async () => '2500',
         );
 
-        const apr = await service.computeStakeFarmAPR(Address.Zero().bech32());
+        const apr = await service.computeStakeFarmAPR(Address.Zero().toBech32());
         expect(apr).toEqual('0.21749328');
     });
 
@@ -171,7 +203,7 @@ describe('StakingComputeService', () => {
         jest.spyOn(service, 'stakeFarmAPR').mockResolvedValue('0.10');
         const optimalCompoundFrequency =
             await service.computeOptimalCompoundFrequency(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 '1000000000000000000000',
                 365,
             );
@@ -194,7 +226,7 @@ describe('StakingComputeService', () => {
         jest.spyOn(service, 'stakeFarmAPR').mockResolvedValue('0.10');
         const optimalCompoundFrequency =
             await service.computeOptimalCompoundFrequency(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 '100000000000000000',
                 365,
             );
@@ -221,7 +253,7 @@ describe('StakingComputeService', () => {
         jest.spyOn(stakingAbi, 'perBlockRewardsAmount').mockResolvedValue('1');
 
         const rewardsRemainingDays = await service.computeRewardsRemainingDays(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
         );
         expect(rewardsRemainingDays).toEqual(1);
     });

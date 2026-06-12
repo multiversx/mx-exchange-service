@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package dex_state;
+
+message BoostedYieldsFactors {
+  string maxRewardsFactor = 1;
+  string userRewardsEnergy = 2;
+  string userRewardsFarm = 3;
+  string minEnergyAmount = 4;
+  string minFarmAmount = 5;
+}
+
+message WeekTimekeeping {
+  string scAddress = 1;
+  uint32 firstWeekStartEpoch = 2;
+  uint32 currentWeek = 3;
+  uint32 startEpochForWeek = 4;
+  uint32 endEpochForWeek = 5;
+}
+
+message EsdtTokenPayment {
+  uint32 tokenType = 1;
+  string tokenID = 2;
+  uint32 nonce = 3;
+  string amount = 4;
+}
+
+message TokenDistribution {
+  string tokenId = 1;
+  string percentage = 2;
+}
+
+message GlobalInfo {
+  string scAddress = 1;
+  uint32 week = 2;
+  string apr = 3;
+  repeated EsdtTokenPayment totalRewardsForWeek = 4;
+  repeated TokenDistribution rewardsDistributionForWeek = 5;
+  string totalEnergyForWeek = 6;
+  string totalLockedTokensForWeek = 7;
+}

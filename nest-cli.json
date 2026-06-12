@@ -2,5 +2,10 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": ".",
   "compilerOptions": {
+    "assets": [
+      {
+        "include": "proto/**/*.proto"
+      }
+    ]
   }
 }

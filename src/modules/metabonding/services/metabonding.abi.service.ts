@@ -1,5 +1,6 @@
-import { Address, AddressValue, Interaction } from '@multiversx/sdk-core';
+import { Address, AddressValue } from '@multiversx/sdk-core';
 import { Injectable } from '@nestjs/common';
+import { scAddress } from 'src/config';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { UserEntryModel } from '../models/metabonding.model';
@@ -28,12 +29,12 @@ export class MetabondingAbiService
     }
 
     async getLockedAssetTokenIDRaw(): Promise<string> {
-        const contract =
-            await this.mxProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedAssetTokenId();
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getMetabondingStakingAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.metabondingStakingAddress,
+            'getLockedAssetTokenId',
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -48,12 +49,12 @@ export class MetabondingAbiService
     }
 
     async getTotalLockedAssetSupplyRaw(): Promise<string> {
-        const contract =
-            await this.mxProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getTotalLockedAssetSupply();
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getMetabondingStakingAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.metabondingStakingAddress,
+            'getTotalLockedAssetSupply',
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -68,14 +69,13 @@ export class MetabondingAbiService
     }
 
     async getStakedAmountForUserRaw(userAddress: string): Promise<string> {
-        const contract =
-            await this.mxProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getStakedAmountForUser([
-                new AddressValue(Address.fromString(userAddress)),
-            ]);
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getMetabondingStakingAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.metabondingStakingAddress,
+            'getStakedAmountForUser',
+            [new AddressValue(Address.newFromBech32(userAddress))],
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -90,13 +90,13 @@ export class MetabondingAbiService
     }
 
     async getUserEntryRaw(userAddress: string): Promise<UserEntryModel> {
-        const contract =
-            await this.mxProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getUserEntry([
-            new AddressValue(Address.fromString(userAddress)),
-        ]);
-
-        const response = await this.getGenericData(interaction);
+        const abi = await this.mxProxy.getMetabondingStakingAbi();
+        const response = await this.getGenericData(
+            abi,
+            scAddress.metabondingStakingAddress,
+            'getUserEntry',
+            [new AddressValue(Address.newFromBech32(userAddress))],
+        );
 
         const rawUserEntry = response.firstValue.valueOf();
 

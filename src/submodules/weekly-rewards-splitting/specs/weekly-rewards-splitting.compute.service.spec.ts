@@ -8,7 +8,7 @@ import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.se
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { MXDataApiServiceProvider } from 'src/services/multiversx-communication/mx.data.api.service.mock';
 import { WeeklyRewardsSplittingAbiService } from '../services/weekly-rewards-splitting.abi.service';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { PairComputeServiceProvider } from 'src/modules/pair/mocks/pair.compute.service.mock';
 import { PairAbiServiceProvider } from 'src/modules/pair/mocks/pair.abi.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -24,6 +24,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { AnalyticsQueryServiceProvider } from 'src/services/analytics/mocks/analytics.query.service.mock';
 import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     let module: TestingModule;
@@ -45,6 +46,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 TokenComputeService,
                 TokenServiceProvider,
                 PairService,
+                PairsStateServiceProvider,
                 PairAbiServiceProvider,
                 PairComputeServiceProvider,
                 WrapAbiServiceProvider,
@@ -79,7 +81,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         ).mockReturnValueOnce(Promise.resolve([]));
 
         const usdValue = await service.computeTotalRewardsForWeekUSD(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             1,
         );
         expect(usdValue).toEqual('0');
@@ -125,13 +127,13 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             ]),
         );
         let usdValue = await service.computeTotalRewardsForWeekUSD(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             1,
         );
         expect(usdValue).toEqual('7000'); // 100 * 10 + 200 * 30
 
         usdValue = await service.computeTotalRewardsForWeekUSD(
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
             1,
         );
         expect(usdValue).toEqual('10000');
@@ -211,10 +213,10 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                     }),
                 ]),
             );
-            let apr = await service.computeWeekAPR(Address.Zero().bech32(), 1);
+            let apr = await service.computeWeekAPR(Address.Zero().toBech32(), 1);
             expect(apr).toEqual('364'); // 100 * 10 + 200 * 30
 
-            apr = await service.computeWeekAPR(Address.Zero().bech32(), 1);
+            apr = await service.computeWeekAPR(Address.Zero().toBech32(), 1);
             expect(apr).toEqual('371.8');
         },
     );
@@ -240,7 +242,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             },
         );
 
-        const apr = await service.computeWeekAPR(Address.Zero().bech32(), 1);
+        const apr = await service.computeWeekAPR(Address.Zero().toBech32(), 1);
         expect(apr).toEqual('371.8'); // 100 * 10 + 200 * 30
     });
 
@@ -283,8 +285,8 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         );
 
         const apr = await service.computeUserApr(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
+            Address.Zero().toBech32(),
+            Address.Zero().toBech32(),
             1,
         );
         expect(apr).toEqual('371.8'); // 100 * 10 + 200 * 30
@@ -338,8 +340,8 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             );
 
             const apr = await service.computeUserApr(
-                Address.Zero().bech32(),
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
+                Address.Zero().toBech32(),
                 1,
             );
             expect(apr).toEqual('371.8');
@@ -401,7 +403,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 'userEnergyForWeek',
             ).mockReturnValueOnce(Promise.resolve(user1Energy));
             let apr = await service.computeUserApr(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user1,
                 1,
             );
@@ -413,7 +415,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             ).mockReturnValueOnce(Promise.resolve(user2Energy));
 
             apr = await service.computeUserApr(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user2,
                 1,
             );
@@ -477,7 +479,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 'userEnergyForWeek',
             ).mockReturnValueOnce(Promise.resolve(user1Energy));
             let apr = await service.computeUserApr(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user1,
                 1,
             );
@@ -488,7 +490,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 'userEnergyForWeek',
             ).mockReturnValueOnce(Promise.resolve(user2Energy));
             apr = await service.computeUserApr(
-                Address.Zero().bech32(),
+                Address.Zero().toBech32(),
                 user2,
                 1,
             );

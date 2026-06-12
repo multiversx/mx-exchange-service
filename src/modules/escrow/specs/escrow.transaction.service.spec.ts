@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EscrowTransactionService } from '../services/escrow.transaction.service';
 import { MXProxyServiceProvider } from 'src/services/multiversx-communication/mx.proxy.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { TransactionModel } from 'src/models/transaction.model';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { gasConfig, mxConfig, scAddress } from 'src/config';
@@ -64,7 +64,7 @@ describe('EscrowTransactionService', () => {
                     amount: '1000000000000000000',
                 },
             ]),
-        ).rejects.toThrowError('Sender and receiver cannot be the same');
+        ).rejects.toThrow('Sender and receiver cannot be the same');
     });
 
     it('should return a lock funds transaction', async () => {

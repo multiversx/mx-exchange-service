@@ -18,7 +18,6 @@ import { RemoteConfigGetterServiceProvider } from '../../remote-config/mocks/rem
 import { TokenServiceProvider } from '../../tokens/mocks/token.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
-import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
@@ -59,7 +58,7 @@ import { FarmAbiServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.abi
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { FarmServiceBaseMock } from 'src/modules/farm/mocks/farm.service.mock';
-import { Address } from '@multiversx/sdk-core/out';
+import { Address } from '@multiversx/sdk-core';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -67,6 +66,9 @@ import winston from 'winston';
 import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { FarmAbiService } from 'src/modules/farm/base-module/services/farm.abi.service';
+import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state.service.mock';
+import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('UserService', () => {
     let module: TestingModule;
@@ -106,6 +108,7 @@ describe('UserService', () => {
                     useClass: FarmAbiServiceMock,
                 },
                 FarmAbiFactory,
+                FarmsStateServiceProvider,
                 LockedTokenWrapperAbiServiceProvider,
                 ProxyService,
                 ProxyAbiServiceProvider,
@@ -141,6 +144,8 @@ describe('UserService', () => {
                 RemoteConfigGetterServiceProvider,
                 MXDataApiServiceProvider,
                 ApiConfigService,
+                TokensStateServiceProvider,
+                PairsStateServiceProvider,
             ],
             imports: [
                 WinstonModule.forRoot({
@@ -166,9 +171,9 @@ describe('UserService', () => {
 
         expect(
             await userEsdts.getAllEsdtTokens(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 {
                     offset: 0,
                     limit: 10,
@@ -179,10 +184,10 @@ describe('UserService', () => {
                 identifier: 'MEX-123456',
                 ticker: 'MEX',
                 name: 'MEX',
-                type: 'Ecosystem',
-                owner: Address.fromHex(
+                type: 'FungibleESDT',
+                owner: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 supply: '2000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -202,7 +207,7 @@ describe('UserService', () => {
                 circulatingSupply: '1',
                 transactions: 1,
                 price: '0.01',
-                roles: new RolesModel(),
+                roles: [],
                 assets: new AssetsModel(),
             }),
         ]);
@@ -214,9 +219,9 @@ describe('UserService', () => {
 
         expect(
             await userMetaEsdts.getAllNftTokens(
-                Address.fromHex(
+                Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000001',
-                ).bech32(),
+                ).toBech32(),
                 {
                     offset: 0,
                     limit: 10,
@@ -232,15 +237,15 @@ describe('UserService', () => {
                 balance: '1000000000000000000',
                 identifier: 'EGLDMEXFL-abcdef-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
-                creator: Address.fromHex(
+                creator: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000021',
-                ).bech32(),
+                ).toBech32(),
                 nonce: 1,
                 royalties: 0,
                 valueUSD: '20',
-                pairAddress: Address.fromHex(
+                pairAddress: Address.newFromHex(
                     '0000000000000000000000000000000000000000000000000000000000000012',
-                ).bech32(),
+                ).toBech32(),
                 decodedAttributes: new FarmTokenAttributesModelV1_2({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',

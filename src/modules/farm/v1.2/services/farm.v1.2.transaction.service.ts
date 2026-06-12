@@ -228,11 +228,11 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
                 gasLimit: gasConfig.farms.admin.setFarmMigrationConfig,
                 function: 'setFarmMigrationConfig',
                 arguments: [
-                    new AddressValue(Address.fromString(args.oldFarmAddress)),
+                    new AddressValue(Address.newFromBech32(args.oldFarmAddress)),
                     BytesValue.fromUTF8(args.oldFarmTokenID),
-                    new AddressValue(Address.fromString(args.newFarmAddress)),
+                    new AddressValue(Address.newFromBech32(args.newFarmAddress)),
                     BytesValue.fromHex(
-                        Address.fromString(args.newLockedFarmAddress).hex(),
+                        Address.newFromBech32(args.newLockedFarmAddress).toHex(),
                     ),
                 ],
             }),
