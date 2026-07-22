@@ -50,9 +50,21 @@ export class FarmAbiServiceV2
         );
     }
 
+    async getRewardsPerBlockRaw(farmAddress: string): Promise<string> {
+        throw new Error(
+            `getRewardsPerBlockRaw() is not supported on V2 farms. Use getRewardsPerSecondRaw() instead. Farm: ${farmAddress}`,
+        );
+    }
+
     async lastRewardBlockNonce(farmAddress: string): Promise<number> {
         throw new Error(
             `lastRewardBlockNonce() is not supported on V2 farms. Use lastRewardTimestamp() instead. Farm: ${farmAddress}`,
+        );
+    }
+
+    async getLastRewardBlockNonceRaw(farmAddress: string): Promise<number> {
+        throw new Error(
+            `getLastRewardBlockNonceRaw() is not supported on V2 farms. Use getLastRewardTimestampRaw() instead. Farm: ${farmAddress}`,
         );
     }
 
