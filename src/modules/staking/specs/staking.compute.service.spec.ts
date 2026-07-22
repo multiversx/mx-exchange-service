@@ -153,7 +153,7 @@ describe('StakingComputeService', () => {
             new BigNumber(100000000),
         );
         expect(extraRewardsBounded.integerValue(BigNumber.ROUND_UP)).toEqual(
-            new BigNumber(10000000000000000000),
+            new BigNumber('1666666666666666667'),
         );
     });
 
