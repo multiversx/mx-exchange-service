@@ -317,7 +317,7 @@ export class StakingAbiService
             stakeAddress,
             'getLastRewardTimestamp',
         );
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().toNumber();
     }
 
     @ErrorLoggerAsync({
