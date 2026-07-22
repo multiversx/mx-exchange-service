@@ -19,6 +19,7 @@ import { WeeklyRewardsSplittingAbiService } from 'src/submodules/weekly-rewards-
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { FarmsStateService } from 'src/modules/state/services/farms.state.service';
 import { FarmModelV2 } from '../../models/farm.v2.model';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class FarmServiceV2 extends FarmServiceBase {
@@ -32,6 +33,7 @@ export class FarmServiceV2 extends FarmServiceBase {
         private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly farmsState: FarmsStateService,
+        private readonly apiService: MXApiService,
     ) {
         super(
             farmAbi,
@@ -87,7 +89,7 @@ export class FarmServiceV2 extends FarmServiceBase {
                 ],
             ),
             this.contextGetter.getCurrentEpoch(),
-            Promise.resolve(Math.floor(Date.now() / 1000)),
+            this.apiService.getShardTimestamp(1),
         ]);
 
         return Promise.all(
@@ -115,9 +117,8 @@ export class FarmServiceV2 extends FarmServiceBase {
         );
         let rewards: BigNumber;
         if (position.vmQuery) {
-            rewards = await this.farmAbi.calculateRewardsForGivenPosition(
-                position,
-            );
+            rewards =
+                await this.farmAbi.calculateRewardsForGivenPosition(position);
         } else {
             rewards = this.farmCompute.computeRewardsForPosition(
                 farm,
@@ -193,7 +194,7 @@ export class FarmServiceV2 extends FarmServiceBase {
         const remainingFarmingEpochs = Math.max(
             0,
             farm.minimumFarmingEpochs -
-            (currentEpoch - farmTokenAttributes.enteringEpoch),
+                (currentEpoch - farmTokenAttributes.enteringEpoch),
         );
 
         return new RewardsModel({
@@ -215,9 +216,8 @@ export class FarmServiceV2 extends FarmServiceBase {
         );
         let rewards: BigNumber;
         if (positon.vmQuery) {
-            rewards = await this.farmAbi.calculateRewardsForGivenPosition(
-                positon,
-            );
+            rewards =
+                await this.farmAbi.calculateRewardsForGivenPosition(positon);
         } else {
             rewards = await this.farmCompute.computeFarmRewardsForPosition(
                 positon,
@@ -303,9 +303,8 @@ export class FarmServiceV2 extends FarmServiceBase {
     ): Promise<BoostedRewardsModel> {
         const modelsList: UserInfoByWeekModel[] = [];
 
-        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
-            farmAddress,
-        );
+        const currentWeek =
+            await this.weekTimekeepingAbi.currentWeek(farmAddress);
 
         let lastActiveWeekUser =
             await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(

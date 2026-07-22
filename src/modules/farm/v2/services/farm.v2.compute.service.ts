@@ -22,11 +22,13 @@ import { WeekTimekeepingAbiService } from 'src/submodules/week-timekeeping/servi
 import { computeValueUSD } from 'src/utils/token.converters';
 import { FarmModelV2 } from '../../models/farm.v2.model';
 import { EnergyType } from '@multiversx/sdk-exchange';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 
 @Injectable()
 export class FarmComputeServiceV2
     extends FarmComputeService
-    implements IFarmComputeServiceV2 {
+    implements IFarmComputeServiceV2
+{
     constructor(
         protected readonly farmAbi: FarmAbiServiceV2,
         @Inject(forwardRef(() => FarmServiceV2))
@@ -41,6 +43,7 @@ export class FarmComputeServiceV2
         private readonly weekTimeKeepingAbi: WeekTimekeepingAbiService,
         private readonly weeklyRewardsSplittingAbi: WeeklyRewardsSplittingAbiService,
         private readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
+        private readonly apiService: MXApiService,
     ) {
         super(
             farmAbi,
@@ -107,9 +110,9 @@ export class FarmComputeServiceV2
             this.farmAbi.rewardsPerSecond(farmAddress),
         ]);
 
-        const totalRewardsPerYear = new BigNumber(rewardsPerSecond).multipliedBy(
-            constantsConfig.SECONDS_IN_YEAR,
-        );
+        const totalRewardsPerYear = new BigNumber(
+            rewardsPerSecond,
+        ).multipliedBy(constantsConfig.SECONDS_IN_YEAR);
 
         return computeValueUSD(
             totalRewardsPerYear.toFixed(),
@@ -119,15 +122,20 @@ export class FarmComputeServiceV2
     }
 
     async computeMintedRewards(farmAddress: string): Promise<BigNumber> {
-        const [rewardsPerSecond, lastRewardTimestamp, produceRewardsEnabled, boostedYieldsRewardsPercenatage] =
-            await Promise.all([
-                this.farmAbi.rewardsPerSecond(farmAddress),
-                this.farmAbi.lastRewardTimestamp(farmAddress),
-                this.farmAbi.produceRewardsEnabled(farmAddress),
-                this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
-            ]);
+        const [
+            rewardsPerSecond,
+            lastRewardTimestamp,
+            produceRewardsEnabled,
+            boostedYieldsRewardsPercenatage,
+            currentTimestamp,
+        ] = await Promise.all([
+            this.farmAbi.rewardsPerSecond(farmAddress),
+            this.farmAbi.lastRewardTimestamp(farmAddress),
+            this.farmAbi.produceRewardsEnabled(farmAddress),
+            this.farmAbi.boostedYieldsRewardsPercenatage(farmAddress),
+            this.apiService.getShardTimestamp(1),
+        ]);
 
-        const currentTimestamp = Math.floor(Date.now() / 1000);
         const rewardsPerSecondBig = new BigNumber(rewardsPerSecond);
         let toBeMinted = new BigNumber(0);
 
@@ -143,11 +151,12 @@ export class FarmComputeServiceV2
         );
     }
 
-    computeRewardsIncrease(farm: FarmModelV2, currentTimestamp: number): BigNumber {
+    computeRewardsIncrease(
+        farm: FarmModelV2,
+        currentTimestamp: number,
+    ): BigNumber {
         const currentTimestampBig = new BigNumber(currentTimestamp);
-        const lastRewardTimestampBig = new BigNumber(
-            farm.lastRewardTimestamp,
-        );
+        const lastRewardTimestampBig = new BigNumber(farm.lastRewardTimestamp);
         const perSecondRewardAmountBig = new BigNumber(farm.perSecondRewards);
 
         let toBeMinted = new BigNumber(0);
@@ -173,7 +182,10 @@ export class FarmComputeServiceV2
         rewardPerShare: string,
         currentTimestamp: number,
     ): BigNumber {
-        const rewardIncrease = this.computeRewardsIncrease(farm, currentTimestamp);
+        const rewardIncrease = this.computeRewardsIncrease(
+            farm,
+            currentTimestamp,
+        );
 
         const amountBig = new BigNumber(positon.liquidity);
         const divisionSafetyConstantBig = new BigNumber(
@@ -649,9 +661,9 @@ export class FarmComputeServiceV2
                 this.farmAbi.boostedYieldsRewardsPercenatage(scAddress),
             ]);
 
-        const totalRewardsPerWeek = new BigNumber(rewardsPerSecond).multipliedBy(
-            constantsConfig.SECONDS_IN_WEEK,
-        );
+        const totalRewardsPerWeek = new BigNumber(
+            rewardsPerSecond,
+        ).multipliedBy(constantsConfig.SECONDS_IN_WEEK);
 
         return totalRewardsPerWeek
             .multipliedBy(boostedYieldsRewardsPercentage)
