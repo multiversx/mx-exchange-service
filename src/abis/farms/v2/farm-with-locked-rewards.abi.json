@@ -3,11 +3,11 @@
         "contractCrate": {
             "name": "farm-with-locked-rewards",
             "version": "0.0.0",
-            "gitVersion": "v1.6.0-2122-g457d1532"
+            "gitVersion": "vtest.pre-3-gc17cd288"
         },
         "framework": {
             "name": "multiversx-sc",
-            "version": "0.64.1"
+            "version": "0.66.2"
         }
     },
     "name": "Farm",
@@ -48,6 +48,7 @@
     "endpoints": [
         {
             "name": "enterFarm",
+            "rustMethodName": "enter_farm_endpoint",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -70,6 +71,7 @@
         },
         {
             "name": "claimRewards",
+            "rustMethodName": "claim_rewards_endpoint",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -92,6 +94,7 @@
         },
         {
             "name": "exitFarm",
+            "rustMethodName": "exit_farm_endpoint",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -114,6 +117,7 @@
         },
         {
             "name": "mergeFarmTokens",
+            "rustMethodName": "merge_farm_tokens_endpoint",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -136,6 +140,7 @@
         },
         {
             "name": "claimBoostedRewards",
+            "rustMethodName": "claim_boosted_rewards",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -152,18 +157,21 @@
         },
         {
             "name": "startProduceRewards",
+            "rustMethodName": "start_produce_rewards_endpoint",
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "endProduceRewards",
+            "rustMethodName": "end_produce_rewards_endpoint",
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "setPerSecondRewardAmount",
+            "rustMethodName": "set_per_second_rewards_endpoint",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -175,6 +183,7 @@
         },
         {
             "name": "setBoostedYieldsRewardsPercentage",
+            "rustMethodName": "set_boosted_yields_rewards_percentage",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -186,6 +195,7 @@
         },
         {
             "name": "calculateRewardsForGivenPosition",
+            "rustMethodName": "calculate_rewards_for_given_position",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -209,6 +219,7 @@
         },
         {
             "name": "getRewardPerShare",
+            "rustMethodName": "reward_per_share",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -219,6 +230,7 @@
         },
         {
             "name": "getRewardReserve",
+            "rustMethodName": "reward_reserve",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -229,6 +241,7 @@
         },
         {
             "name": "getFarmingTokenId",
+            "rustMethodName": "farming_token_id",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -239,6 +252,7 @@
         },
         {
             "name": "getRewardTokenId",
+            "rustMethodName": "reward_token_id",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -249,6 +263,7 @@
         },
         {
             "name": "getPerSecondRewardAmount",
+            "rustMethodName": "per_second_reward_amount",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -259,6 +274,7 @@
         },
         {
             "name": "getLastRewardTimestamp",
+            "rustMethodName": "last_reward_timestamp",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -269,6 +285,7 @@
         },
         {
             "name": "getDivisionSafetyConstant",
+            "rustMethodName": "division_safety_constant",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -279,6 +296,7 @@
         },
         {
             "name": "getUserTotalFarmPosition",
+            "rustMethodName": "user_total_farm_position",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -294,6 +312,7 @@
         },
         {
             "name": "getAllowExternalClaim",
+            "rustMethodName": "allow_external_claim",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -309,6 +328,7 @@
         },
         {
             "name": "getFarmPositionMigrationNonce",
+            "rustMethodName": "farm_position_migration_nonce",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -319,6 +339,7 @@
         },
         {
             "name": "setLockingScAddress",
+            "rustMethodName": "set_locking_sc_address",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
@@ -331,6 +352,7 @@
         },
         {
             "name": "setLockEpochs",
+            "rustMethodName": "set_lock_epochs",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
@@ -343,6 +365,7 @@
         },
         {
             "name": "getLockingScAddress",
+            "rustMethodName": "locking_sc_address",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -353,6 +376,7 @@
         },
         {
             "name": "getLockEpochs",
+            "rustMethodName": "lock_epochs",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -363,6 +387,7 @@
         },
         {
             "name": "registerFarmToken",
+            "rustMethodName": "register_farm_token",
             "mutability": "mutable",
             "payableInTokens": [
                 "EGLD"
@@ -385,6 +410,7 @@
         },
         {
             "name": "getFarmTokenId",
+            "rustMethodName": "farm_token",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -395,6 +421,7 @@
         },
         {
             "name": "getFarmTokenSupply",
+            "rustMethodName": "farm_token_supply",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -405,6 +432,7 @@
         },
         {
             "name": "addToPauseWhitelist",
+            "rustMethodName": "add_to_pause_whitelist",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -417,6 +445,7 @@
         },
         {
             "name": "removeFromPauseWhitelist",
+            "rustMethodName": "remove_from_pause_whitelist",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -441,6 +470,7 @@
         },
         {
             "name": "getState",
+            "rustMethodName": "state",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -451,6 +481,7 @@
         },
         {
             "name": "addAdmin",
+            "rustMethodName": "add_admin_endpoint",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -462,6 +493,7 @@
         },
         {
             "name": "removeAdmin",
+            "rustMethodName": "remove_admin_endpoint",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -473,6 +505,7 @@
         },
         {
             "name": "updateOwnerOrAdmin",
+            "rustMethodName": "update_owner_or_admin_endpoint",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
@@ -485,6 +518,7 @@
         },
         {
             "name": "getPermissions",
+            "rustMethodName": "permissions",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -500,6 +534,7 @@
         },
         {
             "name": "setPermissionsHubAddress",
+            "rustMethodName": "set_permissions_hub_address",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
@@ -512,6 +547,7 @@
         },
         {
             "name": "addSCAddressToWhitelist",
+            "rustMethodName": "add_sc_address_to_whitelist",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
@@ -524,6 +560,7 @@
         },
         {
             "name": "removeSCAddressFromWhitelist",
+            "rustMethodName": "remove_sc_address_from_whitelist",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
@@ -536,6 +573,7 @@
         },
         {
             "name": "isSCAddressWhitelisted",
+            "rustMethodName": "is_sc_address_whitelisted",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -586,6 +624,7 @@
         },
         {
             "name": "getPenaltyPercent",
+            "rustMethodName": "penalty_percent",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -596,6 +635,7 @@
         },
         {
             "name": "getMinimumFarmingEpoch",
+            "rustMethodName": "minimum_farming_epochs",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -606,6 +646,7 @@
         },
         {
             "name": "getBurnGasLimit",
+            "rustMethodName": "burn_gas_limit",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -616,6 +657,7 @@
         },
         {
             "name": "getPairContractManagedAddress",
+            "rustMethodName": "pair_contract_address",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -626,6 +668,7 @@
         },
         {
             "name": "enterFarmOnBehalf",
+            "rustMethodName": "enter_farm_on_behalf",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -647,6 +690,7 @@
         },
         {
             "name": "claimRewardsOnBehalf",
+            "rustMethodName": "claim_rewards_on_behalf",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
@@ -663,6 +707,7 @@
         },
         {
             "name": "getBoostedYieldsRewardsPercentage",
+            "rustMethodName": "boosted_yields_rewards_percentage",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -673,6 +718,7 @@
         },
         {
             "name": "getAccumulatedRewardsForWeek",
+            "rustMethodName": "accumulated_rewards_for_week",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -688,6 +734,7 @@
         },
         {
             "name": "getFarmSupplyForWeek",
+            "rustMethodName": "farm_supply_for_week",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -703,6 +750,7 @@
         },
         {
             "name": "setBoostedYieldsFactors",
+            "rustMethodName": "set_boosted_yields_factors",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -730,6 +778,7 @@
         },
         {
             "name": "getBoostedYieldsFactors",
+            "rustMethodName": "get_boosted_yields_factors",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -740,6 +789,7 @@
         },
         {
             "name": "collectUndistributedBoostedRewards",
+            "rustMethodName": "collect_undistributed_boosted_rewards",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [],
@@ -751,6 +801,7 @@
         },
         {
             "name": "getRemainingBoostedRewardsToDistribute",
+            "rustMethodName": "remaining_boosted_rewards_to_distribute",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -769,6 +820,7 @@
                 "Week starts from 1"
             ],
             "name": "getCurrentWeek",
+            "rustMethodName": "get_current_week",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -779,6 +831,7 @@
         },
         {
             "name": "getFirstWeekStartEpoch",
+            "rustMethodName": "first_week_start_epoch",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -789,6 +842,7 @@
         },
         {
             "name": "getLastActiveWeekForUser",
+            "rustMethodName": "get_last_active_week_for_user_view",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -804,6 +858,7 @@
         },
         {
             "name": "getUserEnergyForWeek",
+            "rustMethodName": "get_user_energy_for_week_view",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -824,6 +879,7 @@
         },
         {
             "name": "getLastGlobalUpdateWeek",
+            "rustMethodName": "last_global_update_week",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -834,6 +890,7 @@
         },
         {
             "name": "getTotalRewardsForWeek",
+            "rustMethodName": "total_rewards_for_week",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -849,6 +906,7 @@
         },
         {
             "name": "getTotalEnergyForWeek",
+            "rustMethodName": "total_energy_for_week",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -864,6 +922,7 @@
         },
         {
             "name": "getTotalLockedTokensForWeek",
+            "rustMethodName": "total_locked_tokens_for_week",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -879,6 +938,7 @@
         },
         {
             "name": "updateEnergyForUser",
+            "rustMethodName": "update_energy_for_user",
             "mutability": "mutable",
             "inputs": [
                 {
@@ -890,6 +950,7 @@
         },
         {
             "name": "getCurrentClaimProgress",
+            "rustMethodName": "current_claim_progress",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -905,6 +966,7 @@
         },
         {
             "name": "setEnergyFactoryAddress",
+            "rustMethodName": "set_energy_factory_address",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
@@ -917,6 +979,7 @@
         },
         {
             "name": "getEnergyFactoryAddress",
+            "rustMethodName": "energy_factory_address",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
