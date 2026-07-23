@@ -15,7 +15,7 @@ export class StakingCacheWarmerService {
         private readonly stakeCompute: StakingComputeService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    ) {}
+    ) { }
 
     @Cron(CronExpression.EVERY_HOUR)
     async cacheFarmsStaking(): Promise<void> {
@@ -101,15 +101,15 @@ export class StakingCacheWarmerService {
                 rewardPerShare,
                 accumulatedRewards,
                 rewardCapacity,
-                perBlockRewards,
-                lastRewardBlockNonce,
+                perSecondRewards,
+                lastRewardTimestamp,
             ] = await Promise.all([
                 this.stakingAbi.getFarmTokenSupplyRaw(address),
                 this.stakingAbi.getRewardPerShareRaw(address),
                 this.stakingAbi.getAccumulatedRewardsRaw(address),
                 this.stakingAbi.getRewardCapacityRaw(address),
-                this.stakingAbi.getPerBlockRewardsAmountRaw(address),
-                this.stakingAbi.getLastRewardBlockNonceRaw(address),
+                this.stakingAbi.getPerSecondRewardsAmountRaw(address),
+                this.stakingAbi.getLastRewardTimestampRaw(address),
             ]);
 
             const cacheKeys = await Promise.all([
@@ -129,13 +129,13 @@ export class StakingCacheWarmerService {
                     address,
                     rewardCapacity,
                 ),
-                this.stakeSetterService.setPerBlockRewardAmount(
+                this.stakeSetterService.setPerSecondRewardAmount(
                     address,
-                    perBlockRewards,
+                    perSecondRewards,
                 ),
-                this.stakeSetterService.setLastRewardBlockNonce(
+                this.stakeSetterService.setLastRewardTimestamp(
                     address,
-                    lastRewardBlockNonce,
+                    lastRewardTimestamp,
                 ),
             ]);
 

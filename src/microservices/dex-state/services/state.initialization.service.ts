@@ -31,6 +31,7 @@ export class StateInitializationService {
     ) {}
 
     initState(request: InitStateRequest): InitStateResponse {
+        console.log('Initialize state store in gRPC');
         const {
             tokens,
             pairs,

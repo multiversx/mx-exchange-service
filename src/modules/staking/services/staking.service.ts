@@ -3,7 +3,6 @@ import {
     UnbondFarmTokenAttributes,
 } from '@multiversx/sdk-exchange';
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
@@ -85,9 +84,8 @@ export class StakingService {
     }
 
     async getFarmingToken(stakeAddress: string): Promise<EsdtToken> {
-        const farmingTokenID = await this.stakingAbi.farmingTokenID(
-            stakeAddress,
-        );
+        const farmingTokenID =
+            await this.stakingAbi.farmingTokenID(stakeAddress);
         return this.tokenService.tokenMetadata(farmingTokenID);
     }
 
@@ -130,7 +128,7 @@ export class StakingService {
         positions: CalculateRewardsArgs[],
         computeBoosted = false,
     ): Promise<StakingRewardsModel[]> {
-        const [stakingFarms, currentNonce] = await Promise.all([
+        const [stakingFarms, currentTimestamp] = await Promise.all([
             this.stakingState.getStakingFarms(
                 positions.map((position) => position.farmAddress),
                 [
@@ -141,13 +139,14 @@ export class StakingService {
                     'divisionSafetyConstant',
                     'accumulatedRewards',
                     'rewardCapacity',
-                    'lastRewardBlockNonce',
-                    'perBlockRewards',
+                    'lastRewardTimestamp',
+                    'perSecondRewards',
                     'produceRewardsEnabled',
-                    'rewardsPerBlockAPRBound',
+                    'rewardsPerSecondAPRBound',
                 ],
             ),
-            this.contextGetter.getShardCurrentBlockNonce(1),
+            this.apiService.getShardTimestamp(1),
+            ,
         ]);
 
         return Promise.all(
@@ -155,7 +154,7 @@ export class StakingService {
                 this.getRewardsForPosition(
                     stakingFarms[index],
                     position,
-                    currentNonce,
+                    currentTimestamp,
                     computeBoosted,
                 ),
             ),
@@ -165,7 +164,7 @@ export class StakingService {
     async getRewardsForPosition(
         stakingFarm: StakingModel,
         position: CalculateRewardsArgs,
-        currentNonce: number,
+        currentTimestamp: number,
         computeBoosted = false,
     ): Promise<StakingRewardsModel> {
         const stakeTokenAttributes = this.decodeStakingTokenAttributes({
@@ -188,7 +187,7 @@ export class StakingService {
                 stakingFarm,
                 position.liquidity,
                 stakeTokenAttributes[0],
-                currentNonce,
+                currentTimestamp,
             );
         }
 
@@ -264,9 +263,8 @@ export class StakingService {
         stakingAddress: string,
         userAddress: string,
     ): Promise<StakingBoostedRewardsModel> {
-        const currentWeek = await this.weekTimekeepingAbi.currentWeek(
-            stakingAddress,
-        );
+        const currentWeek =
+            await this.weekTimekeepingAbi.currentWeek(stakingAddress);
         const modelsList = [];
         let lastActiveWeekUser =
             await this.weeklyRewardsSplittingAbi.lastActiveWeekForUser(

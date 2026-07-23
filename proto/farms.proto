@@ -46,4 +46,6 @@ message Farm {
   string optimalEnergyPerLp                 = 38;
   string boostedRewardsPerWeek              = 39;
   Pair pair                                 = 40;
+  string perSecondRewards                   = 41;
+  uint32 lastRewardTimestamp                = 42;
 }

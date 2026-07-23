@@ -13,7 +13,7 @@ import { StateStore } from '../state.store';
 
 @Injectable()
 export class StakingComputeService {
-    constructor(private readonly stateStore: StateStore) {}
+    constructor(private readonly stateStore: StateStore) { }
 
     computeMissingStakingProxyFields(
         stakingProxy: StakingProxyModel,
@@ -47,29 +47,27 @@ export class StakingComputeService {
         );
 
         stakingFarm.isProducingRewards =
-            !stakingFarm.produceRewardsEnabled ||
-            new BigNumber(stakingFarm.accumulatedRewards).isEqualTo(
+            stakingFarm.produceRewardsEnabled &&
+            !new BigNumber(stakingFarm.accumulatedRewards).isEqualTo(
                 stakingFarm.rewardCapacity,
-            )
-                ? false
-                : true;
+            );
 
-        stakingFarm.rewardsPerBlockAPRBound =
-            this.computeRewardsPerBlockAPRBound(
+        stakingFarm.rewardsPerSecondAPRBound =
+            this.computeRewardsPerSecondAPRBound(
                 stakingFarm.farmTokenSupply,
                 stakingFarm.annualPercentageRewards,
             );
 
         stakingFarm.rewardsRemainingDays = this.computeRewardsRemainingDaysBase(
-            stakingFarm.perBlockRewards,
+            stakingFarm.perSecondRewards,
             stakingFarm.rewardCapacity,
             stakingFarm.accumulatedRewards,
-            stakingFarm.rewardsPerBlockAPRBound,
+            stakingFarm.rewardsPerSecondAPRBound,
         );
 
         stakingFarm.rewardsRemainingDaysUncapped =
             this.computeRewardsRemainingDaysBase(
-                stakingFarm.perBlockRewards,
+                stakingFarm.perSecondRewards,
                 stakingFarm.rewardCapacity,
                 stakingFarm.accumulatedRewards,
             );
@@ -83,19 +81,19 @@ export class StakingComputeService {
         ).toFixed();
 
         const rewardsAPRBounded = new BigNumber(
-            stakingFarm.rewardsPerBlockAPRBound,
-        ).multipliedBy(constantsConfig.BLOCKS_IN_YEAR);
+            stakingFarm.rewardsPerSecondAPRBound,
+        ).multipliedBy(constantsConfig.SECONDS_IN_YEAR);
 
         stakingFarm.apr = this.computeStakeFarmAPR(
             stakingFarm.isProducingRewards,
-            stakingFarm.perBlockRewards,
+            stakingFarm.perSecondRewards,
             stakingFarm.farmTokenSupply,
             stakingFarm.annualPercentageRewards,
             rewardsAPRBounded,
         );
 
         stakingFarm.aprUncapped = this.computeStakeFarmUncappedAPR(
-            stakingFarm.perBlockRewards,
+            stakingFarm.perSecondRewards,
             stakingFarm.farmTokenSupply,
             stakingFarm.isProducingRewards,
         );
@@ -123,7 +121,7 @@ export class StakingComputeService {
 
     computeStakeFarmAPR(
         isProducingRewards: boolean,
-        perBlockRewardAmount: string,
+        perSecondRewardAmount: string,
         farmTokenSupply: string,
         annualPercentageRewards: string,
         rewardsAPRBounded: BigNumber,
@@ -132,20 +130,20 @@ export class StakingComputeService {
             return '0';
         }
 
-        const rewardsUnboundedBig = new BigNumber(perBlockRewardAmount).times(
-            constantsConfig.BLOCKS_IN_YEAR,
+        const rewardsUnboundedBig = new BigNumber(perSecondRewardAmount).times(
+            constantsConfig.SECONDS_IN_YEAR,
         );
         const stakedValueBig = new BigNumber(farmTokenSupply);
 
         return rewardsUnboundedBig.isLessThan(rewardsAPRBounded.integerValue())
             ? rewardsUnboundedBig.dividedBy(stakedValueBig).toFixed()
             : new BigNumber(annualPercentageRewards)
-                  .dividedBy(constantsConfig.MAX_PERCENT)
-                  .toFixed();
+                .dividedBy(constantsConfig.MAX_PERCENT)
+                .toFixed();
     }
 
     computeStakeFarmUncappedAPR(
-        perBlockRewardAmount: string,
+        perSecondRewardAmount: string,
         farmTokenSupply: string,
         isProducingRewards: boolean,
     ): string {
@@ -154,8 +152,8 @@ export class StakingComputeService {
         }
 
         const rewardsUnboundedBig = new BigNumber(
-            perBlockRewardAmount,
-        ).multipliedBy(constantsConfig.BLOCKS_IN_YEAR);
+            perSecondRewardAmount,
+        ).multipliedBy(constantsConfig.SECONDS_IN_YEAR);
 
         return rewardsUnboundedBig.dividedBy(farmTokenSupply).toFixed();
     }
@@ -192,38 +190,35 @@ export class StakingComputeService {
         return bnRawMaxBoostedApr.toFixed();
     }
 
-    computeRewardsPerBlockAPRBound(
+    computeRewardsPerSecondAPRBound(
         farmTokenSupply: string,
         annualPercentageRewards: string,
     ): string {
         return new BigNumber(farmTokenSupply)
             .multipliedBy(annualPercentageRewards)
             .dividedBy(constantsConfig.MAX_PERCENT)
-            .dividedBy(constantsConfig.BLOCKS_IN_YEAR)
+            .dividedBy(constantsConfig.SECONDS_IN_YEAR)
             .toFixed();
     }
 
     computeRewardsRemainingDaysBase(
-        perBlockRewardAmount: string,
+        perSecondRewardAmount: string,
         rewardsCapacity: string,
         accumulatedRewards: string,
-        extraRewardsAPRBoundedPerBlock?: string,
+        extraRewardsAPRBoundedPerSecond?: string,
     ): number {
-        const perBlockRewards = extraRewardsAPRBoundedPerBlock
+        const perSecondRewards = extraRewardsAPRBoundedPerSecond
             ? BigNumber.min(
-                  extraRewardsAPRBoundedPerBlock,
-                  perBlockRewardAmount,
-              )
-            : new BigNumber(perBlockRewardAmount);
-
-        // 10 blocks per minute * 60 minutes per hour * 24 hours per day
-        const blocksInDay = 10 * 60 * 24;
+                extraRewardsAPRBoundedPerSecond,
+                perSecondRewardAmount,
+            )
+            : new BigNumber(perSecondRewardAmount);
 
         return parseFloat(
             new BigNumber(rewardsCapacity)
                 .minus(accumulatedRewards)
-                .dividedBy(perBlockRewards)
-                .dividedBy(blocksInDay)
+                .dividedBy(perSecondRewards)
+                .dividedBy(constantsConfig.SECONDS_IN_DAY)
                 .toFixed(2),
         );
     }

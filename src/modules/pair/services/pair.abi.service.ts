@@ -104,6 +104,11 @@ export class PairAbiService
             pairAddress,
             'getLpTokenIdentifier',
         );
+
+        if (response.returnCode.equals(ReturnCode.UserError)) {
+            return undefined;
+        }
+
         const lpTokenID = response.firstValue.valueOf().toString();
         return lpTokenID === mxConfig.EGLDIdentifier || lpTokenID === ''
             ? undefined

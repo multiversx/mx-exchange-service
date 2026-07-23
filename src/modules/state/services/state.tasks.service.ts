@@ -214,7 +214,7 @@ export class StateTasksService {
 
         const response = await this.stateService.initState(request);
 
-        this.logger.debug(`Populate state task completed`, {
+        this.logger.info(`Populate state task completed`, {
             context: StateTasksService.name,
             response,
         });

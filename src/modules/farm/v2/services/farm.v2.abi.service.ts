@@ -44,6 +44,74 @@ export class FarmAbiServiceV2
         super(mxProxy, gatewayService, mxApi, cacheService);
     }
 
+    async rewardsPerBlock(farmAddress: string): Promise<string> {
+        throw new Error(
+            `rewardsPerBlock() is not supported on V2 farms. Use rewardsPerSecond() instead. Farm: ${farmAddress}`,
+        );
+    }
+
+    async getRewardsPerBlockRaw(farmAddress: string): Promise<string> {
+        throw new Error(
+            `getRewardsPerBlockRaw() is not supported on V2 farms. Use getRewardsPerSecondRaw() instead. Farm: ${farmAddress}`,
+        );
+    }
+
+    async lastRewardBlockNonce(farmAddress: string): Promise<number> {
+        throw new Error(
+            `lastRewardBlockNonce() is not supported on V2 farms. Use lastRewardTimestamp() instead. Farm: ${farmAddress}`,
+        );
+    }
+
+    async getLastRewardBlockNonceRaw(farmAddress: string): Promise<number> {
+        throw new Error(
+            `getLastRewardBlockNonceRaw() is not supported on V2 farms. Use getLastRewardTimestampRaw() instead. Farm: ${farmAddress}`,
+        );
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
+        localTtl: CacheTtlInfo.ContractState.localTtl,
+    })
+    async rewardsPerSecond(farmAddress: string): Promise<string> {
+        return this.getRewardsPerSecondRaw(farmAddress);
+    }
+
+    async getRewardsPerSecondRaw(farmAddress: string): Promise<string> {
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getPerSecondRewardAmount',
+        );
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    @ErrorLoggerAsync({
+        logArgs: true,
+    })
+    @GetOrSetCache({
+        baseKey: 'farm',
+        remoteTtl: CacheTtlInfo.ContractInfo.remoteTtl,
+        localTtl: CacheTtlInfo.ContractInfo.localTtl,
+    })
+    async lastRewardTimestamp(farmAddress: string): Promise<number> {
+        return this.getLastRewardTimestampRaw(farmAddress);
+    }
+
+    async getLastRewardTimestampRaw(farmAddress: string): Promise<number> {
+        const abi = await this.mxProxy.getFarmAbi(farmAddress);
+        const response = await this.getGenericData(
+            abi,
+            farmAddress,
+            'getLastRewardTimestamp',
+        );
+        return response.firstValue.valueOf().toNumber();
+    }
+
     async getLastErrorMessageRaw(farmAddress: string): Promise<string> {
         return undefined;
     }

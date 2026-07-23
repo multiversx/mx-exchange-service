@@ -139,6 +139,7 @@ export class StateStore {
     }
 
     setInitialized(initialized: boolean): void {
+        console.log(`DEX STATE STORE INITIALIZED: ${initialized}`);
         this._initialized = initialized;
     }
 

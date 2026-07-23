@@ -116,7 +116,7 @@ describe('FarmServiceV2', () => {
             }),
         ]);
         jest.spyOn(farmAbi, 'farmTokenSupply').mockResolvedValue('2');
-        jest.spyOn(farmAbi, 'rewardsPerBlock').mockResolvedValue(
+        jest.spyOn(farmAbi, 'rewardsPerSecond').mockResolvedValue(
             '1000000000000000000',
         );
         jest.spyOn(farmAbi, 'userTotalFarmPosition').mockResolvedValue('2');

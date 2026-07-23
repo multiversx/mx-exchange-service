@@ -105,10 +105,7 @@ export class AutoRouterService {
             [
                 this.remoteConfigGetterService.getMultiSwapStatus(),
                 this.getAllActivePairs(),
-                this.tokensState.getTokens(
-                    [tokenInID, tokenOutID],
-                    ['identifier', 'decimals', 'price'],
-                ),
+                this.tokensState.getTokens([tokenInID, tokenOutID]),
             ],
         );
 
@@ -441,10 +438,7 @@ export class AutoRouterService {
             tokenIDs.push(...[pair.firstTokenId, pair.secondTokenId]);
         });
 
-        const tokens = await this.tokensState.getTokens(
-            [...new Set(tokenIDs)],
-            ['identifier', 'isPaused', 'decimals', 'price'],
-        );
+        const tokens = await this.tokensState.getTokens([...new Set(tokenIDs)]);
 
         const tokenMap = new Map(
             tokens

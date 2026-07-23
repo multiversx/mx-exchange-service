@@ -132,11 +132,11 @@ describe('FarmsStateHandler', () => {
                 farms: [
                     {
                         address: TEST_ADDRESSES.FARM_1,
-                        perBlockRewards: '2000000000000000000',
+                        perSecondRewards: '2000000000000000000',
                     } as any,
                 ],
                 updateMask: {
-                    paths: ['perBlockRewards'],
+                    paths: ['perSecondRewards'],
                 },
             };
 
@@ -146,7 +146,7 @@ describe('FarmsStateHandler', () => {
             expect(response.failedAddresses).toHaveLength(0);
 
             const farm = stateStore.farms.get(TEST_ADDRESSES.FARM_1);
-            expect(farm.perBlockRewards).toBe('2000000000000000000');
+            expect(farm?.perSecondRewards).toBe('2000000000000000000');
         });
 
         it('should skip immutable field updates', () => {
@@ -161,11 +161,11 @@ describe('FarmsStateHandler', () => {
                         farmedTokenId: 'NEWTOKEN-123456',
                         farmingTokenId: 'NEWFARMING-abcdef',
                         pairAddress: 'erd1qqqqqqqqqqqqqnewpair',
-                        perBlockRewards: '2000000000000000000',
+                        perSecondRewards: '2000000000000000000',
                     } as any,
                 ],
                 updateMask: {
-                    paths: ['farmedTokenId', 'farmingTokenId', 'pairAddress', 'perBlockRewards'],
+                    paths: ['farmedTokenId', 'farmingTokenId', 'pairAddress', 'perSecondRewards'],
                 },
             };
 
@@ -175,7 +175,7 @@ describe('FarmsStateHandler', () => {
             expect(farm.farmedTokenId).toBe(originalFarmedTokenId); // Should not change
             expect(farm.farmingTokenId).toBe(originalFarmingTokenId); // Should not change
             expect(farm.pairAddress).toBe(originalPairAddress); // Should not change
-            expect(farm.perBlockRewards).toBe('2000000000000000000'); // Should change
+            expect(farm?.perSecondRewards).toBe('2000000000000000000'); // Should change
         });
 
         it('should return failedAddresses for non-existent farms', () => {

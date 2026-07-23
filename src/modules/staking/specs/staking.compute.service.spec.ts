@@ -152,8 +152,8 @@ describe('StakingComputeService', () => {
             Address.Zero().toBech32(),
             new BigNumber(100000000),
         );
-        expect(extraRewardsBounded).toEqual(
-            new BigNumber(10000000000000000000),
+        expect(extraRewardsBounded.integerValue(BigNumber.ROUND_UP)).toEqual(
+            new BigNumber('1666666666666666667'),
         );
     });
 
@@ -166,14 +166,16 @@ describe('StakingComputeService', () => {
         jest.spyOn(stakingAbi, 'farmTokenSupply').mockImplementation(
             async () => '10000000000000000000000000',
         );
-        jest.spyOn(stakingAbi, 'perBlockRewardsAmount').mockImplementation(
-            async () => '4138000000000000000',
+        jest.spyOn(stakingAbi, 'perSecondRewardsAmount').mockImplementation(
+            async () => '689666666666666666',
         );
         jest.spyOn(stakingAbi, 'annualPercentageRewards').mockImplementation(
             async () => '2500',
         );
 
-        const apr = await service.computeStakeFarmAPR(Address.Zero().toBech32());
+        const apr = await service.computeStakeFarmAPR(
+            Address.Zero().toBech32(),
+        );
         expect(apr).toEqual('0.25');
     });
 
@@ -185,15 +187,17 @@ describe('StakingComputeService', () => {
         jest.spyOn(stakingAbi, 'farmTokenSupply').mockImplementation(
             async () => '100000000000000000000000000',
         );
-        jest.spyOn(stakingAbi, 'perBlockRewardsAmount').mockImplementation(
-            async () => '4138000000000000000',
+        jest.spyOn(stakingAbi, 'perSecondRewardsAmount').mockImplementation(
+            async () => '689666666666666666',
         );
         jest.spyOn(stakingAbi, 'annualPercentageRewards').mockImplementation(
             async () => '2500',
         );
 
-        const apr = await service.computeStakeFarmAPR(Address.Zero().toBech32());
-        expect(apr).toEqual('0.21749328');
+        const apr = await service.computeStakeFarmAPR(
+            Address.Zero().toBech32(),
+        );
+        expect(apr).toEqual('0.21749327999999999978');
     });
 
     it('should compute optimal compound frequency', async () => {
@@ -250,11 +254,13 @@ describe('StakingComputeService', () => {
         const stakingAbi = module.get<StakingAbiService>(StakingAbiService);
         jest.spyOn(stakingAbi, 'accumulatedRewards').mockResolvedValue('100');
         jest.spyOn(stakingAbi, 'rewardCapacity').mockResolvedValue('14500');
-        jest.spyOn(stakingAbi, 'perBlockRewardsAmount').mockResolvedValue('1');
+        jest.spyOn(stakingAbi, 'perSecondRewardsAmount').mockResolvedValue(
+            '0.16666667',
+        );
 
         const rewardsRemainingDays = await service.computeRewardsRemainingDays(
             Address.Zero().toBech32(),
         );
-        expect(rewardsRemainingDays).toEqual(1);
+        expect(rewardsRemainingDays).toEqual(0.99);
     });
 });

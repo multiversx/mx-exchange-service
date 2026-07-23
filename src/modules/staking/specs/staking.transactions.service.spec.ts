@@ -558,12 +558,12 @@ describe('StakingTransactionService', () => {
         });
     });
 
-    it('should get set per block reward amount transaction', async () => {
+    it('should get set per second reward amount transaction', async () => {
         const service = module.get<StakingTransactionService>(
             StakingTransactionService,
         );
 
-        const transaction = await service.setPerBlockRewardAmount(
+        const transaction = await service.setPerSecondRewardAmount(
             senderAddress,
             Address.Zero().toBech32(),
             '100',
@@ -577,8 +577,8 @@ describe('StakingTransactionService', () => {
             receiverUsername: undefined,
             senderUsername: undefined,
             gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.setPerBlockRewardAmount,
-            data: encodeTransactionData('setPerBlockRewardAmount@0100'),
+            gasLimit: gasConfig.stake.admin.setPerSecondRewardAmount,
+            data: encodeTransactionData('setPerSecondRewardAmount@0100'),
             chainID: 'T',
             version: 2,
             options: undefined,

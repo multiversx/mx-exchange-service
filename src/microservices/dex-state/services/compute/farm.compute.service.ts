@@ -41,8 +41,8 @@ export class FarmComputeService {
             farm.farmTokenPriceUSD,
         ).toFixed();
 
-        const totalRewardsPerYear = new BigNumber(farm.perBlockRewards)
-            .multipliedBy(constantsConfig.BLOCKS_IN_YEAR)
+        const totalRewardsPerYear = new BigNumber(farm.perSecondRewards)
+            .multipliedBy(constantsConfig.SECONDS_IN_YEAR)
             .toFixed();
 
         const totalRewardsPerYearUSD = computeValueUSD(
@@ -73,10 +73,9 @@ export class FarmComputeService {
     }
 
     calculateBoostedRewardsPerWeek(farm: FarmModelV2): string {
-        const blocksInWeek = constantsConfig.BLOCKS_PER_WEEK;
         const totalRewardsPerWeek = new BigNumber(
-            farm.perBlockRewards,
-        ).multipliedBy(blocksInWeek);
+            farm.perSecondRewards,
+        ).multipliedBy(constantsConfig.SECONDS_IN_WEEK);
 
         return totalRewardsPerWeek
             .multipliedBy(farm.boostedYieldsRewardsPercenatage)

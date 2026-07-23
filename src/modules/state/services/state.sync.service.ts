@@ -87,6 +87,7 @@ export class StateSyncService {
 
         const pairsNeedingAnalytics: string[] = [];
         const tokensNeedingAnalytics: string[] = [];
+        let count = 1;
 
         profiler = new PerformanceProfiler('Initialize pairs');
 
@@ -172,6 +173,11 @@ export class StateSyncService {
 
             pairsNeedingAnalytics.push(pair.address);
             tokensNeedingAnalytics.push(pair.firstTokenId, pair.secondTokenId);
+
+            this.logger.info(
+                `Finished populating pair: ${pair.address}: ${count} / ${pairsMetadata.length}`,
+            );
+            count += 1;
         }
 
         this.logger.info(

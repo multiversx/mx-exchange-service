@@ -284,16 +284,16 @@ export class StakingAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async perBlockRewardsAmount(stakeAddress: string): Promise<string> {
-        return this.getPerBlockRewardsAmountRaw(stakeAddress);
+    async perSecondRewardsAmount(stakeAddress: string): Promise<string> {
+        return this.getPerSecondRewardsAmountRaw(stakeAddress);
     }
 
-    async getPerBlockRewardsAmountRaw(stakeAddress: string): Promise<string> {
+    async getPerSecondRewardsAmountRaw(stakeAddress: string): Promise<string> {
         const abi = await this.mxProxy.getStakingAbi();
         const response = await this.getGenericData(
             abi,
             stakeAddress,
-            'getPerBlockRewardAmount',
+            'getPerSecondRewardAmount',
         );
         return response.firstValue.valueOf().toFixed();
     }
@@ -306,18 +306,18 @@ export class StakingAbiService
         remoteTtl: CacheTtlInfo.ContractState.remoteTtl,
         localTtl: CacheTtlInfo.ContractState.localTtl,
     })
-    async lastRewardBlockNonce(stakeAddress: string): Promise<number> {
-        return this.getLastRewardBlockNonceRaw(stakeAddress);
+    async lastRewardTimestamp(stakeAddress: string): Promise<number> {
+        return this.getLastRewardTimestampRaw(stakeAddress);
     }
 
-    async getLastRewardBlockNonceRaw(stakeAddress: string): Promise<number> {
+    async getLastRewardTimestampRaw(stakeAddress: string): Promise<number> {
         const abi = await this.mxProxy.getStakingAbi();
         const response = await this.getGenericData(
             abi,
             stakeAddress,
-            'getLastRewardBlockNonce',
+            'getLastRewardTimestamp',
         );
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().toNumber();
     }
 
     @ErrorLoggerAsync({

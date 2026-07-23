@@ -5,6 +5,8 @@ import {
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 
 export interface IFarmAbiServiceV2 extends IFarmAbiService {
+    rewardsPerSecond(farmAddress: string): Promise<string>;
+    lastRewardTimestamp(farmAddress: string): Promise<number>;
     boostedYieldsRewardsPercenatage(farmAddress: string): Promise<number>;
     lockingScAddress(farmAddress: string): Promise<string>;
     lockEpochs(farmAddress: string): Promise<number>;
