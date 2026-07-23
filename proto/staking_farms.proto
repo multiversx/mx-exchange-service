@@ -22,9 +22,8 @@ message StakingFarm {
   string baseApr                            = 15;
   string maxBoostedApr                      = 16;
   uint32 minUnboundEpochs                   = 17;
-  string perSecondRewards                   = 18;
-  uint32 lastRewardTimestamp                = 19;
-  string rewardsPerSecondAPRBound           = 20;
+  reserved 18, 19, 20;
+  reserved "perBlockRewards", "lastRewardBlockNonce", "rewardsPerBlockAPRBound";
   bool isProducingRewards                   = 21;
   uint32 rewardsRemainingDays               = 22;
   uint32 rewardsRemainingDaysUncapped       = 23;
@@ -45,4 +44,7 @@ message StakingFarm {
   uint32 stakingPositionMigrationNonce      = 38;
   string stakedValueUSD                     = 39;
   uint32 deployedAt                         = 40;
+  string perSecondRewards                   = 41;
+  uint32 lastRewardTimestamp                = 42;
+  string rewardsPerSecondAPRBound           = 43;
 }
