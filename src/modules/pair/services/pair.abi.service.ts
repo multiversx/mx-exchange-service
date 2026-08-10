@@ -334,7 +334,7 @@ export class PairAbiService
                 'getInitialLiquidtyAdder',
             );
             if (
-                queryResponse.returnMessage === undefined ||
+                queryResponse.returnCode !== 'ok' &&
                 queryResponse.returnMessage.includes(
                     VmQueryError.BAD_ARRAY_LENGTH,
                 )
