@@ -70,6 +70,7 @@ import { GovernanceHandlerService } from './handlers/governance.handler.service'
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { StakingHandlerService } from './handlers/staking.handler.service';
 import { TradingContestSwapHandlerService } from '../trading-contest/services/trading.contest.swap.handler.service';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -105,7 +106,11 @@ export class RabbitMqConsumer {
         channel: 'channel-events',
     })
     async consumeEvents(rawEvents: any) {
-        this.logger.info('rawEvents', rawEvents);
+        const profiler = new PerformanceProfiler('events consumer');
+
+        this.logger.info(`rawEvents count: ${rawEvents.length}`, {
+            context: RabbitMqConsumer.name,
+        });
 
         if (!rawEvents.events) {
             return;
@@ -138,20 +143,9 @@ export class RabbitMqConsumer {
                 rawEvent.name !== GOVERNANCE_EVENTS.ABSTAIN &&
                 rawEvent.name !== GOVERNANCE_EVENTS.DOWN_VETO
             ) {
-                this.logger.info('Event skipped', {
-                    address: rawEvent.address,
-                    identifier: rawEvent.identifier,
-                    name: rawEvent.name,
-                    topics: rawEvent.topics,
-                });
                 continue;
             }
-            this.logger.info('Processing event', {
-                address: rawEvent.address,
-                identifier: rawEvent.identifier,
-                name: rawEvent.name,
-                topics: rawEvent.topics,
-            });
+
             let eventData: any[];
             switch (rawEvent.name) {
                 case PAIR_EVENTS.SWAP:
@@ -369,6 +363,12 @@ export class RabbitMqConsumer {
                 Time: timestamp,
             });
         }
+
+        profiler.stop();
+
+        this.logger.info(`Events processed in: ${profiler.duration}ms`, {
+            context: RabbitMqConsumer.name,
+        });
     }
 
     async getFilterAddresses(): Promise<void> {
