@@ -108,13 +108,14 @@ export class RabbitMqConsumer {
     async consumeEvents(rawEvents: any) {
         const profiler = new PerformanceProfiler('events consumer');
 
-        this.logger.info(`rawEvents count: ${rawEvents.length}`, {
-            context: RabbitMqConsumer.name,
-        });
-
         if (!rawEvents.events) {
             return;
         }
+
+        this.logger.info(`rawEvents count: ${rawEvents.events.length}`, {
+            context: RabbitMqConsumer.name,
+        });
+
         const events: RawEvent[] = rawEvents?.events
             ?.filter(
                 (rawEvent: { address: string; identifier: string }) =>
