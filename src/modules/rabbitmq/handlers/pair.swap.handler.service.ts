@@ -269,8 +269,10 @@ export class SwapEventHandler {
             firstTokenPriceUSD,
             secondTokenPriceUSD,
         );
-        await this.updateTokenPrices(firstToken.identifier);
-        await this.updateTokenPrices(secondToken.identifier);
+        await Promise.all([
+            this.updateTokenPrices(firstToken.identifier),
+            this.updateTokenPrices(secondToken.identifier),
+        ]);
 
         event.getIdentifier() === SWAP_IDENTIFIER.SWAP_FIXED_INPUT
             ? await this.pubSub.publish(SWAP_IDENTIFIER.SWAP_FIXED_INPUT, {
