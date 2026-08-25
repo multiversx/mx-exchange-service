@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
@@ -53,6 +54,9 @@ export class SwapEventHandler {
         event: SwapEvent,
         context: EventsBatchContext,
     ): Promise<[any[], number]> {
+        const handlerProfiler = new PerformanceProfiler();
+        const timings: Record<string, number> = {};
+
         const [
             firstToken,
             secondToken,
@@ -60,14 +64,16 @@ export class SwapEventHandler {
             usdcPrice,
             liquidity,
             totalFeePercent,
-        ] = await Promise.all([
-            this.pairService.getFirstToken(event.address),
-            this.pairService.getSecondToken(event.address),
-            this.routerAbi.commonTokensForUserPairs(),
-            this.dataApi.getTokenPrice('USDC'),
-            this.pairAbi.totalSupply(event.address),
-            this.pairAbi.totalFeePercent(event.address),
-        ]);
+        ] = await this.measure(timings, 'pairMetadata', () =>
+            Promise.all([
+                this.pairService.getFirstToken(event.address),
+                this.pairService.getSecondToken(event.address),
+                this.routerAbi.commonTokensForUserPairs(),
+                this.dataApi.getTokenPrice('USDC'),
+                this.pairAbi.totalSupply(event.address),
+                this.pairAbi.totalFeePercent(event.address),
+            ]),
+        );
 
         const [
             firstTokenAmount,
@@ -104,16 +110,23 @@ export class SwapEventHandler {
             .multipliedBy(`1e-${firstToken.decimals}`)
             .toFixed();
 
-        await this.pairHandler.updatePairReserves(
-            event.getAddress(),
-            firstTokenReserve,
-            secondTokenReserve,
+        await this.measure(timings, 'updateReserves', () =>
+            this.pairHandler.updatePairReserves(
+                event.getAddress(),
+                firstTokenReserve,
+                secondTokenReserve,
+            ),
         );
 
-        const [firstTokenPriceUSD, secondTokenPriceUSD] = await Promise.all([
-            this.pairCompute.computeFirstTokenPriceUSD(event.address),
-            this.pairCompute.computeSecondTokenPriceUSD(event.address),
-        ]);
+        const [firstTokenPriceUSD, secondTokenPriceUSD] = await this.measure(
+            timings,
+            'tokenPricesUSD',
+            () =>
+                Promise.all([
+                    this.pairCompute.computeFirstTokenPriceUSD(event.address),
+                    this.pairCompute.computeSecondTokenPriceUSD(event.address),
+                ]),
+        );
 
         const firstTokenValues = {
             firstTokenPrice,
@@ -191,10 +204,12 @@ export class SwapEventHandler {
 
             if (event.getTokenIn().tokenID === secondToken.identifier) {
                 feeAmount = (
-                    await this.pairService.getEquivalentForLiquidity(
-                        event.address,
-                        secondToken.identifier,
-                        feeAmount,
+                    await this.measure(timings, 'feeEquivalent', () =>
+                        this.pairService.getEquivalentForLiquidity(
+                            event.address,
+                            secondToken.identifier,
+                            feeAmount,
+                        ),
                     )
                 ).toFixed();
             }
@@ -212,10 +227,12 @@ export class SwapEventHandler {
 
             if (event.getTokenIn().tokenID === firstToken.identifier) {
                 feeAmount = (
-                    await this.pairService.getEquivalentForLiquidity(
-                        event.address,
-                        firstToken.identifier,
-                        feeAmount,
+                    await this.measure(timings, 'feeEquivalent', () =>
+                        this.pairService.getEquivalentForLiquidity(
+                            event.address,
+                            firstToken.identifier,
+                            feeAmount,
+                        ),
                     )
                 ).toFixed();
             }
@@ -266,17 +283,21 @@ export class SwapEventHandler {
             secondTokenPriceUSD,
         );
 
-        await this.updatePairPrices(
-            event.address,
-            firstTokenPrice,
-            secondTokenPrice,
-            firstTokenPriceUSD,
-            secondTokenPriceUSD,
+        await this.measure(timings, 'updatePairPrices', () =>
+            this.updatePairPrices(
+                event.address,
+                firstTokenPrice,
+                secondTokenPrice,
+                firstTokenPriceUSD,
+                secondTokenPriceUSD,
+            ),
         );
-        await Promise.all([
-            this.updateTokenPrices(firstToken.identifier),
-            this.updateTokenPrices(secondToken.identifier),
-        ]);
+        await this.measure(timings, 'updateTokenPrices', () =>
+            Promise.all([
+                this.updateTokenPrices(firstToken.identifier),
+                this.updateTokenPrices(secondToken.identifier),
+            ]),
+        );
 
         if (event.getIdentifier() === SWAP_IDENTIFIER.SWAP_FIXED_INPUT) {
             this.publish(SWAP_IDENTIFIER.SWAP_FIXED_INPUT, {
@@ -323,6 +344,19 @@ export class SwapEventHandler {
 
         this.publish('tradingActivityEvent', {
             tradingActivityEvent: tradingActivity,
+        });
+
+        handlerProfiler.stop();
+
+        this.logger.info('handleSwapEvents timings', {
+            context: SwapEventHandler.name,
+            address: event.getAddress(),
+            txHash: event['txHash'],
+            total: this.round(handlerProfiler.duration),
+            awaited: this.round(
+                Object.values(timings).reduce((sum, ms) => sum + ms, 0),
+            ),
+            ...timings,
         });
 
         return [data, event.getTimestamp().toNumber()];
@@ -374,6 +408,30 @@ export class SwapEventHandler {
 
     private deleteCacheKeys(invalidatedKeys: string[]): void {
         this.publish('deleteCacheKeys', invalidatedKeys);
+    }
+
+    /**
+     * Times one awaited phase of the handler. Phases entered more than once
+     * (the conditional fee lookups) accumulate into a single total.
+     */
+    private async measure<T>(
+        timings: Record<string, number>,
+        phase: string,
+        work: () => Promise<T>,
+    ): Promise<T> {
+        const profiler = new PerformanceProfiler();
+        try {
+            return await work();
+        } finally {
+            profiler.stop();
+            timings[phase] = this.round(
+                (timings[phase] ?? 0) + profiler.duration,
+            );
+        }
+    }
+
+    private round(duration: number): number {
+        return Math.round(duration * 100) / 100;
     }
 
     private publish(trigger: string, payload: any): void {
