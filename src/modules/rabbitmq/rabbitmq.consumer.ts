@@ -71,6 +71,8 @@ import { RemoteConfigGetterService } from '../remote-config/remote-config.getter
 import { StakingHandlerService } from './handlers/staking.handler.service';
 import { TradingContestSwapHandlerService } from '../trading-contest/services/trading.contest.swap.handler.service';
 import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
+import { EventsBatchContext } from './handlers/events.batch.context';
+import { EventsAggregatorService } from './handlers/events.aggregator.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -94,6 +96,7 @@ export class RabbitMqConsumer {
         private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
         private readonly escrowHandler: EscrowHandlerService,
         private readonly analyticsWrite: AnalyticsWriteService,
+        private readonly eventsAggregator: EventsAggregatorService,
         private readonly governanceHandler: GovernanceHandlerService,
         private readonly remoteConfig: RemoteConfigGetterService,
         private readonly tradingContestSwapHandlerService: TradingContestSwapHandlerService,
@@ -130,6 +133,8 @@ export class RabbitMqConsumer {
         this.data = [];
         let timestamp: number;
 
+        const batchContext = new EventsBatchContext();
+
         for (const rawEvent of events) {
             if (
                 rawEvent.data === '' &&
@@ -152,7 +157,10 @@ export class RabbitMqConsumer {
                 case PAIR_EVENTS.SWAP:
                     const swapEvent = new SwapEvent(rawEvent);
                     [eventData, timestamp] =
-                        await this.swapHandler.handleSwapEvents(swapEvent);
+                        await this.swapHandler.handleSwapEvents(
+                            swapEvent,
+                            batchContext,
+                        );
                     this.updateIngestData(eventData);
                     await this.tradingContestSwapHandlerService.handleSwapEvent(
                         swapEvent,
@@ -163,6 +171,7 @@ export class RabbitMqConsumer {
                     [eventData, timestamp] =
                         await this.liquidityHandler.handleLiquidityEvent(
                             new AddLiquidityEvent(rawEvent),
+                            batchContext,
                         );
                     this.updateIngestData(eventData);
                     break;
@@ -170,6 +179,7 @@ export class RabbitMqConsumer {
                     [eventData, timestamp] =
                         await this.liquidityHandler.handleLiquidityEvent(
                             new RemoveLiquidityEvent(rawEvent),
+                            batchContext,
                         );
                     this.updateIngestData(eventData);
                     break;
@@ -358,6 +368,11 @@ export class RabbitMqConsumer {
             }
         }
 
+        const aggregates = await this.eventsAggregator.computeBatchAggregates(
+            batchContext,
+        );
+        this.updateIngestData(aggregates);
+
         if (Object.keys(this.data).length > 0) {
             await this.analyticsWrite.ingest({
                 data: this.data,
@@ -406,7 +421,9 @@ export class RabbitMqConsumer {
         );
     }
 
-    private async updateIngestData(eventData: any[]): Promise<void> {
+    private async updateIngestData(
+        eventData: Record<string, any>,
+    ): Promise<void> {
         for (const series of Object.keys(eventData)) {
             if (this.data[series] === undefined) {
                 this.data[series] = {};

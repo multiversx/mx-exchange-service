@@ -11,7 +11,6 @@ import {
     SwapNoFeeEvent,
 } from '@multiversx/sdk-exchange';
 import { PairHandler } from './pair.handler.service';
-import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
@@ -21,6 +20,7 @@ import { RouterAbiService } from 'src/modules/router/services/router.abi.service
 import { TradingActivityAction } from 'src/modules/analytics/models/trading.activity.model';
 import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { EventsBatchContext } from './events.batch.context';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -37,7 +37,6 @@ export class SwapEventHandler {
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairCompute: PairComputeService,
         private readonly routerAbi: RouterAbiService,
-        private readonly routerCompute: RouterComputeService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly tokenSetter: TokenSetterService,
@@ -46,7 +45,10 @@ export class SwapEventHandler {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    async handleSwapEvents(event: SwapEvent): Promise<[any[], number]> {
+    async handleSwapEvents(
+        event: SwapEvent,
+        context: EventsBatchContext,
+    ): Promise<[any[], number]> {
         const [firstToken, secondToken, commonTokensIDs] = await Promise.all([
             this.pairService.getFirstToken(event.address),
             this.pairService.getSecondToken(event.address),
@@ -88,7 +90,6 @@ export class SwapEventHandler {
             secondTokenPriceUSD,
             liquidity,
             totalFeePercent,
-            newTotalLockedValueUSD,
         ] = await Promise.all([
             this.pairCompute.computeFirstTokenPrice(event.address),
             this.pairCompute.computeSecondTokenPrice(event.address),
@@ -96,7 +97,6 @@ export class SwapEventHandler {
             this.pairCompute.computeSecondTokenPriceUSD(event.address),
             this.pairAbi.totalSupply(event.address),
             this.pairAbi.totalFeePercent(event.address),
-            this.routerCompute.computeTotalLockedValueUSD(),
         ]);
 
         const firstTokenValues = {
@@ -224,24 +224,7 @@ export class SwapEventHandler {
             feesUSD: feesUSD.dividedBy(usdcPrice).toFixed(),
         };
 
-        const [firstTokenTotalLockedValue, secondTokenTotalLockedValue] =
-            await Promise.all([
-                this.pairHandler.getTokenTotalLockedValue(
-                    firstToken.identifier,
-                ),
-                this.pairHandler.getTokenTotalLockedValue(
-                    secondToken.identifier,
-                ),
-            ]);
         data[firstToken.identifier] = {
-            lockedValue: firstTokenTotalLockedValue,
-            lockedValueUSD: computeValueUSD(
-                firstTokenTotalLockedValue,
-                firstToken.decimals,
-                firstTokenPriceUSD,
-            )
-                .dividedBy(usdcPrice)
-                .toFixed(),
             priceUSD: new BigNumber(firstTokenPriceUSD)
                 .dividedBy(usdcPrice)
                 .toFixed(),
@@ -249,14 +232,6 @@ export class SwapEventHandler {
             volumeUSD: firstTokenVolumeUSD.toFixed(),
         };
         data[secondToken.identifier] = {
-            lockedValue: secondTokenTotalLockedValue,
-            lockedValueUSD: computeValueUSD(
-                secondTokenTotalLockedValue,
-                secondToken.decimals,
-                secondTokenPriceUSD,
-            )
-                .dividedBy(usdcPrice)
-                .toFixed(),
             priceUSD: new BigNumber(secondTokenPriceUSD)
                 .dividedBy(usdcPrice)
                 .toFixed(),
@@ -264,11 +239,16 @@ export class SwapEventHandler {
             volumeUSD: secondTokenVolumeUSD.toFixed(),
         };
 
-        data['factory'] = {
-            totalLockedValueUSD: newTotalLockedValueUSD
-                .dividedBy(usdcPrice)
-                .toFixed(),
-        };
+        context.trackTokenLockedValue(
+            firstToken.identifier,
+            firstToken.decimals,
+            firstTokenPriceUSD,
+        );
+        context.trackTokenLockedValue(
+            secondToken.identifier,
+            secondToken.decimals,
+            secondTokenPriceUSD,
+        );
 
         await this.updatePairPrices(
             event.address,

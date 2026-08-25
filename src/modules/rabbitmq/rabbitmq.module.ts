@@ -42,6 +42,7 @@ import { StakingHandlerService } from './handlers/staking.handler.service';
 import { StakingModule } from '../staking/staking.module';
 import { TradingContestModule } from '../trading-contest/trading.contest.module';
 import { StateChangesConsumer } from './state-changes/state.changes.consumer';
+import { EventsAggregatorService } from './handlers/events.aggregator.service';
 import { StateModule } from '../state/state.module';
 import { StateTasksModule } from '../state/state.tasks.module';
 
@@ -87,6 +88,7 @@ import { StateTasksModule } from '../state/state.tasks.module';
         PairHandler,
         LiquidityHandler,
         SwapEventHandler,
+        EventsAggregatorService,
         FeesCollectorHandlerService,
         TokenUnstakeHandlerService,
         WeeklyRewardsSplittingHandlerService,

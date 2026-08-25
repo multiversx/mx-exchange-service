@@ -2,21 +2,18 @@ import { AddLiquidityEvent, PAIR_EVENTS } from '@multiversx/sdk-exchange';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
-import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
-import { RouterSetterService } from 'src/modules/router/services/router.setter.service';
 import { MXDataApiService } from 'src/services/multiversx-communication/mx.data.api.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { PairHandler } from './pair.handler.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { EventsBatchContext } from './events.batch.context';
 
 @Injectable()
 export class LiquidityHandler {
     constructor(
         private readonly pairSetter: PairSetterService,
-        private readonly routerCompute: RouterComputeService,
-        private readonly routerSetter: RouterSetterService,
         private readonly tokenService: TokenService,
         private readonly tokenCompute: TokenComputeService,
         private readonly pairHandler: PairHandler,
@@ -26,6 +23,7 @@ export class LiquidityHandler {
 
     async handleLiquidityEvent(
         event: AddLiquidityEvent,
+        context: EventsBatchContext,
     ): Promise<[any[], number]> {
         await this.pairHandler.updatePairReserves(
             event.getAddress(),
@@ -39,7 +37,6 @@ export class LiquidityHandler {
             secondToken,
             firstTokenPriceUSD,
             secondTokenPriceUSD,
-            newTotalLockedValueUSD,
         ] = await Promise.all([
             this.tokenService.tokenMetadata(event.getFirstToken().tokenID),
             this.tokenService.tokenMetadata(event.getSecondToken().tokenID),
@@ -49,15 +46,9 @@ export class LiquidityHandler {
             this.tokenCompute.tokenPriceDerivedUSD(
                 event.getSecondToken().tokenID,
             ),
-            this.routerCompute.computeTotalLockedValueUSD(),
         ]);
 
         const data = [];
-        data['factory'] = {
-            totalLockedValueUSD: newTotalLockedValueUSD
-                .dividedBy(usdcPrice)
-                .toFixed(),
-        };
         const firstTokenLockedValueUSD = computeValueUSD(
             event.getFirstTokenReserves().toFixed(),
             firstToken.decimals,
@@ -85,36 +76,16 @@ export class LiquidityHandler {
             liquidity: event.getLiquidityPoolSupply().toFixed(),
         };
 
-        const [firstTokenTotalLockedValue, secondTokenTotalLockedValue] =
-            await Promise.all([
-                this.pairHandler.getTokenTotalLockedValue(
-                    firstToken.identifier,
-                ),
-                this.pairHandler.getTokenTotalLockedValue(
-                    secondToken.identifier,
-                ),
-            ]);
-
-        data[firstToken.identifier] = {
-            lockedValue: firstTokenTotalLockedValue,
-            lockedValueUSD: computeValueUSD(
-                firstTokenTotalLockedValue,
-                firstToken.decimals,
-                firstTokenPriceUSD,
-            )
-                .dividedBy(usdcPrice)
-                .toFixed(),
-        };
-        data[secondToken.identifier] = {
-            lockedValue: secondTokenTotalLockedValue,
-            lockedValueUSD: computeValueUSD(
-                secondTokenTotalLockedValue,
-                secondToken.decimals,
-                secondTokenPriceUSD,
-            )
-                .dividedBy(usdcPrice)
-                .toFixed(),
-        };
+        context.trackTokenLockedValue(
+            firstToken.identifier,
+            firstToken.decimals,
+            firstTokenPriceUSD,
+        );
+        context.trackTokenLockedValue(
+            secondToken.identifier,
+            secondToken.decimals,
+            secondTokenPriceUSD,
+        );
 
         const cacheKeys = await Promise.all([
             this.pairSetter.setFirstTokenLockedValueUSD(
@@ -124,9 +95,6 @@ export class LiquidityHandler {
             this.pairSetter.setSecondTokenLockedValueUSD(
                 event.address,
                 secondTokenLockedValueUSD.toFixed(),
-            ),
-            this.routerSetter.setTotalLockedValueUSD(
-                newTotalLockedValueUSD.toFixed(),
             ),
         ]);
 
