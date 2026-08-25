@@ -21,6 +21,7 @@ import { TradingActivityAction } from 'src/modules/analytics/models/trading.acti
 import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { EventsBatchContext } from './events.batch.context';
+import { quote } from 'src/modules/pair/pair.utils';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -75,6 +76,21 @@ export class SwapEventHandler {
                       event.getTokenInReserves().toFixed(),
                   ];
 
+        const firstTokenPrice = quote(
+            new BigNumber(`1e${firstToken.decimals}`).toFixed(),
+            firstTokenReserve,
+            secondTokenReserve,
+        )
+            .multipliedBy(`1e-${secondToken.decimals}`)
+            .toFixed();
+        const secondTokenPrice = quote(
+            new BigNumber(`1e${secondToken.decimals}`).toFixed(),
+            secondTokenReserve,
+            firstTokenReserve,
+        )
+            .multipliedBy(`1e-${firstToken.decimals}`)
+            .toFixed();
+
         await this.pairHandler.updatePairReserves(
             event.getAddress(),
             firstTokenReserve,
@@ -84,15 +100,11 @@ export class SwapEventHandler {
         const usdcPrice = await this.dataApi.getTokenPrice('USDC');
 
         const [
-            firstTokenPrice,
-            secondTokenPrice,
             firstTokenPriceUSD,
             secondTokenPriceUSD,
             liquidity,
             totalFeePercent,
         ] = await Promise.all([
-            this.pairCompute.computeFirstTokenPrice(event.address),
-            this.pairCompute.computeSecondTokenPrice(event.address),
             this.pairCompute.computeFirstTokenPriceUSD(event.address),
             this.pairCompute.computeSecondTokenPriceUSD(event.address),
             this.pairAbi.totalSupply(event.address),
