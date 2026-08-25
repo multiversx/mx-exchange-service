@@ -50,10 +50,20 @@ export class SwapEventHandler {
         event: SwapEvent,
         context: EventsBatchContext,
     ): Promise<[any[], number]> {
-        const [firstToken, secondToken, commonTokensIDs] = await Promise.all([
+        const [
+            firstToken,
+            secondToken,
+            commonTokensIDs,
+            usdcPrice,
+            liquidity,
+            totalFeePercent,
+        ] = await Promise.all([
             this.pairService.getFirstToken(event.address),
             this.pairService.getSecondToken(event.address),
             this.routerAbi.commonTokensForUserPairs(),
+            this.dataApi.getTokenPrice('USDC'),
+            this.pairAbi.totalSupply(event.address),
+            this.pairAbi.totalFeePercent(event.address),
         ]);
 
         const [
@@ -97,18 +107,9 @@ export class SwapEventHandler {
             secondTokenReserve,
         );
 
-        const usdcPrice = await this.dataApi.getTokenPrice('USDC');
-
-        const [
-            firstTokenPriceUSD,
-            secondTokenPriceUSD,
-            liquidity,
-            totalFeePercent,
-        ] = await Promise.all([
+        const [firstTokenPriceUSD, secondTokenPriceUSD] = await Promise.all([
             this.pairCompute.computeFirstTokenPriceUSD(event.address),
             this.pairCompute.computeSecondTokenPriceUSD(event.address),
-            this.pairAbi.totalSupply(event.address),
-            this.pairAbi.totalFeePercent(event.address),
         ]);
 
         const firstTokenValues = {
