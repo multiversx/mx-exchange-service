@@ -88,6 +88,19 @@ export class GenericSetterService {
         cacheKey: string,
         value: any,
     ): Promise<boolean> {
+        const locallyCachedValue = this.cachingService.getLocal(cacheKey);
+
+        // A locally cached value that already differs settles the question: the
+        // only way this returns true is remote === value === local, so there is
+        // nothing the remote read could still tell us. Skips a round trip on
+        // every write that actually changes the value.
+        if (
+            locallyCachedValue !== undefined &&
+            parseCachedNullOrUndefined(locallyCachedValue) !== value
+        ) {
+            return false;
+        }
+
         const cachedValue = await this.cachingService.getRemote(cacheKey);
 
         if (cachedValue === undefined) {
@@ -98,8 +111,6 @@ export class GenericSetterService {
         if (parsedRemote !== value) {
             return false;
         }
-
-        const locallyCachedValue = this.cachingService.getLocal(cacheKey);
 
         if (locallyCachedValue === undefined) {
             return true;
