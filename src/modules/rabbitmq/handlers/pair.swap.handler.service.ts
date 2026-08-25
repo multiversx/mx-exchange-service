@@ -1,4 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
@@ -44,6 +46,7 @@ export class SwapEventHandler {
         private readonly pairHandler: PairHandler,
         private readonly dataApi: MXDataApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async handleSwapEvents(
@@ -275,13 +278,15 @@ export class SwapEventHandler {
             this.updateTokenPrices(secondToken.identifier),
         ]);
 
-        event.getIdentifier() === SWAP_IDENTIFIER.SWAP_FIXED_INPUT
-            ? await this.pubSub.publish(SWAP_IDENTIFIER.SWAP_FIXED_INPUT, {
-                  swapFixedInputEvent: event,
-              })
-            : await this.pubSub.publish(SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT, {
-                  swapFixedOutputEvent: event,
-              });
+        if (event.getIdentifier() === SWAP_IDENTIFIER.SWAP_FIXED_INPUT) {
+            this.publish(SWAP_IDENTIFIER.SWAP_FIXED_INPUT, {
+                swapFixedInputEvent: event,
+            });
+        } else {
+            this.publish(SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT, {
+                swapFixedOutputEvent: event,
+            });
+        }
 
         const pair = new PairMetadata({
             address: event.getAddress(),
@@ -316,7 +321,7 @@ export class SwapEventHandler {
             },
         };
 
-        this.pubSub.publish('tradingActivityEvent', {
+        this.publish('tradingActivityEvent', {
             tradingActivityEvent: tradingActivity,
         });
 
@@ -324,7 +329,7 @@ export class SwapEventHandler {
     }
 
     async handleSwapNoFeeEvent(event: SwapNoFeeEvent): Promise<void> {
-        await this.pubSub.publish(PAIR_EVENTS.SWAP_NO_FEE, {
+        this.publish(PAIR_EVENTS.SWAP_NO_FEE, {
             swapNoFeeEvent: event,
         });
     }
@@ -348,7 +353,7 @@ export class SwapEventHandler {
                 secondTokenPriceUSD,
             ),
         ]);
-        await this.deleteCacheKeys(cacheKeys);
+        this.deleteCacheKeys(cacheKeys);
     }
 
     private async updateTokenPrices(tokenID: string): Promise<void> {
@@ -364,10 +369,19 @@ export class SwapEventHandler {
             this.tokenSetter.setDerivedUSD(tokenID, tokenPriceDerivedUSD),
         ]);
 
-        await this.deleteCacheKeys(cacheKeys);
+        this.deleteCacheKeys(cacheKeys);
     }
 
-    private async deleteCacheKeys(invalidatedKeys: string[]) {
-        await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
+    private deleteCacheKeys(invalidatedKeys: string[]): void {
+        this.publish('deleteCacheKeys', invalidatedKeys);
+    }
+
+    private publish(trigger: string, payload: any): void {
+        this.pubSub.publish(trigger, payload).catch((error) => {
+            this.logger.error(`Failed to publish ${trigger}`, {
+                context: SwapEventHandler.name,
+                error: error?.message ?? error,
+            });
+        });
     }
 }

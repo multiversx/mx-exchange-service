@@ -1,4 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
@@ -14,6 +16,7 @@ export class PairHandler {
         private readonly pairSetter: PairSetterService,
         private readonly routerAbi: RouterAbiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async updatePairReserves(
@@ -51,7 +54,7 @@ export class PairHandler {
             ),
         );
         const cachedKeys = await Promise.all(promises);
-        await this.deleteCacheKeys(cachedKeys);
+        this.deleteCacheKeys(cachedKeys);
     }
 
     async getTokenTotalLockedValue(tokenID: string): Promise<string> {
@@ -78,7 +81,14 @@ export class PairHandler {
         return newLockedValue.toFixed();
     }
 
-    private async deleteCacheKeys(invalidatedKeys: string[]) {
-        await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
+    private deleteCacheKeys(invalidatedKeys: string[]): void {
+        this.pubSub
+            .publish('deleteCacheKeys', invalidatedKeys)
+            .catch((error) => {
+                this.logger.error('Failed to publish deleteCacheKeys', {
+                    context: PairHandler.name,
+                    error: error?.message ?? error,
+                });
+            });
     }
 }
