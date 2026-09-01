@@ -132,8 +132,8 @@
                 "withFeeSwap": 15000000
             },
             "swapTokensFixedOutput": {
-                "default": 15000000,
-                "withFeeSwap": 15000000
+                "default": 17500000,
+                "withFeeSwap": 17500000
             },
             "swapNoFeeAndForward": 25500000,
             "setLpTokenIdentifier": 200000000,
