@@ -124,8 +124,8 @@
             }
         },
         "pairs": {
-            "addLiquidity": 10000000,
-            "removeLiquidity": 10000000,
+            "addLiquidity": 11500000,
+            "removeLiquidity": 11500000,
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
                 "default": 15000000,
