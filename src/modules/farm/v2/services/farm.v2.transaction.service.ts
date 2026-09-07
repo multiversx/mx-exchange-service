@@ -11,7 +11,7 @@ import {
     ClaimRewardsArgs,
     CompoundRewardsArgs,
 } from '../../models/farm.args';
-import { FarmRewardType, FarmVersion } from '../../models/farm.model';
+import { FarmVersion } from '../../models/farm.model';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
@@ -20,6 +20,8 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { FarmServiceV2 } from './farm.v2.service';
+import { FarmComputeServiceV2 } from './farm.v2.compute.service';
 
 @Injectable()
 export class FarmTransactionServiceV2 extends TransactionsFarmService {
@@ -28,6 +30,8 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         protected readonly farmAbi: FarmAbiServiceV2,
         protected readonly pairService: PairService,
         protected readonly pairAbi: PairAbiService,
+        private readonly farmService: FarmServiceV2,
+        private readonly farmComputeService: FarmComputeServiceV2,
         private readonly mxApi: MXApiService,
         private readonly contextGetter: ContextGetterService,
     ) {
@@ -43,10 +47,34 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
     ): Promise<TransactionModel> {
         await this.validateInputTokens(args.farmAddress, args.tokens);
 
-        const gasLimit =
+        let gasLimit =
             args.tokens.length > 1
                 ? gasConfig.farms[FarmVersion.V2].enterFarm.withTokenMerge
                 : gasConfig.farms[FarmVersion.V2].enterFarm.default;
+
+        const boostedRewardsInfo = await this.farmService.getFarmBoostedRewards(
+            args.farmAddress,
+            sender,
+        );
+
+        const rewardsList = await Promise.all(
+            boostedRewardsInfo.boostedRewardsWeeklyInfo.map((weeklyInfo) =>
+                this.farmComputeService.computeUserRewardsForWeek(
+                    weeklyInfo.scAddress,
+                    weeklyInfo.userAddress,
+                    weeklyInfo.week,
+                ),
+            ),
+        );
+
+        const claimableBoostedRewards = rewardsList.reduce(
+            (total, rewards) => total.plus(rewards),
+            new BigNumber(0),
+        );
+
+        if (claimableBoostedRewards.isGreaterThan(0)) {
+            gasLimit += 10000000;
+        }
 
         return this.mxProxy.getFarmSmartContractTransaction(
             args.farmAddress,
