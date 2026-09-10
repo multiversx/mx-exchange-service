@@ -25,6 +25,7 @@ import { determineBaseAndQuoteTokens } from 'src/utils/pair.utils';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { EventsBatchContext } from './events.batch.context';
 import { quote } from 'src/modules/pair/pair.utils';
+import { PriceContext } from 'src/modules/tokens/models/price.context';
 
 export enum SWAP_IDENTIFIER {
     SWAP_FIXED_INPUT = 'swapTokensFixedInput',
@@ -56,6 +57,7 @@ export class SwapEventHandler {
     ): Promise<[any[], number]> {
         const handlerProfiler = new PerformanceProfiler();
         const timings: Record<string, number> = {};
+        const priceContext = new PriceContext();
 
         const [
             firstToken,
@@ -110,12 +112,19 @@ export class SwapEventHandler {
             .multipliedBy(`1e-${firstToken.decimals}`)
             .toFixed();
 
-        await this.measure(timings, 'updateReserves', () =>
-            this.pairHandler.updatePairReserves(
-                event.getAddress(),
-                firstTokenReserve,
-                secondTokenReserve,
-            ),
+        await this.measure(timings, 'updatePairState', () =>
+            Promise.all([
+                this.pairHandler.updatePairReserves(
+                    event.getAddress(),
+                    firstTokenReserve,
+                    secondTokenReserve,
+                ),
+                this.updatePairTokenPrices(
+                    event.address,
+                    firstTokenPrice,
+                    secondTokenPrice,
+                ),
+            ]),
         );
 
         const [firstTokenPriceUSD, secondTokenPriceUSD] = await this.measure(
@@ -123,8 +132,14 @@ export class SwapEventHandler {
             'tokenPricesUSD',
             () =>
                 Promise.all([
-                    this.pairCompute.computeFirstTokenPriceUSD(event.address),
-                    this.pairCompute.computeSecondTokenPriceUSD(event.address),
+                    this.pairCompute.computeFirstTokenPriceUSD(
+                        event.address,
+                        priceContext,
+                    ),
+                    this.pairCompute.computeSecondTokenPriceUSD(
+                        event.address,
+                        priceContext,
+                    ),
                 ]),
         );
 
@@ -283,19 +298,17 @@ export class SwapEventHandler {
             secondTokenPriceUSD,
         );
 
-        await this.measure(timings, 'updatePairPrices', () =>
-            this.updatePairPrices(
+        await this.measure(timings, 'updatePairPricesUSD', () =>
+            this.updatePairTokenPricesUSD(
                 event.address,
-                firstTokenPrice,
-                secondTokenPrice,
                 firstTokenPriceUSD,
                 secondTokenPriceUSD,
             ),
         );
         await this.measure(timings, 'updateTokenPrices', () =>
             Promise.all([
-                this.updateTokenPrices(firstToken.identifier),
-                this.updateTokenPrices(secondToken.identifier),
+                this.updateTokenPrices(firstToken.identifier, priceContext),
+                this.updateTokenPrices(secondToken.identifier, priceContext),
             ]),
         );
 
@@ -368,16 +381,30 @@ export class SwapEventHandler {
         });
     }
 
-    private async updatePairPrices(
+    /**
+     * Written before the USD prices are computed: the price graph reads
+     * `pair.firstTokenPrice` back while deriving them, so publishing the
+     * event-derived values first keeps that read consistent with the reserves
+     * this same event just wrote.
+     */
+    private async updatePairTokenPrices(
         pairAddress: string,
         firstTokenPrice: string,
         secondTokenPrice: string,
-        firstTokenPriceUSD: string,
-        secondTokenPriceUSD: string,
     ): Promise<void> {
         const cacheKeys = await Promise.all([
             this.pairSetter.setFirstTokenPrice(pairAddress, firstTokenPrice),
             this.pairSetter.setSecondTokenPrice(pairAddress, secondTokenPrice),
+        ]);
+        this.deleteCacheKeys(cacheKeys);
+    }
+
+    private async updatePairTokenPricesUSD(
+        pairAddress: string,
+        firstTokenPriceUSD: string,
+        secondTokenPriceUSD: string,
+    ): Promise<void> {
+        const cacheKeys = await Promise.all([
             this.pairSetter.setFirstTokenPriceUSD(
                 pairAddress,
                 firstTokenPriceUSD,
@@ -390,11 +417,14 @@ export class SwapEventHandler {
         this.deleteCacheKeys(cacheKeys);
     }
 
-    private async updateTokenPrices(tokenID: string): Promise<void> {
+    private async updateTokenPrices(
+        tokenID: string,
+        context: PriceContext,
+    ): Promise<void> {
         const [tokenPriceDerivedEGLD, tokenPriceDerivedUSD] = await Promise.all(
             [
-                this.tokenCompute.computeTokenPriceDerivedEGLD(tokenID, []),
-                this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
+                this.tokenCompute.computeDerivedEGLDInContext(tokenID, context),
+                this.tokenCompute.computeTokenPriceDerivedUSD(tokenID, context),
             ],
         );
 

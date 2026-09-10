@@ -28,6 +28,7 @@ import { getAllKeys } from 'src/utils/get.many.utils';
 import moment from 'moment';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
+import { PriceContext } from 'src/modules/tokens/models/price.context';
 
 @Injectable()
 export class PairComputeService implements IPairComputeService {
@@ -217,7 +218,10 @@ export class PairComputeService implements IPairComputeService {
         return this.computeFirstTokenPriceUSD(pairAddress);
     }
 
-    async computeFirstTokenPriceUSD(pairAddress: string): Promise<string> {
+    async computeFirstTokenPriceUSD(
+        pairAddress: string,
+        context?: PriceContext,
+    ): Promise<string> {
         const [firstTokenID, secondTokenID] = await Promise.all([
             this.pairAbi.firstTokenID(pairAddress),
             this.pairAbi.secondTokenID(pairAddress),
@@ -236,7 +240,10 @@ export class PairComputeService implements IPairComputeService {
             return new BigNumber(tokenPrice).times(usdcPrice).toFixed();
         }
 
-        return this.tokenCompute.computeTokenPriceDerivedUSD(firstTokenID);
+        return this.tokenCompute.computeTokenPriceDerivedUSD(
+            firstTokenID,
+            context,
+        );
     }
 
     async getAllFirstTokensPriceUSD(
@@ -263,7 +270,10 @@ export class PairComputeService implements IPairComputeService {
         return this.computeSecondTokenPriceUSD(pairAddress);
     }
 
-    async computeSecondTokenPriceUSD(pairAddress: string): Promise<string> {
+    async computeSecondTokenPriceUSD(
+        pairAddress: string,
+        context?: PriceContext,
+    ): Promise<string> {
         const [firstTokenID, secondTokenID] = await Promise.all([
             this.pairAbi.firstTokenID(pairAddress),
             this.pairAbi.secondTokenID(pairAddress),
@@ -282,7 +292,10 @@ export class PairComputeService implements IPairComputeService {
             return new BigNumber(tokenPrice).times(usdcPrice).toFixed();
         }
 
-        return this.tokenCompute.computeTokenPriceDerivedUSD(secondTokenID);
+        return this.tokenCompute.computeTokenPriceDerivedUSD(
+            secondTokenID,
+            context,
+        );
     }
 
     async getAllSecondTokensPricesUSD(

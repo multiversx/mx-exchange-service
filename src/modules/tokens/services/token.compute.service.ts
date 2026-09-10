@@ -27,6 +27,7 @@ import { PendingExecutor } from 'src/utils/pending.executor';
 import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
+import { PriceContext } from '../models/price.context';
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -74,6 +75,19 @@ export class TokenComputeService implements ITokenComputeService {
     })
     async tokenPriceDerivedEGLD(tokenID: string): Promise<string> {
         return this.computeTokenPriceDerivedEGLD(tokenID, []);
+    }
+
+    async computeDerivedEGLDInContext(
+        tokenID: string,
+        context?: PriceContext,
+    ): Promise<string> {
+        if (!context) {
+            return this.computeTokenPriceDerivedEGLD(tokenID, []);
+        }
+
+        return context.memoizeDerivedEGLD(tokenID, () =>
+            this.computeTokenPriceDerivedEGLD(tokenID, []),
+        );
     }
 
     async computeTokenPriceDerivedEGLD(
@@ -236,7 +250,23 @@ export class TokenComputeService implements ITokenComputeService {
         return this.computeTokenPriceDerivedUSD(tokenID);
     }
 
-    async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
+    async computeTokenPriceDerivedUSD(
+        tokenID: string,
+        context?: PriceContext,
+    ): Promise<string> {
+        if (!context) {
+            return this.derivedUSD(tokenID);
+        }
+
+        return context.memoizeDerivedUSD(tokenID, () =>
+            this.derivedUSD(tokenID, context),
+        );
+    }
+
+    private async derivedUSD(
+        tokenID: string,
+        context?: PriceContext,
+    ): Promise<string> {
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             tokenID,
         );
@@ -247,7 +277,7 @@ export class TokenComputeService implements ITokenComputeService {
 
         const [egldPriceUSD, derivedEGLD, usdcPrice] = await Promise.all([
             this.getEgldPriceInUSD(),
-            this.computeTokenPriceDerivedEGLD(tokenID, []),
+            this.computeDerivedEGLDInContext(tokenID, context),
             this.dataApi.getTokenPrice('USDC'),
         ]);
 
