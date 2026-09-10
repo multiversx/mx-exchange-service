@@ -19,6 +19,15 @@ import { MXApiService } from 'src/services/multiversx-communication/mx.api.servi
 import { Address } from '@multiversx/sdk-core';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
+import { FarmServiceV2 } from '../v2/services/farm.v2.service';
+import { FarmComputeServiceV2 } from '../v2/services/farm.v2.compute.service';
+import { WeekTimekeepingAbiServiceProvider } from 'src/submodules/week-timekeeping/mocks/week.timekeeping.abi.service.mock';
+import { WeekTimekeepingComputeService } from 'src/submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import { WeeklyRewardsSplittingAbiServiceProvider } from 'src/submodules/weekly-rewards-splitting/mocks/weekly.rewards.splitting.abi.mock';
+import { EnergyAbiServiceProvider } from 'src/modules/energy/mocks/energy.abi.service.mock';
+import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { TokenComputeServiceProvider } from 'src/modules/tokens/mocks/token.compute.service.mock';
+import { FarmsStateServiceProvider } from 'src/modules/state/mocks/farms.state.service.mock';
 
 describe('FarmTransactionsServiceV2', () => {
     let module: TestingModule;
@@ -44,7 +53,16 @@ describe('FarmTransactionsServiceV2', () => {
                 RouterAbiServiceProvider,
                 WrapAbiServiceProvider,
                 TokenServiceProvider,
+                TokenComputeServiceProvider,
                 ContextGetterServiceProvider,
+                WeekTimekeepingAbiServiceProvider,
+                WeekTimekeepingComputeService,
+                WeeklyRewardsSplittingAbiServiceProvider,
+                EnergyAbiServiceProvider,
+                WeeklyRewardsSplittingComputeService,
+                FarmServiceV2,
+                FarmsStateServiceProvider,
+                FarmComputeServiceV2,
                 FarmTransactionServiceV2,
             ],
         }).compile();

@@ -2390,7 +2390,7 @@ describe('PositionCreatorTransaction', () => {
                     data: encodeTransactionData(
                         'ESDTTransfer@WEGLD-123456@1000000000000000000@createEnergyPosition@1440@986046911229504184328@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@986046911229504184328',
                     ),
-                    gasLimit: 30000000,
+                    gasLimit: 31000000,
                     gasPrice: 1000000000,
                     guardian: undefined,
                     guardianSignature: undefined,
@@ -2442,7 +2442,7 @@ describe('PositionCreatorTransaction', () => {
                     data: encodeTransactionData(
                         'createEnergyPosition@1440@986046911229504184328@0000000000000000000000000000000000000000000000000000000000000012@swapTokensFixedInput@MEX-123456@986046911229504184328',
                     ),
-                    gasLimit: 33000000,
+                    gasLimit: 34000000,
                     gasPrice: 1000000000,
                     guardian: undefined,
                     guardianSignature: undefined,
