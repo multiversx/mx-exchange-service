@@ -111,7 +111,8 @@ export class RabbitMqConsumer {
     async consumeEvents(rawEvents: any) {
         const profiler = new PerformanceProfiler('events consumer');
 
-        if (!rawEvents.events) {
+        if (!rawEvents.events || rawEvents.events.length === 0) {
+            profiler.stop();
             return;
         }
 
@@ -368,9 +369,8 @@ export class RabbitMqConsumer {
             }
         }
 
-        const aggregates = await this.eventsAggregator.computeBatchAggregates(
-            batchContext,
-        );
+        const aggregates =
+            await this.eventsAggregator.computeBatchAggregates(batchContext);
         this.updateIngestData(aggregates);
 
         if (Object.keys(this.data).length > 0) {
