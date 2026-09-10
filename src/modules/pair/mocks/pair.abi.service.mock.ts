@@ -37,6 +37,26 @@ export class PairAbiServiceMock implements IPairAbiService {
     ): Promise<PairInfoModel[]> {
         return pairAddresses.map((pairAddress) => PairsData(pairAddress).info);
     }
+    async getAllPairsTotalSupply(pairAddresses: string[]): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).info.totalSupply,
+        );
+    }
+    async getAllFirstTokensReserve(pairAddresses: string[]): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).info.reserves0,
+        );
+    }
+    async getAllSecondTokensReserve(pairAddresses: string[]): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).info.reserves1,
+        );
+    }
+    async getAllPairsState(pairAddresses: string[]): Promise<string[]> {
+        return pairAddresses.map(
+            (pairAddress) => PairsData(pairAddress).state,
+        );
+    }
     async totalFeePercent(pairAddress: string): Promise<number> {
         return PairsData(pairAddress).totalFeePercent;
     }

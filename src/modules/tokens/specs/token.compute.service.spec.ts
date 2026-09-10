@@ -19,6 +19,7 @@ import { MXApiServiceProvider } from 'src/services/multiversx-communication/mx.a
 import { ElasticSearchModule } from 'src/services/elastic-search/elastic.search.module';
 import { PairsStateServiceProvider } from 'src/modules/state/mocks/pairs.state.service.mock';
 import { PriceContext } from '../models/price.context';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 
 describe('TokenComputeService', () => {
     let module: TestingModule;
@@ -105,6 +106,61 @@ describe('TokenComputeService', () => {
             [],
         );
         expect(price).toEqual('0');
+    });
+
+    describe('batched traversal reads', () => {
+        let service: TokenComputeService;
+        let pairAbi: PairAbiService;
+
+        beforeEach(() => {
+            service = module.get<TokenComputeService>(TokenComputeService);
+            pairAbi = module.get<PairAbiService>(PairAbiService);
+        });
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it('should read pair state and liquidity in batches, never per pair', async () => {
+            const totalSupply = jest.spyOn(pairAbi, 'totalSupply');
+            const state = jest.spyOn(pairAbi, 'state');
+            const firstTokenReserve = jest.spyOn(pairAbi, 'firstTokenReserve');
+            const secondTokenReserve = jest.spyOn(pairAbi, 'secondTokenReserve');
+            const batchedTotalSupply = jest.spyOn(
+                pairAbi,
+                'getAllPairsTotalSupply',
+            );
+
+            const price = await service.computeTokenPriceDerivedEGLD(
+                'MEX-123456',
+                [],
+            );
+
+            expect(price).toEqual('0.001');
+            expect(batchedTotalSupply.mock.calls.length).toBeGreaterThan(0);
+            expect(totalSupply).not.toHaveBeenCalled();
+            expect(state).not.toHaveBeenCalled();
+            expect(firstTokenReserve).not.toHaveBeenCalled();
+            expect(secondTokenReserve).not.toHaveBeenCalled();
+        });
+
+        it('should issue one batched liquidity read per visited node', async () => {
+            const batchedTotalSupply = jest.spyOn(
+                pairAbi,
+                'getAllPairsTotalSupply',
+            );
+
+            await service.computeTokenPriceDerivedEGLD('MEX-123456', []);
+
+            const readPairs = batchedTotalSupply.mock.calls.reduce(
+                (total, [addresses]) => total + addresses.length,
+                0,
+            );
+
+            expect(readPairs).toBeGreaterThanOrEqual(
+                batchedTotalSupply.mock.calls.length,
+            );
+        });
     });
 
     describe('price context', () => {

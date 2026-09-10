@@ -28,6 +28,14 @@ import { CacheService } from 'src/services/caching/cache.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { ElasticSearchEventsService } from 'src/services/elastic-search/services/es.events.service';
 import { PriceContext } from '../models/price.context';
+import { TokenService } from './token.service';
+
+type TokenPairsData = {
+    liquidities: string[];
+    counterpartyReserves: string[];
+    tokenPrices: string[];
+    counterpartyDecimals: Map<string, number>;
+};
 
 @Injectable()
 export class TokenComputeService implements ITokenComputeService {
@@ -52,6 +60,7 @@ export class TokenComputeService implements ITokenComputeService {
         private readonly elasticService: ElasticService,
         private readonly cachingService: CacheService,
         private readonly elasticEventsService: ElasticSearchEventsService,
+        private readonly tokenService: TokenService,
     ) {
         this.swapCountExecutor = new PendingExecutor(
             async () => await this.allTokensSwapsCount(),
@@ -122,8 +131,8 @@ export class TokenComputeService implements ITokenComputeService {
         }
 
         if (tokenPairs.length > 1) {
-            const states = await Promise.all(
-                tokenPairs.map((pair) => this.pairAbi.state(pair.address)),
+            const states = await this.pairAbi.getAllPairsState(
+                tokenPairs.map((pair) => pair.address),
             );
             if (states.find((state) => state === 'Active')) {
                 tokenPairs = tokenPairs.filter((pair, index) => {
@@ -154,78 +163,137 @@ export class TokenComputeService implements ITokenComputeService {
             const eglpPriceUSD = await this.getEgldPriceInUSD();
             priceSoFar = new BigNumber(1).dividedBy(eglpPriceUSD).toFixed();
         } else {
-            for (const pair of tokenPairs) {
-                const liquidity = await this.pairAbi.totalSupply(pair.address);
-                if (new BigNumber(liquidity).isGreaterThan(0)) {
-                    if (pair.firstTokenID === tokenID) {
-                        const [
-                            secondTokenDerivedEGLD,
-                            secondTokenReserves,
-                            firstTokenPrice,
-                            secondToken,
-                        ] = await Promise.all([
-                            this.computeTokenPriceDerivedEGLD(
-                                pair.secondTokenID,
-                                pairsNotToVisit,
-                                computedPrices,
-                            ),
-                            this.pairAbi.secondTokenReserve(pair.address),
-                            this.pairCompute.firstTokenPrice(pair.address),
-                            this.pairService.getSecondToken(pair.address),
-                        ]);
-                        const egldLocked = new BigNumber(secondTokenReserves)
-                            .times(`1e-${secondToken.decimals}`)
-                            .times(secondTokenDerivedEGLD)
-                            .times(`1e${mxConfig.EGLDDecimals}`)
-                            .integerValue();
+            // Read once per node, then await only the recursive descent - it
+            // stays sequential to preserve the cycle guard's visit order.
+            const {
+                liquidities,
+                counterpartyReserves,
+                tokenPrices,
+                counterpartyDecimals,
+            } = await this.loadTokenPairsData(tokenID, tokenPairs);
 
-                        if (
-                            egldLocked.isGreaterThan(largestLiquidityEGLD) &&
-                            egldLocked.gt(minLiquidity)
-                        ) {
-                            largestLiquidityEGLD = egldLocked;
-                            priceSoFar = new BigNumber(firstTokenPrice)
-                                .times(secondTokenDerivedEGLD)
-                                .toFixed();
-                        }
-                    }
-                    if (pair.secondTokenID === tokenID) {
-                        const [
-                            firstTokenDerivedEGLD,
-                            firstTokenReserves,
-                            secondTokenPrice,
-                            firstToken,
-                        ] = await Promise.all([
-                            this.computeTokenPriceDerivedEGLD(
-                                pair.firstTokenID,
-                                pairsNotToVisit,
-                                computedPrices,
-                            ),
-                            this.pairAbi.firstTokenReserve(pair.address),
-                            this.pairCompute.secondTokenPrice(pair.address),
-                            this.pairService.getFirstToken(pair.address),
-                        ]);
-                        const egldLocked = new BigNumber(firstTokenReserves)
-                            .times(`1e-${firstToken.decimals}`)
-                            .times(firstTokenDerivedEGLD)
-                            .times(`1e${mxConfig.EGLDDecimals}`)
-                            .integerValue();
-                        if (
-                            egldLocked.isGreaterThan(largestLiquidityEGLD) &&
-                            egldLocked.gt(minLiquidity)
-                        ) {
-                            largestLiquidityEGLD = egldLocked;
-                            priceSoFar = new BigNumber(secondTokenPrice)
-                                .times(firstTokenDerivedEGLD)
-                                .toFixed();
-                        }
-                    }
+            for (const [index, pair] of tokenPairs.entries()) {
+                if (!new BigNumber(liquidities[index]).isGreaterThan(0)) {
+                    continue;
+                }
+
+                const counterpartyTokenID =
+                    pair.firstTokenID === tokenID
+                        ? pair.secondTokenID
+                        : pair.firstTokenID;
+
+                const counterpartyDerivedEGLD =
+                    await this.computeTokenPriceDerivedEGLD(
+                        counterpartyTokenID,
+                        pairsNotToVisit,
+                        computedPrices,
+                    );
+
+                const egldLocked = new BigNumber(counterpartyReserves[index])
+                    .times(
+                        `1e-${counterpartyDecimals.get(counterpartyTokenID)}`,
+                    )
+                    .times(counterpartyDerivedEGLD)
+                    .times(`1e${mxConfig.EGLDDecimals}`)
+                    .integerValue();
+
+                if (
+                    egldLocked.isGreaterThan(largestLiquidityEGLD) &&
+                    egldLocked.gt(minLiquidity)
+                ) {
+                    largestLiquidityEGLD = egldLocked;
+                    priceSoFar = new BigNumber(tokenPrices[index])
+                        .times(counterpartyDerivedEGLD)
+                        .toFixed();
                 }
             }
         }
 
         computedPrices.set(tokenID, priceSoFar);
         return priceSoFar;
+    }
+
+    /**
+     * Reserves and total supply keep their own cache keys instead of coming
+     * from `pairInfoMetadata`, so these reads see what the per-pair reads saw.
+     */
+    private async loadTokenPairsData(
+        tokenID: string,
+        tokenPairs: PairMetadata[],
+    ): Promise<TokenPairsData> {
+        const addresses = tokenPairs.map((pair) => pair.address);
+
+        // Split by side so each pair fetches only the reserve and price it
+        // needs - fetching both would double the work on a cold cache.
+        const asFirstToken: number[] = [];
+        const asSecondToken: number[] = [];
+        tokenPairs.forEach((pair, index) => {
+            if (pair.firstTokenID === tokenID) {
+                asFirstToken.push(index);
+            } else {
+                asSecondToken.push(index);
+            }
+        });
+
+        const counterpartyTokenIDs = [
+            ...new Set(
+                tokenPairs.map((pair) =>
+                    pair.firstTokenID === tokenID
+                        ? pair.secondTokenID
+                        : pair.firstTokenID,
+                ),
+            ),
+        ];
+
+        const [
+            liquidities,
+            counterpartyReservesAsFirst,
+            tokenPricesAsFirst,
+            counterpartyReservesAsSecond,
+            tokenPricesAsSecond,
+            counterpartyTokens,
+        ] = await Promise.all([
+            this.pairAbi.getAllPairsTotalSupply(addresses),
+            this.pairAbi.getAllSecondTokensReserve(
+                asFirstToken.map((index) => addresses[index]),
+            ),
+            this.pairCompute.getAllFirstTokensPrice(
+                asFirstToken.map((index) => addresses[index]),
+            ),
+            this.pairAbi.getAllFirstTokensReserve(
+                asSecondToken.map((index) => addresses[index]),
+            ),
+            this.pairCompute.getAllSecondTokensPrice(
+                asSecondToken.map((index) => addresses[index]),
+            ),
+            this.tokenService.getAllTokensMetadata(counterpartyTokenIDs),
+        ]);
+
+        const counterpartyDecimals = new Map<string, number>(
+            counterpartyTokenIDs.map((counterpartyTokenID, index) => [
+                counterpartyTokenID,
+                counterpartyTokens[index].decimals,
+            ]),
+        );
+
+        const counterpartyReserves: string[] = new Array(tokenPairs.length);
+        const tokenPrices: string[] = new Array(tokenPairs.length);
+        asFirstToken.forEach((pairIndex, index) => {
+            counterpartyReserves[pairIndex] = counterpartyReservesAsFirst[index];
+            tokenPrices[pairIndex] = tokenPricesAsFirst[index];
+        });
+        asSecondToken.forEach((pairIndex, index) => {
+            counterpartyReserves[pairIndex] =
+                counterpartyReservesAsSecond[index];
+            tokenPrices[pairIndex] = tokenPricesAsSecond[index];
+        });
+
+        return {
+            liquidities,
+            counterpartyReserves,
+            tokenPrices,
+            counterpartyDecimals,
+        };
     }
 
     async getAllTokensPriceDerivedEGLD(tokenIDs: string[]): Promise<string[]> {
