@@ -213,18 +213,14 @@ export class TokenComputeService implements ITokenComputeService {
         return priceSoFar;
     }
 
-    /**
-     * Reserves and total supply keep their own cache keys instead of coming
-     * from `pairInfoMetadata`, so these reads see what the per-pair reads saw.
-     */
     private async loadTokenPairsData(
         tokenID: string,
         tokenPairs: PairMetadata[],
     ): Promise<TokenPairsData> {
         const addresses = tokenPairs.map((pair) => pair.address);
 
-        // Split by side so each pair fetches only the reserve and price it
-        // needs - fetching both would double the work on a cold cache.
+        // Split by side so each pair fetches only the price it needs -
+        // fetching both would double the work on a cold cache.
         const asFirstToken: number[] = [];
         const asSecondToken: number[] = [];
         tokenPairs.forEach((pair, index) => {
@@ -246,22 +242,14 @@ export class TokenComputeService implements ITokenComputeService {
         ];
 
         const [
-            liquidities,
-            counterpartyReservesAsFirst,
+            pairsInfo,
             tokenPricesAsFirst,
-            counterpartyReservesAsSecond,
             tokenPricesAsSecond,
             counterpartyTokens,
         ] = await Promise.all([
-            this.pairAbi.getAllPairsTotalSupply(addresses),
-            this.pairAbi.getAllSecondTokensReserve(
-                asFirstToken.map((index) => addresses[index]),
-            ),
+            this.pairAbi.getAllPairsInfoMetadata(addresses),
             this.pairCompute.getAllFirstTokensPrice(
                 asFirstToken.map((index) => addresses[index]),
-            ),
-            this.pairAbi.getAllFirstTokensReserve(
-                asSecondToken.map((index) => addresses[index]),
             ),
             this.pairCompute.getAllSecondTokensPrice(
                 asSecondToken.map((index) => addresses[index]),
@@ -276,21 +264,21 @@ export class TokenComputeService implements ITokenComputeService {
             ]),
         );
 
-        const counterpartyReserves: string[] = new Array(tokenPairs.length);
         const tokenPrices: string[] = new Array(tokenPairs.length);
         asFirstToken.forEach((pairIndex, index) => {
-            counterpartyReserves[pairIndex] = counterpartyReservesAsFirst[index];
             tokenPrices[pairIndex] = tokenPricesAsFirst[index];
         });
         asSecondToken.forEach((pairIndex, index) => {
-            counterpartyReserves[pairIndex] =
-                counterpartyReservesAsSecond[index];
             tokenPrices[pairIndex] = tokenPricesAsSecond[index];
         });
 
         return {
-            liquidities,
-            counterpartyReserves,
+            liquidities: pairsInfo.map((info) => info.totalSupply),
+            counterpartyReserves: tokenPairs.map((pair, index) =>
+                pair.firstTokenID === tokenID
+                    ? pairsInfo[index].reserves1
+                    : pairsInfo[index].reserves0,
+            ),
             tokenPrices,
             counterpartyDecimals,
         };

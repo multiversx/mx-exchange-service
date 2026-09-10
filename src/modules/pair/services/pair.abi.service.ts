@@ -153,26 +153,6 @@ export class PairAbiService
         return this.getTokenReserveRaw(pairAddress, secondTokenID);
     }
 
-    async getAllFirstTokensReserve(pairAddresses: string[]): Promise<string[]> {
-        return getAllKeys<string>(
-            this.cachingService,
-            pairAddresses,
-            'pair.firstTokenReserve',
-            this.firstTokenReserve.bind(this),
-            CacheTtlInfo.ContractBalance,
-        );
-    }
-
-    async getAllSecondTokensReserve(pairAddresses: string[]): Promise<string[]> {
-        return getAllKeys<string>(
-            this.cachingService,
-            pairAddresses,
-            'pair.secondTokenReserve',
-            this.secondTokenReserve.bind(this),
-            CacheTtlInfo.ContractBalance,
-        );
-    }
-
     async getTokenReserveRaw(
         pairAddress: string,
         tokenID: string,
@@ -197,16 +177,6 @@ export class PairAbiService
     })
     async totalSupply(pairAddress: string): Promise<string> {
         return this.getTotalSupplyRaw(pairAddress);
-    }
-
-    async getAllPairsTotalSupply(pairAddresses: string[]): Promise<string[]> {
-        return getAllKeys<string>(
-            this.cachingService,
-            pairAddresses,
-            'pair.totalSupply',
-            this.totalSupply.bind(this),
-            CacheTtlInfo.ContractBalance,
-        );
     }
 
     async getTotalSupplyRaw(pairAddress: string): Promise<string> {

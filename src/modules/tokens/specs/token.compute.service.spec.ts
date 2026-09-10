@@ -126,9 +126,10 @@ describe('TokenComputeService', () => {
             const state = jest.spyOn(pairAbi, 'state');
             const firstTokenReserve = jest.spyOn(pairAbi, 'firstTokenReserve');
             const secondTokenReserve = jest.spyOn(pairAbi, 'secondTokenReserve');
-            const batchedTotalSupply = jest.spyOn(
+            const pairInfoMetadata = jest.spyOn(pairAbi, 'pairInfoMetadata');
+            const batchedPairsInfo = jest.spyOn(
                 pairAbi,
-                'getAllPairsTotalSupply',
+                'getAllPairsInfoMetadata',
             );
 
             const price = await service.computeTokenPriceDerivedEGLD(
@@ -137,28 +138,29 @@ describe('TokenComputeService', () => {
             );
 
             expect(price).toEqual('0.001');
-            expect(batchedTotalSupply.mock.calls.length).toBeGreaterThan(0);
+            expect(batchedPairsInfo.mock.calls.length).toBeGreaterThan(0);
             expect(totalSupply).not.toHaveBeenCalled();
             expect(state).not.toHaveBeenCalled();
             expect(firstTokenReserve).not.toHaveBeenCalled();
             expect(secondTokenReserve).not.toHaveBeenCalled();
+            expect(pairInfoMetadata).not.toHaveBeenCalled();
         });
 
-        it('should issue one batched liquidity read per visited node', async () => {
-            const batchedTotalSupply = jest.spyOn(
+        it('should read reserves and liquidity from one call per visited node', async () => {
+            const batchedPairsInfo = jest.spyOn(
                 pairAbi,
-                'getAllPairsTotalSupply',
+                'getAllPairsInfoMetadata',
             );
 
             await service.computeTokenPriceDerivedEGLD('MEX-123456', []);
 
-            const readPairs = batchedTotalSupply.mock.calls.reduce(
+            const readPairs = batchedPairsInfo.mock.calls.reduce(
                 (total, [addresses]) => total + addresses.length,
                 0,
             );
 
             expect(readPairs).toBeGreaterThanOrEqual(
-                batchedTotalSupply.mock.calls.length,
+                batchedPairsInfo.mock.calls.length,
             );
         });
     });
