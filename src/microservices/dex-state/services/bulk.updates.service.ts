@@ -193,17 +193,21 @@ export class BulkUpdatesService {
                 return [];
             }
 
+            const commonTokenIDs = this.commonTokenIDs.filter(
+                (token) => token !== constantsConfig.MEX_TOKEN_ID,
+            );
+
+            pairs = pairs.filter((pair) => {
+                return pair.firstTokenId === id
+                    ? commonTokenIDs.includes(pair.secondTokenId)
+                    : commonTokenIDs.includes(pair.firstTokenId);
+            });
+
             if (pairs.length > 1) {
                 if (pairs.some((p) => p.state === 'Active')) {
                     pairs = pairs.filter((p) => p.state === 'Active');
                 }
             }
-
-            pairs = pairs.filter((pair) => {
-                return pair.firstTokenId === id
-                    ? this.commonTokenIDs.includes(pair.secondTokenId)
-                    : this.commonTokenIDs.includes(pair.firstTokenId);
-            });
 
             const tokenPairs: PairModel[] = [];
 

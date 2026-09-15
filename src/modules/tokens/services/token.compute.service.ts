@@ -92,10 +92,14 @@ export class TokenComputeService implements ITokenComputeService {
 
         const minLiquidity = new BigNumber(`1e${mxConfig.EGLDDecimals}`);
 
-        const [pairsMetadata, commonTokenIDs] = await Promise.all([
+        const [pairsMetadata, rawCommonTokenIDs] = await Promise.all([
             this.routerAbi.pairsMetadata(),
             this.routerAbi.commonTokensForUserPairs(),
         ]);
+
+        const commonTokenIDs = rawCommonTokenIDs.filter(
+            (token) => token !== constantsConfig.MEX_TOKEN_ID,
+        );
 
         let tokenPairs: PairMetadata[] = [];
         for (const pair of pairsMetadata) {
@@ -107,6 +111,12 @@ export class TokenComputeService implements ITokenComputeService {
             }
         }
 
+        tokenPairs = tokenPairs.filter((pair) => {
+            return pair.firstTokenID === tokenID
+                ? commonTokenIDs.includes(pair.secondTokenID)
+                : commonTokenIDs.includes(pair.firstTokenID);
+        });
+
         if (tokenPairs.length > 1) {
             const states = await Promise.all(
                 tokenPairs.map((pair) => this.pairAbi.state(pair.address)),
@@ -117,12 +127,6 @@ export class TokenComputeService implements ITokenComputeService {
                 });
             }
         }
-
-        tokenPairs = tokenPairs.filter((pair) => {
-            return pair.firstTokenID === tokenID
-                ? commonTokenIDs.includes(pair.secondTokenID)
-                : commonTokenIDs.includes(pair.firstTokenID);
-        });
 
         tokenPairs = tokenPairs.filter(
             (pair) =>
@@ -237,9 +241,8 @@ export class TokenComputeService implements ITokenComputeService {
     }
 
     async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
-        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            tokenID,
-        );
+        const pairAddress =
+            await this.pairService.getPairAddressByLpTokenID(tokenID);
 
         if (pairAddress) {
             return this.pairCompute.lpTokenPriceUSD(pairAddress);
@@ -701,9 +704,8 @@ export class TokenComputeService implements ITokenComputeService {
         logArgs: true,
     })
     async tokenPrevious24hSwapCount(tokenID: string): Promise<number> {
-        const allSwapsCount = await this.swapCountPrevious24hExecutor.execute(
-            null,
-        );
+        const allSwapsCount =
+            await this.swapCountPrevious24hExecutor.execute(null);
 
         const currentTokenSwapCount = allSwapsCount.find(
             (elem) => elem.tokenID === tokenID,
@@ -719,9 +721,10 @@ export class TokenComputeService implements ITokenComputeService {
         { tokenID: string; swapsCount: number }[]
     > {
         const cacheKey = 'token.allTokensSwapsCount';
-        const cachedValue = await this.cachingService.get<
-            { tokenID: string; swapsCount: number }[]
-        >(cacheKey);
+        const cachedValue =
+            await this.cachingService.get<
+                { tokenID: string; swapsCount: number }[]
+            >(cacheKey);
         if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
@@ -746,9 +749,10 @@ export class TokenComputeService implements ITokenComputeService {
         { tokenID: string; swapsCount: number }[]
     > {
         const cacheKey = 'token.allTokensSwapsCountPrevious24h';
-        const cachedValue = await this.cachingService.get<
-            { tokenID: string; swapsCount: number }[]
-        >(cacheKey);
+        const cachedValue =
+            await this.cachingService.get<
+                { tokenID: string; swapsCount: number }[]
+            >(cacheKey);
         if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
