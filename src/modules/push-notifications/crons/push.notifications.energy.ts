@@ -56,9 +56,10 @@ export class PushNotificationsEnergyCron {
             return;
         }
 
-        await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
-            targetEpoch,
-        );
+        // TODO: enable back fees collector when chain is up
+        // await this.pushNotificationsEnergyService.feesCollectorRewardsNotification(
+        //     targetEpoch,
+        // );
 
         await this.redisCacheService.set(
             this.FEES_COLLECTOR_LAST_EPOCH_KEY,
