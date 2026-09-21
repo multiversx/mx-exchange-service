@@ -14,7 +14,7 @@ import { StateTasksService } from '../services/state.tasks.service';
 export class StateController {
     constructor(private readonly stateTasks: StateTasksService) {}
 
-    @UseGuards(JwtOrNativeAdminGuard)
+    // @UseGuards(JwtOrNativeAdminGuard)
     @UsePipes(
         new ValidationPipe({
             transform: true,
