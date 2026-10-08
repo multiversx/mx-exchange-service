@@ -372,6 +372,43 @@ describe('AutoRouterService', () => {
         ).rejects.toThrow('Spread too big!');
     });
 
+    it('should return the worst hop price deviation for a multi pair route', async () => {
+        // hop 1: 10 USDC ($10) -> 1 WEGLD ($10); hop 2: 1 WEGLD ($10) -> 500 MEX ($5)
+        const priceDeviationPercent =
+            await service.getTokenPriceDeviationPercent(
+                ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
+                ['10000000', '1000000000000000000', '500000000000000000000'],
+            );
+
+        expect(priceDeviationPercent).toEqual(0.5);
+    });
+
+    it('should return the worst hop price deviation across smart router allocations', async () => {
+        const priceDeviationPercent =
+            await service.getSmartRouterAllocationsPriceDeviationPercent([
+                {
+                    tokenRoute: ['USDC-123456', 'WEGLD-123456'],
+                    addressRoute: [],
+                    inputAmount: '10000000',
+                    outputAmount: '1000000000000000000',
+                    intermediaryAmounts: ['10000000', '1000000000000000000'],
+                },
+                {
+                    tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
+                    addressRoute: [],
+                    inputAmount: '10000000',
+                    outputAmount: '500000000000000000000',
+                    intermediaryAmounts: [
+                        '10000000',
+                        '1000000000000000000',
+                        '500000000000000000000',
+                    ],
+                },
+            ]);
+
+        expect(priceDeviationPercent).toEqual(0.5);
+    });
+
     it('should throw an error when the single possible route contains a paused token', async () => {
         await expect(
             service.swap({

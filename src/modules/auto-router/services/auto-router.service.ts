@@ -698,6 +698,8 @@ export class AutoRouterService {
             'price',
         ]);
 
+        let maxPriceDeviationPercent = new BigNumber(0);
+
         for (let index = 0; index < tokenRoute.length - 1; index++) {
             const [tokenInID, amountIn, tokenOutID, amountOut] = [
                 tokenRoute[index],
@@ -736,8 +738,13 @@ export class AutoRouterService {
                 amount out = ${amountOut}, usd value = ${amountOutUSD}`);
             }
 
-            return priceDeviationPercent.toNumber();
+            maxPriceDeviationPercent = BigNumber.max(
+                maxPriceDeviationPercent,
+                priceDeviationPercent,
+            );
         }
+
+        return maxPriceDeviationPercent.toNumber();
     }
 
     async getSmartRouterAllocationsPriceDeviationPercent(
@@ -763,6 +770,8 @@ export class AutoRouterService {
         tokenIDs.forEach((tokenID, index) => {
             tokensMetadata.set(tokenID, allTokens[index]);
         });
+
+        let maxPriceDeviationPercent = new BigNumber(0);
 
         for (const [routeIndex, route] of tokenRoutes.entries()) {
             for (let index = 0; index < route.length - 1; index++) {
@@ -809,9 +818,14 @@ export class AutoRouterService {
                 amount out = ${amountOut}, usd value = ${amountOutUSD}`);
                 }
 
-                return priceDeviationPercent.toNumber();
+                maxPriceDeviationPercent = BigNumber.max(
+                    maxPriceDeviationPercent,
+                    priceDeviationPercent,
+                );
             }
         }
+
+        return maxPriceDeviationPercent.toNumber();
     }
 
     private getSmartRouterSwap(
