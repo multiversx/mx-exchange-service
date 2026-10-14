@@ -31,7 +31,6 @@ export class FarmsSyncService {
             penaltyPercent,
             minimumFarmingEpochs,
             divisionSafetyConstant,
-            state,
             burnGasLimit,
             boostedYieldsRewardsPercenatage,
             boostedYieldsFactors,
@@ -48,7 +47,6 @@ export class FarmsSyncService {
             this.farmAbiV2.getPenaltyPercentRaw(address),
             this.farmAbiV2.getMinimumFarmingEpochsRaw(address),
             this.farmAbiV2.getDivisionSafetyConstantRaw(address),
-            this.farmAbiV2.getStateRaw(address),
             this.farmAbiV2.getBurnGasLimitRaw(address),
             this.farmAbiV2.getBoostedYieldsRewardsPercenatageRaw(address),
             this.farmAbiV2.getBoostedYieldsFactorsRaw(address),
@@ -75,7 +73,6 @@ export class FarmsSyncService {
             penaltyPercent,
             minimumFarmingEpochs,
             divisionSafetyConstant,
-            state,
             burnGasLimit,
             boostedYieldsRewardsPercenatage,
             boostedYieldsFactors,
@@ -111,6 +108,7 @@ export class FarmsSyncService {
             rewardPerShare,
             rewardReserve,
             produceRewardsEnabled,
+            state,
             farmTokenSupplyCurrentWeek,
             accumulatedRewards,
             undistributedBoostedRewards,
@@ -123,6 +121,7 @@ export class FarmsSyncService {
             this.farmAbiV2.getRewardPerShareRaw(address),
             this.farmAbiV2.getRewardReserveRaw(address),
             this.farmAbiV2.getProduceRewardsEnabledRaw(address),
+            this.farmAbiV2.getStateRaw(address),
 
             this.farmAbiV2.getFarmSupplyForWeekRaw(address, currentWeek),
             this.farmAbiV2.getAccumulatedRewardsForWeekRaw(
@@ -147,6 +146,7 @@ export class FarmsSyncService {
             rewardPerShare,
             rewardReserve,
             produceRewardsEnabled,
+            state,
             farmTokenSupplyCurrentWeek,
             accumulatedRewards,
             undistributedBoostedRewards: undistributedBoostedRewards
