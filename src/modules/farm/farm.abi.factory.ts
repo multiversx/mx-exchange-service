@@ -15,7 +15,7 @@ export class FarmAbiFactory {
         private readonly abiServiceV1_3: FarmAbiServiceV1_3,
         private readonly abiServiceV2: FarmAbiServiceV2,
         private readonly cachingService: CacheService,
-    ) {}
+    ) { }
 
     useAbi(farmAddress: string): FarmAbiService {
         switch (farmVersion(farmAddress)) {
@@ -51,10 +51,17 @@ export class FarmAbiFactory {
         if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
+
+        let failure: unknown;
         for (const farmAddress of farmsAddresses()) {
-            const farmTokenID = await this.useAbi(farmAddress).farmTokenID(
-                farmAddress,
-            );
+            let farmTokenID: string;
+            try {
+                farmTokenID =
+                    await this.useAbi(farmAddress).farmTokenID(farmAddress);
+            } catch (error) {
+                failure ??= error;
+                continue;
+            }
             if (farmTokenID === tokenID) {
                 await this.cachingService.set(
                     `${tokenID}.farmAddress`,
@@ -63,6 +70,9 @@ export class FarmAbiFactory {
                 );
                 return farmAddress;
             }
+        }
+        if (failure !== undefined) {
+            throw failure;
         }
         return undefined;
     }

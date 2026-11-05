@@ -25,7 +25,7 @@ import { PriceDiscoveryModule } from './modules/price-discovery/price.discovery.
 import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloDriverConfig } from '@nestjs/apollo';
 import { FeesCollectorModule } from './modules/fees-collector/fees-collector.module';
 import { EnergyModule } from './modules/energy/energy.module';
 import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
@@ -45,12 +45,17 @@ import { ComplexityModule } from './complexity.module';
 import { TradingContestModule } from './modules/trading-contest/trading.contest.module';
 import { DustConverterModule } from './modules/dust-converter/dust.converter.module';
 import { ApiConfigService } from './helpers/api.config.service';
+import {
+    apolloDriverWithWsMaxPayload,
+    graphqlParseOptions,
+    onWsSubscribe,
+} from './utils/graphql.limits';
 
 @Module({
     imports: [
         CommonAppModule,
         GraphQLModule.forRootAsync<ApolloDriverConfig>({
-            driver: ApolloDriver,
+            driver: apolloDriverWithWsMaxPayload(64 * 1024),
             imports: [CommonAppModule],
             useFactory: async (
                 logger: LoggerService,
@@ -60,9 +65,7 @@ import { ApiConfigService } from './helpers/api.config.service';
                 subscriptions: {
                     'graphql-ws': {
                         path: '/graphql',
-                    },
-                    'subscriptions-transport-ws': {
-                        path: '/graphql',
+                        onSubscribe: onWsSubscribe,
                     },
                 },
                 context: async (contextData: any) => ({
@@ -70,9 +73,7 @@ import { ApiConfigService } from './helpers/api.config.service';
                         contextData.req ??
                         contextData.extra?.request,
                 }),
-                parseOptions: {
-                    maxTokens: 1000,
-                },
+                parseOptions: graphqlParseOptions,
                 formatError: (
                     formattedError: GraphQLFormattedError,
                     error: any,
