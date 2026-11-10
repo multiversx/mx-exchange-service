@@ -1,5 +1,5 @@
 import { MetricsService } from '@multiversx/sdk-nestjs-monitoring';
-import { register, Histogram, Gauge } from 'prom-client';
+import { register, Counter, Histogram, Gauge } from 'prom-client';
 
 export class MetricsCollector {
     private static fieldDurationHistogram: Histogram<string>;
@@ -12,6 +12,7 @@ export class MetricsCollector {
     private static gasDifferenceHistogram: Histogram<string>;
     private static stateRpcDurationHistogram: Histogram<string>;
     private static guestQueriesGauge: Gauge<string>;
+    private static labelOverflowCounter: Counter<string>;
     private static currentNonceGauge: Gauge<string>;
     private static lastProcessedNonceGauge: Gauge<string>;
     private static localCacheHitGauge: Gauge<string>;
@@ -122,6 +123,14 @@ export class MetricsCollector {
                 name: 'guest_queries',
                 help: 'Guest queries by operation',
                 labelNames: ['operation'],
+            });
+        }
+
+        if (!MetricsCollector.labelOverflowCounter) {
+            MetricsCollector.labelOverflowCounter = new Counter({
+                name: 'metric_label_overflow_total',
+                help: 'Observations labelled other after a label limit was hit',
+                labelNames: ['metric'],
             });
         }
 
@@ -251,6 +260,11 @@ export class MetricsCollector {
     static incrementGuestQueries(operation: string, count: number) {
         MetricsCollector.ensureIsInitialized();
         MetricsCollector.guestQueriesGauge.inc({ operation }, count);
+    }
+
+    static incrementLabelOverflow(metric: string) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.labelOverflowCounter.inc({ metric });
     }
 
     static incrementGuestHits() {

@@ -10,6 +10,8 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { MetricsCollector } from '../utils/metrics.collector';
 import { cacheConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { GraphQLSchemaHost } from '@nestjs/graphql';
+import { LabelLimiter, operationLabelFromQuery } from './metric.labels';
 
 
 @Injectable()
@@ -17,14 +19,20 @@ export class GuestCachingMiddleware implements NestMiddleware {
     private cacheHitsCounter = {};
     private readonly maxBodySize: number;
     private readonly batchSize: number;
+    private readonly operationLabels: LabelLimiter;
 
     constructor(
         private cacheService: CacheService,
         apiConfig: ApiConfigService,
+        private schemaHost: GraphQLSchemaHost,
     ) {
         // Read once, so that invalid limits fail at startup.
         this.maxBodySize = apiConfig.getGuestCacheMaxBodySize();
         this.batchSize = apiConfig.getGuestCacheRedisBatchSize();
+        this.operationLabels = new LabelLimiter(
+            apiConfig.getMetricsMaxGuestOperationLabels(),
+            () => MetricsCollector.incrementLabelOverflow('guest_queries'),
+        );
     }
 
     async use(req: Request, res: any, next: NextFunction) {
@@ -77,7 +85,9 @@ export class GuestCachingMiddleware implements NestMiddleware {
             await this.cacheService.getOrSetRemote(redisQueryKey, () => Promise.resolve(req.body), cacheConfig.default);
             await this.cacheService.zIncrementRemote(redisCounterKey, cacheHitsCurrentMinute[gqlQueryHash], gqlQueryHash);
 
-            const operation = req.body['operationName'];
+            const [operation] = this.operationLabels.limit([
+                operationLabelFromQuery(req.body['query'], req.body['operationName'], this.schemaHost.schema),
+            ]);
             MetricsCollector.incrementGuestQueries(operation, cacheHitsCurrentMinute[gqlQueryHash]);
         }
 

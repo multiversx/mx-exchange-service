@@ -112,6 +112,14 @@ export class ApiConfigService {
         return this.getWholeNumber('GUEST_CACHE_REDIS_BATCH_SIZE', 3);
     }
 
+    getMetricsMaxQueryLabelPairs(): number {
+        return this.getWholeNumber('METRICS_MAX_QUERY_LABEL_PAIRS', 2000);
+    }
+
+    getMetricsMaxGuestOperationLabels(): number {
+        return this.getWholeNumber('METRICS_MAX_GUEST_OPERATION_LABELS', 1000);
+    }
+
     getRedisUrl(): string {
         const redisUrl = this.configService.get<string>('REDIS_URL');
         if (!redisUrl) {
