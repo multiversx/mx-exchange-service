@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CacheService } from 'src/services/caching/cache.service';
 import { Address } from '@multiversx/sdk-core';
 import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { cacheConfig, constantsConfig } from 'src/config';
 import { MetricsCollector } from 'src/utils/metrics.collector';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class TransactionProcessorService {
@@ -13,6 +15,7 @@ export class TransactionProcessorService {
     constructor(
         private readonly cachingService: CacheService,
         private readonly apiService: MXApiService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     @Cron(CronExpression.EVERY_10_SECONDS)
@@ -113,7 +116,10 @@ export class TransactionProcessorService {
                 cacheConfig.default,
             );
         } catch (error) {
-            console.log(error);
+            this.logger.error(
+                `Failed to process transactions: ${error.message}`,
+                { context: TransactionProcessorService.name },
+            );
         } finally {
             this.isProcessing = false;
         }

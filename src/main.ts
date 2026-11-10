@@ -20,6 +20,7 @@ import { DexStateAppModule } from './microservices/dex-state/dex.state.app.modul
 import { DEX_STATE_PACKAGE_NAME } from './microservices/dex-state/interfaces/dex_state.interfaces';
 import { join } from 'path';
 import { ReflectionService } from '@grpc/reflection';
+import { requestIdMiddleware } from './utils/request.id';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -31,6 +32,7 @@ async function bootstrap() {
         },
     );
     app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
+    app.use(requestIdMiddleware);
     app.useBodyParser('json', { limit: '1mb' });
 
     const httpAdapterHostService = app.get<HttpAdapterHost>(HttpAdapterHost);
