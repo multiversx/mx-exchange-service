@@ -93,6 +93,25 @@ export class ApiConfigService {
         return tracerFlag === 'true';
     }
 
+    getGuestCacheMaxBodySize(): number {
+        const maxBodySize = this.configService.get<string>(
+            'GUEST_CACHE_MAX_BODY_SIZE',
+        );
+        if (!maxBodySize) {
+            return 16 * 1024;
+        }
+        if (!/^\d+$/.test(maxBodySize)) {
+            throw new Error(
+                'GUEST_CACHE_MAX_BODY_SIZE must be a whole number of bytes',
+            );
+        }
+        return Number(maxBodySize);
+    }
+
+    getGuestCacheRedisBatchSize(): number {
+        return this.getWholeNumber('GUEST_CACHE_REDIS_BATCH_SIZE', 3);
+    }
+
     getRedisUrl(): string {
         const redisUrl = this.configService.get<string>('REDIS_URL');
         if (!redisUrl) {
@@ -527,5 +546,16 @@ export class ApiConfigService {
             throw new Error('No STATE_MICROSERVICE_CLIENT_URL present');
         }
         return url;
+    }
+
+    private getWholeNumber(name: string, fallback: number): number {
+        const value = this.configService.get<string>(name);
+        if (!value) {
+            return fallback;
+        }
+        if (!/^\d+$/.test(value)) {
+            throw new Error(`${name} must be a whole number`);
+        }
+        return Number(value);
     }
 }
