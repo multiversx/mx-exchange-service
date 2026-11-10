@@ -73,7 +73,6 @@ function buildPublicGraphQLOptions(
             maskInternalError(formattedError, error, logger),
         fieldResolverEnhancers: ['guards'],
         playground: apiConfig.isGraphqlPlaygroundEnabled(),
-        introspection: apiConfig.isGraphqlIntrospectionEnabled(),
     };
 }
 

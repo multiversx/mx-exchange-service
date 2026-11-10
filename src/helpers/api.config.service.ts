@@ -459,16 +459,6 @@ export class ApiConfigService {
         return playgrounEnabled === 'true';
     }
 
-    isGraphqlIntrospectionEnabled(): boolean {
-        const introspectionEnabled = this.configService.get<string>(
-            'ENABLE_INTROSPECTION',
-        );
-        if (!introspectionEnabled) {
-            return false;
-        }
-        return introspectionEnabled === 'true';
-    }
-
     isTaskRunnerModuleActive(): boolean {
         const notificationsModuleActive =
             this.configService.get<string>('ENABLE_TASK_RUNNER');

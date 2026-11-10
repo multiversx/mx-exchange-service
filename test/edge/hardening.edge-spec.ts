@@ -9,26 +9,12 @@ const INTROSPECTION_QUERY = '{ __schema { queryType { name } } }';
 
 describe('GraphQL and HTTP hardening', () => {
     describe('introspection', () => {
-        it('is refused with the flag off', async () => {
-            const edge = await createEdgeApp({ ENABLE_INTROSPECTION: 'false' });
-            try {
-                const response = await graphqlRequest(edge, {
-                    query: INTROSPECTION_QUERY,
-                });
-
-                expect(response.body.data).toBeUndefined();
-                expect(response.body.errors).toEqual([
-                    expect.objectContaining({
-                        message: expect.stringContaining('introspection'),
-                    }),
-                ]);
-            } finally {
-                await edge.close();
-            }
-        });
-
-        it('is allowed with the flag on', async () => {
-            const edge = await createEdgeApp({ ENABLE_INTROSPECTION: 'true' });
+        it('is allowed in every environment', async () => {
+            // The retired flag may linger in deployed environments.
+            const edge = await createEdgeApp({
+                NODE_ENV: 'production',
+                ENABLE_INTROSPECTION: 'false',
+            });
             try {
                 const response = await graphqlRequest(edge, {
                     query: INTROSPECTION_QUERY,
