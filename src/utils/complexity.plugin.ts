@@ -10,9 +10,8 @@ import {
     getComplexity,
     simpleEstimator,
 } from 'graphql-query-complexity';
-import { GraphQLSchema } from 'graphql';
+import { GraphQLError, GraphQLSchema, Kind } from 'graphql';
 import { complexityConfig } from 'src/config';
-import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { rootQueryEstimator } from 'src/helpers/complexity/query.estimators';
 
@@ -40,21 +39,30 @@ export class ComplexityPlugin implements ApolloServerPlugin {
                 response,
                 contextValue,
             }) {
-                const complexity = getComplexity({
-                    schema,
-                    operationName: request.operationName,
-                    query: document,
-                    variables: request.variables,
-                    estimators: [
-                        rootQueryEstimator(),
-                        fieldExtensionsEstimator(),
-                        simpleEstimator({
-                            defaultComplexity:
-                                complexityConfig.defaultComplexity,
-                        }),
-                    ],
-                    context: { queryCount: 0 },
-                });
+                let complexity: number;
+                try {
+                    complexity = getComplexity({
+                        schema,
+                        operationName: request.operationName,
+                        query: document,
+                        variables: request.variables,
+                        estimators: [
+                            rootQueryEstimator(),
+                            fieldExtensionsEstimator(),
+                            simpleEstimator({
+                                defaultComplexity:
+                                    complexityConfig.defaultComplexity,
+                            }),
+                        ],
+                        context: { queryCount: 0 },
+                    });
+                } catch (error) {
+                    // Execution reports invalid variables as user input errors.
+                    if (isVariableCoercionError(error)) {
+                        return;
+                    }
+                    throw error;
+                }
 
                 if (exposeComplexity) {
                     response.http.headers.set(
@@ -81,4 +89,12 @@ export class ComplexityPlugin implements ApolloServerPlugin {
             },
         };
     }
+}
+
+function isVariableCoercionError(error: unknown): boolean {
+    return (
+        error instanceof GraphQLError &&
+        error.nodes?.length === 1 &&
+        error.nodes[0].kind === Kind.VARIABLE_DEFINITION
+    );
 }

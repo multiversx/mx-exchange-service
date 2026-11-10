@@ -1,10 +1,4 @@
-import {
-    LoggerService,
-    MiddlewareConsumer,
-    Module,
-    RequestMethod,
-} from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
 import { FarmModule } from './modules/farm/farm.module';
@@ -14,9 +8,7 @@ import { ProxyModule } from './modules/proxy/proxy.module';
 import { LockedAssetModule } from './modules/locked-asset-factory/locked-asset.module';
 import { UserModule } from './modules/user/user.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
-import { GraphQLFormattedError } from 'graphql';
 import { CommonAppModule } from './common.app.module';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { StakingModule } from './modules/staking/staking.module';
 import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module';
@@ -25,12 +17,10 @@ import { PriceDiscoveryModule } from './modules/price-discovery/price.discovery.
 import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
-import { ApolloDriverConfig } from '@nestjs/apollo';
 import { FeesCollectorModule } from './modules/fees-collector/fees-collector.module';
 import { EnergyModule } from './modules/energy/energy.module';
 import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
 import { LockedTokenWrapperModule } from './modules/locked-token-wrapper/locked-token-wrapper.module';
-import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
 import { EscrowModule } from './modules/escrow/escrow.module';
 import { GovernanceModule } from './modules/governance/governance.module';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
@@ -40,64 +30,18 @@ import { ComposableTasksModule } from './modules/composable-tasks/composable.tas
 import { AggregatorsModule } from './modules/aggregators/aggregators.module';
 import { QueryMetricsPlugin } from './utils/query.metrics.plugin';
 import { CurrencyConverterModule } from './modules/currency-converter/currency.converter.module';
-import { ConditionalModule } from '@nestjs/config';
-import { ComplexityModule } from './complexity.module';
 import { TradingContestModule } from './modules/trading-contest/trading.contest.module';
 import { DustConverterModule } from './modules/dust-converter/dust.converter.module';
-import { ApiConfigService } from './helpers/api.config.service';
 import {
-    apolloDriverWithWsMaxPayload,
-    graphqlParseOptions,
-    onWsSubscribe,
-} from './utils/graphql.limits';
+    applyPublicEdgeMiddleware,
+    publicComplexityModule,
+    publicGraphQLModule,
+} from './utils/public.edge';
 
 @Module({
     imports: [
         CommonAppModule,
-        GraphQLModule.forRootAsync<ApolloDriverConfig>({
-            driver: apolloDriverWithWsMaxPayload(64 * 1024),
-            imports: [CommonAppModule],
-            useFactory: async (
-                logger: LoggerService,
-                apiConfig: ApiConfigService,
-            ) => ({
-                autoSchemaFile: 'schema.gql',
-                subscriptions: {
-                    'graphql-ws': {
-                        path: '/graphql',
-                        onSubscribe: onWsSubscribe,
-                    },
-                },
-                context: async (contextData: any) => ({
-                    req:
-                        contextData.req ??
-                        contextData.extra?.request,
-                }),
-                parseOptions: graphqlParseOptions,
-                formatError: (
-                    formattedError: GraphQLFormattedError,
-                    error: any,
-                ): GraphQLFormattedError => {
-                    const errorStatus = formattedError.extensions?.code;
-                    switch (errorStatus) {
-                        case 'FORBIDDEN':
-                            logger.log(error.message, 'GraphQLModule');
-                            break;
-                    }
-
-                    return {
-                        message: formattedError.message,
-                        path: formattedError.path,
-                        extensions: {
-                            code: errorStatus,
-                        },
-                    };
-                },
-                fieldResolverEnhancers: ['guards'],
-                playground: apiConfig.isGraphqlPlaygroundEnabled(),
-            }),
-            inject: [WINSTON_MODULE_NEST_PROVIDER, ApiConfigService],
-        }),
+        publicGraphQLModule(),
         RouterModule,
         AutoRouterModule,
         PairModule,
@@ -126,10 +70,7 @@ import {
         DynamicModuleUtils.getCacheModule(),
         AggregatorsModule,
         CurrencyConverterModule,
-        ConditionalModule.registerWhen(
-            ComplexityModule,
-            (env: NodeJS.ProcessEnv) => env['ENABLE_COMPLEXITY'] === 'true',
-        ),
+        publicComplexityModule(),
         TradingContestModule,
         DustConverterModule,
     ],
@@ -137,8 +78,6 @@ import {
 })
 export class PublicAppModule {
     configure(consumer: MiddlewareConsumer) {
-        consumer
-            .apply(GuestCachingMiddleware)
-            .forRoutes({ path: 'graphql', method: RequestMethod.POST });
+        applyPublicEdgeMiddleware(consumer);
     }
 }

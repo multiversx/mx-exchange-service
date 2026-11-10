@@ -93,16 +93,6 @@ export class ApiConfigService {
         return tracerFlag === 'true';
     }
 
-    isDeephistoryActive(): boolean {
-        const deepHistoryFlag = this.configService.get<string>(
-            'ENABLE_DEEP_HISTORY',
-        );
-        if (!deepHistoryFlag) {
-            return false;
-        }
-        return deepHistoryFlag === 'true';
-    }
-
     getRedisUrl(): string {
         const redisUrl = this.configService.get<string>('REDIS_URL');
         if (!redisUrl) {
@@ -440,6 +430,16 @@ export class ApiConfigService {
             return false;
         }
         return playgrounEnabled === 'true';
+    }
+
+    isGraphqlIntrospectionEnabled(): boolean {
+        const introspectionEnabled = this.configService.get<string>(
+            'ENABLE_INTROSPECTION',
+        );
+        if (!introspectionEnabled) {
+            return false;
+        }
+        return introspectionEnabled === 'true';
     }
 
     isTaskRunnerModuleActive(): boolean {
