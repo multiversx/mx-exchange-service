@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
     EsdtToken,
     EsdtTokenType,
@@ -23,6 +23,8 @@ import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 
 @Injectable()
 export class StateInitializationService {
+    private readonly logger = new Logger(StateInitializationService.name);
+
     constructor(
         private readonly stateStore: StateStore,
         private readonly farmComputeService: FarmComputeService,
@@ -31,7 +33,7 @@ export class StateInitializationService {
     ) {}
 
     initState(request: InitStateRequest): InitStateResponse {
-        console.log('Initialize state store in gRPC');
+        this.logger.log('Initialize state store in gRPC');
         const {
             tokens,
             pairs,

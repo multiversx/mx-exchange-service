@@ -5,11 +5,9 @@ import { PublicAppModule } from './public.app.module';
 import { PrivateAppModule } from './private.app.module';
 import { CacheWarmerModule } from './services/cache.warmer.module';
 import { PubSubModule } from './services/pub.sub.module';
-import { LoggingInterceptor } from './utils/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { RabbitMqConsumer } from './modules/rabbitmq/rabbitmq.consumer';
-import cookieParser from 'cookie-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -20,6 +18,7 @@ import { DexStateAppModule } from './microservices/dex-state/dex.state.app.modul
 import { DEX_STATE_PACKAGE_NAME } from './microservices/dex-state/interfaces/dex_state.interfaces';
 import { join } from 'path';
 import { ReflectionService } from '@grpc/reflection';
+import { configurePublicHttpPipeline } from './utils/public.edge';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -31,13 +30,10 @@ async function bootstrap() {
         },
     );
     app.useLogger(app.get<LoggerService>(WINSTON_MODULE_NEST_PROVIDER));
-    app.useBodyParser('json', { limit: '1mb' });
+    configurePublicHttpPipeline(app);
 
     const httpAdapterHostService = app.get<HttpAdapterHost>(HttpAdapterHost);
 
-    app.useGlobalInterceptors(new LoggingInterceptor());
-
-    app.use(cookieParser());
     const apiConfigService = app.get<ApiConfigService>(ApiConfigService);
     const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
 
@@ -61,10 +57,6 @@ async function bootstrap() {
 
     if (apiConfigService.isPublicApiActive()) {
         pubSubApp.listen();
-
-        app.enableCors({
-            origin: '*',
-        });
 
         await app.listen(
             apiConfigService.getPublicAppPort(),

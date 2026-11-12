@@ -93,14 +93,31 @@ export class ApiConfigService {
         return tracerFlag === 'true';
     }
 
-    isDeephistoryActive(): boolean {
-        const deepHistoryFlag = this.configService.get<string>(
-            'ENABLE_DEEP_HISTORY',
+    getGuestCacheMaxBodySize(): number {
+        const maxBodySize = this.configService.get<string>(
+            'GUEST_CACHE_MAX_BODY_SIZE',
         );
-        if (!deepHistoryFlag) {
-            return false;
+        if (!maxBodySize) {
+            return 16 * 1024;
         }
-        return deepHistoryFlag === 'true';
+        if (!/^\d+$/.test(maxBodySize)) {
+            throw new Error(
+                'GUEST_CACHE_MAX_BODY_SIZE must be a whole number of bytes',
+            );
+        }
+        return Number(maxBodySize);
+    }
+
+    getGuestCacheRedisBatchSize(): number {
+        return this.getWholeNumber('GUEST_CACHE_REDIS_BATCH_SIZE', 3);
+    }
+
+    getMetricsMaxQueryLabelPairs(): number {
+        return this.getWholeNumber('METRICS_MAX_QUERY_LABEL_PAIRS', 2000);
+    }
+
+    getMetricsMaxGuestOperationLabels(): number {
+        return this.getWholeNumber('METRICS_MAX_GUEST_OPERATION_LABELS', 1000);
     }
 
     getRedisUrl(): string {
@@ -527,5 +544,16 @@ export class ApiConfigService {
             throw new Error('No STATE_MICROSERVICE_CLIENT_URL present');
         }
         return url;
+    }
+
+    private getWholeNumber(name: string, fallback: number): number {
+        const value = this.configService.get<string>(name);
+        if (!value) {
+            return fallback;
+        }
+        if (!/^\d+$/.test(value)) {
+            throw new Error(`${name} must be a whole number`);
+        }
+        return Number(value);
     }
 }

@@ -174,5 +174,18 @@ describe('XoxnoAggregatorService', () => {
             expect(result).toBeUndefined();
             expect(loggerMock.error).toHaveBeenCalled();
         });
+
+        it('should log a large error response truncated', async () => {
+            mockedAxios.get.mockRejectedValueOnce({
+                message: 'Request failed with status code 500',
+                response: { status: 500, data: 'x'.repeat(100_000) },
+            });
+
+            await service.getQuote(tokenIn, tokenOut, amountIn, slippage);
+
+            const [, meta] = loggerMock.error.mock.calls[0];
+            expect(meta.status).toBe(500);
+            expect(meta.response.length).toBeLessThanOrEqual(2048);
+        });
     });
 });

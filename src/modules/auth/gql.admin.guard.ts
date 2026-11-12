@@ -39,9 +39,10 @@ export class GqlAdminGuard implements CanActivate {
 
                     const admins = this.apiConfigService.getSecurityAdmins();
                     if (!admins.includes(decoded.sub)) {
-                        console.log({
-                            address: decoded.sub,
-                        });
+                        this.logger.warn(
+                            `Admin access denied for ${decoded.sub}`,
+                            GqlAdminGuard.name,
+                        );
                         throw new ForbiddenError(
                             'You are not authorized to make this request',
                         );
