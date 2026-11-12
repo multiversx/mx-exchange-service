@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.7
 
-FROM node:24-alpine AS deps
+FROM node:24.22.3-alpine AS deps
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
 COPY package.json pnpm-lock.yaml .npmrc ./
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
     pnpm install --frozen-lockfile
 
-FROM node:24-alpine AS build
+FROM node:24.22.3-alpine AS build
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@10.33.4 --activate
 
@@ -15,7 +15,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build
 
-FROM node:24-alpine AS runtime
+FROM node:24.22.3-alpine AS runtime
 WORKDIR /app
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false \
     NPM_CONFIG_FUND=false
