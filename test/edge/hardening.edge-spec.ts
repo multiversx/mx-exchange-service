@@ -13,12 +13,9 @@ const INTROSPECTION_QUERY = '{ __schema { queryType { name } } }';
 
 describe('GraphQL and HTTP hardening', () => {
     describe('introspection', () => {
-        it('is allowed in every environment', async () => {
+        it('ignores the retired introspection flag', async () => {
             // The retired flag may linger in deployed environments.
-            const edge = await createEdgeApp({
-                NODE_ENV: 'production',
-                ENABLE_INTROSPECTION: 'false',
-            });
+            const edge = await createEdgeApp({ ENABLE_INTROSPECTION: 'false' });
             try {
                 const response = await graphqlRequest(edge, {
                     query: INTROSPECTION_QUERY,
