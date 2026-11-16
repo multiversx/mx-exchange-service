@@ -36,6 +36,7 @@ import {
     StakingFarmsSortingArgs,
 } from '../models/staking.args';
 import { StakingStateService } from 'src/modules/state/services/staking.state.service';
+import { ForbiddenError, UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class StakingService {
@@ -350,7 +351,7 @@ export class StakingService {
         scAddress: string,
     ): Promise<void> {
         if (!(await this.stakingAbi.isWhitelisted(stakeAddress, scAddress)))
-            throw new Error('SC not whitelisted.');
+            throw new UserInputError('SC not whitelisted.');
     }
 
     async requireOwner(stakeAddress: string, sender: string): Promise<void> {
@@ -358,7 +359,9 @@ export class StakingService {
             (await this.apiService.getAccountStats(stakeAddress))
                 .ownerAddress !== sender
         ) {
-            throw new Error('Sender is not the owner of the contract.');
+            throw new ForbiddenError(
+                'Sender is not the owner of the contract.',
+            );
         }
     }
 }

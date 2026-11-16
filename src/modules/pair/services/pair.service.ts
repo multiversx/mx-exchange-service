@@ -26,6 +26,7 @@ import { getAllKeys } from 'src/utils/get.many.utils';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { PairInfoModel } from '../models/pair-info.model';
 import { PairsStateService } from 'src/modules/state/services/pairs.state.service';
+import { ForbiddenError } from '@nestjs/apollo';
 
 @Injectable()
 export class PairService {
@@ -291,7 +292,7 @@ export class PairService {
 
     async requireOwner(sender: string) {
         if ((await this.routerAbi.owner()) !== sender)
-            throw new Error('You are not the owner.');
+            throw new ForbiddenError('You are not the owner.');
     }
 
 }

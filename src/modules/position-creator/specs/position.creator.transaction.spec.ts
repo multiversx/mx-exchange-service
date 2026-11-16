@@ -119,7 +119,10 @@ describe('PositionCreatorTransaction', () => {
                     }),
                     [],
                 ),
-            ).rejects.toThrow('Invalid ESDT token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid ESDT token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return transaction with single token', async () => {
@@ -343,7 +346,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrow('Invalid ESDT token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid ESDT token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return error on farm token', async () => {
@@ -371,7 +377,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrow('Invalid farm token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid farm token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return transaction with EGLD and no merge farm tokens', async () => {
@@ -826,7 +835,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrow('Invalid ESDT token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid ESDT token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return error on dual farm token', async () => {
@@ -851,7 +863,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     [],
                 ),
-            ).rejects.toThrow('Invalid dual yield token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid dual yield token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return transaction with EGLD no merge dual farm tokens', async () => {
@@ -1258,7 +1273,10 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                 ),
-            ).rejects.toThrow('Invalid ESDT token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid ESDT token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return error on staking token', async () => {
@@ -1283,7 +1301,10 @@ describe('PositionCreatorTransaction', () => {
                         }),
                     ],
                 ),
-            ).rejects.toThrow('Invalid staking token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid staking token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return transaction with EGLD no merge staking tokens', async () => {
@@ -1594,7 +1615,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrow('Invalid ESDT tokens payments');
+            ).rejects.toMatchObject({
+                message: 'Invalid ESDT tokens payments',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return error on invalid farm token merge', async () => {
@@ -1626,7 +1650,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrow('Invalid farm token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid farm token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return transaction no merge farm tokens', async () => {
@@ -1825,7 +1852,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrow('Invalid locked tokens payments');
+            ).rejects.toMatchObject({
+                message: 'Invalid locked tokens payments',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
 
             expect(
                 service.createFarmPositionDualTokens(
@@ -1847,7 +1877,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrow('Invalid locked tokens payments');
+            ).rejects.toMatchObject({
+                message: 'Invalid locked tokens payments',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
 
             expect(
                 service.createFarmPositionDualTokens(
@@ -1869,7 +1902,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrow('Invalid locked tokens payments');
+            ).rejects.toMatchObject({
+                message: 'Invalid locked tokens payments',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return error on wrapped farm token', async () => {
@@ -1902,7 +1938,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrow('Invalid wrapped farm token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid wrapped farm token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return transaction without consolidate', async () => {
@@ -2039,7 +2078,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrow('Invalid ESDT tokens payments');
+            ).rejects.toMatchObject({
+                message: 'Invalid ESDT tokens payments',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return error on invalid farm token merge', async () => {
@@ -2078,7 +2120,10 @@ describe('PositionCreatorTransaction', () => {
                     ],
                     0.01,
                 ),
-            ).rejects.toThrow('Invalid dual farm token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid dual farm token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return transaction no merge farm tokens', async () => {
@@ -2293,7 +2338,10 @@ describe('PositionCreatorTransaction', () => {
                     }),
                     0.01,
                 ),
-            ).rejects.toThrow('Invalid farm token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid farm token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return transaction', async () => {
@@ -2352,7 +2400,10 @@ describe('PositionCreatorTransaction', () => {
                     new SwapRouteModel(),
                     1440,
                 ),
-            ).rejects.toThrow('Invalid ESDT token payment');
+            ).rejects.toMatchObject({
+                message: 'Invalid ESDT token payment',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         });
 
         it('should return transaction with ESDT payment', async () => {

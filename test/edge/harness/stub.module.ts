@@ -1,4 +1,5 @@
 import { Inject, Injectable, Module } from '@nestjs/common';
+import { ForbiddenError, UserInputError } from '@nestjs/apollo';
 import { Args, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { GetOrSetCache } from 'src/helpers/decorators/caching.decorator';
@@ -7,6 +8,8 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 export const STUB_EVENT = 'edgeEvent';
 export const STUB_CACHE_BASE_KEY = 'edgeStub';
 export const STUB_INTERNAL_ERROR = 'edge stub internal failure';
+export const STUB_INPUT_ERROR = 'edge stub rejected input';
+export const STUB_FORBIDDEN_ERROR = 'edge stub refused caller';
 
 @Injectable()
 export class EdgeStubService {
@@ -44,6 +47,16 @@ export class EdgeStubResolver {
     @Query(() => String)
     failing(): string {
         throw new Error(STUB_INTERNAL_ERROR);
+    }
+
+    @Query(() => String)
+    rejectedInput(): string {
+        throw new UserInputError(STUB_INPUT_ERROR);
+    }
+
+    @Query(() => String)
+    refusedCaller(): string {
+        throw new ForbiddenError(STUB_FORBIDDEN_ERROR);
     }
 
     @Subscription(() => String)

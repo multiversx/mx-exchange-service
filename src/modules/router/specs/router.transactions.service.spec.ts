@@ -643,7 +643,10 @@ describe('RouterService', () => {
                             'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAQ==',
                     }),
                 ),
-            ).rejects.toThrow('Token not locked for long enough');
+            ).rejects.toMatchObject({
+                message: 'Token not locked for long enough',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         },
     );
 
@@ -666,7 +669,10 @@ describe('RouterService', () => {
                             'AAAAEUVHTERVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAQ==',
                     }),
                 ),
-            ).rejects.toThrow('Invalid input token');
+            ).rejects.toMatchObject({
+                message: 'Invalid input token',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         },
     );
 
@@ -688,7 +694,10 @@ describe('RouterService', () => {
                         attributes: 'AAAAClRPSzJUT0szTFAAAAAAAAAAAAAAAAAAAAAA',
                     }),
                 ),
-            ).rejects.toThrow('Invalid locked LP token');
+            ).rejects.toMatchObject({
+                message: 'Invalid locked LP token',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         },
     );
 
@@ -711,7 +720,10 @@ describe('RouterService', () => {
                             'AAAAEVRPSzVUT0s2TFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAQ==',
                     }),
                 ),
-            ).rejects.toThrow('Not a valid user defined pair');
+            ).rejects.toMatchObject({
+                message: 'Not a valid user defined pair',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         },
     );
 
@@ -734,7 +746,10 @@ describe('RouterService', () => {
                             'AAAAEVRPSzVVU0RDTFAtYWJjZGVmAAAAAAAAAAAAAAAAAAAAAg==',
                     }),
                 ),
-            ).rejects.toThrow('Not enough value locked');
+            ).rejects.toMatchObject({
+                message: 'Not enough value locked',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
         },
     );
 });

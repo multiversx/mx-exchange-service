@@ -22,6 +22,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { FarmServiceV2 } from './farm.v2.service';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class FarmTransactionServiceV2 extends TransactionsFarmService {
@@ -102,7 +103,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         args: ExitFarmArgs,
     ): Promise<TransactionModel> {
         if (!args.exitAmount && !new BigNumber(args.exitAmount).isPositive()) {
-            throw new Error('Invalid exit amount');
+            throw new UserInputError('Invalid exit amount');
         }
 
         const gasLimit = await this.getExitFarmGasLimit(

@@ -19,6 +19,7 @@ import { TradingActivityModel } from './models/trading.activity.model';
 import { RouterAbiService } from '../router/services/router.abi.service';
 import { alignTimestampTo4HourInterval } from 'src/utils/analytics.utils';
 import { QueryArgsValidationPipe } from 'src/helpers/validators/query.args.validation.pipe';
+import { UserInputError } from '@nestjs/apollo';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -240,6 +241,6 @@ export class AnalyticsResolver {
             }
         }
 
-        throw new Error('Invalid parameters');
+        throw new UserInputError('Invalid parameters');
     }
 }

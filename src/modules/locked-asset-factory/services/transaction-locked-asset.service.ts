@@ -11,6 +11,7 @@ import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { LockedAssetGetterService } from './locked.asset.getter.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class TransactionsLockedAssetService {
@@ -75,7 +76,9 @@ export class TransactionsLockedAssetService {
                 .plus(gasConfig.lockedAssetFactory.defaultMergeLockedAssets)
                 .isGreaterThan(constantsConfig.MAX_GAS_LIMIT)
         ) {
-            throw new Error('Number of merge tokens exeeds maximum gas limit!');
+            throw new UserInputError(
+                'Number of merge tokens exeeds maximum gas limit!',
+            );
         }
         try {
             await this.validateInputTokens(tokens);
@@ -125,7 +128,7 @@ export class TransactionsLockedAssetService {
                 lockedAssetToken.tokenID !== lockedAssetTokenID ||
                 lockedAssetToken.nonce < 1
             ) {
-                throw new Error('Invalid locked asset to merge!');
+                throw new UserInputError('Invalid locked asset to merge!');
             }
         }
     }
@@ -134,7 +137,7 @@ export class TransactionsLockedAssetService {
         const assetTokenID = await this.lockedAssetGetter.getAssetTokenID();
 
         if (token.tokenID !== assetTokenID || token.nonce > 0) {
-            throw new Error('Invalid input token!');
+            throw new UserInputError('Invalid input token!');
         }
     }
 }

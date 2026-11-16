@@ -17,8 +17,6 @@ import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { LockedAssetGetterService } from './services/locked.asset.getter.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { GraphQLError } from 'graphql';
-import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => LockedAssetModel)
 export class LockedAssetResolver {
@@ -30,54 +28,22 @@ export class LockedAssetResolver {
 
     @ResolveField()
     async assetToken(): Promise<EsdtToken> {
-        try {
-            return await this.lockedAssetGetter.getAssetToken();
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.lockedAssetGetter.getAssetToken();
     }
 
     @ResolveField()
     async lockedToken(): Promise<NftCollection> {
-        try {
-            return await this.lockedAssetGetter.getLockedToken();
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.lockedAssetGetter.getLockedToken();
     }
 
     @ResolveField()
     async unlockMilestones(): Promise<UnlockMileStoneModel[]> {
-        try {
-            return await this.lockedAssetGetter.getDefaultUnlockPeriod();
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.lockedAssetGetter.getDefaultUnlockPeriod();
     }
 
     @ResolveField()
     async activationNonce(): Promise<number> {
-        try {
-            return await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.lockedAssetGetter.getExtendedAttributesActivationNonce();
     }
 
     @Query(() => LockedAssetModel)
@@ -110,18 +76,10 @@ export class LockedAssetResolver {
         tokens: InputTokenModel[],
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        try {
-            return await this.transactionsService.mergeLockedAssetTokens(
-                user.address,
-                tokens,
-            );
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.transactionsService.mergeLockedAssetTokens(
+            user.address,
+            tokens,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)

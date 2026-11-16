@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AutoRouterService } from '../services/auto-router.service';
+import { AutoRouterResolver } from '../auto-router.resolver';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { WinstonModule } from 'nest-winston';
@@ -330,46 +331,61 @@ describe('AutoRouterService', () => {
         ]);
     });
 
+    // A route whose token prices drift more than the allowed spread.
+    const spreadTooBigRoute = (): AutoRouteModel =>
+        new AutoRouteModel({
+            swapType: 1,
+            tokenInID: 'USDC-123456',
+            tokenOutID: 'MEX-123456',
+            tokenInExchangeRate: '99201792616073289490',
+            tokenOutExchangeRate: '10080',
+            tokenInExchangeRateDenom: '99.20179261607328949',
+            tokenOutExchangeRateDenom: '0.01008',
+            tokenInPriceUSD: '1',
+            tokenOutPriceUSD: '0.01',
+            amountIn: '10181267',
+            amountOut: '1000000000000000000000',
+            intermediaryAmounts: [
+                '10080463',
+                '1004013040121365097',
+                '1000000000000000000000',
+            ],
+            tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
+            pairs: [
+                new PairModel({
+                    address: Address.newFromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000013',
+                    ).toBech32(),
+                }),
+                new PairModel({
+                    address: Address.newFromHex(
+                        '0000000000000000000000000000000000000000000000000000000000000012',
+                    ).toBech32(),
+                }),
+            ],
+            tolerance: 0.01,
+            maxPriceDeviationPercent: 0.004,
+            tokensPriceDeviationPercent: 0.004001066100470686,
+        });
+
     it('should throw an error when spread is too big', async () => {
         await expect(
-            service.getTransactions(
-                senderAddress,
-                new AutoRouteModel({
-                    swapType: 1,
-                    tokenInID: 'USDC-123456',
-                    tokenOutID: 'MEX-123456',
-                    tokenInExchangeRate: '99201792616073289490',
-                    tokenOutExchangeRate: '10080',
-                    tokenInExchangeRateDenom: '99.20179261607328949',
-                    tokenOutExchangeRateDenom: '0.01008',
-                    tokenInPriceUSD: '1',
-                    tokenOutPriceUSD: '0.01',
-                    amountIn: '10181267',
-                    amountOut: '1000000000000000000000',
-                    intermediaryAmounts: [
-                        '10080463',
-                        '1004013040121365097',
-                        '1000000000000000000000',
-                    ],
-                    tokenRoute: ['USDC-123456', 'WEGLD-123456', 'MEX-123456'],
-                    pairs: [
-                        new PairModel({
-                            address: Address.newFromHex(
-                                '0000000000000000000000000000000000000000000000000000000000000013',
-                            ).toBech32(),
-                        }),
-                        new PairModel({
-                            address: Address.newFromHex(
-                                '0000000000000000000000000000000000000000000000000000000000000012',
-                            ).toBech32(),
-                        }),
-                    ],
-                    tolerance: 0.01,
-                    maxPriceDeviationPercent: 0.004,
-                    tokensPriceDeviationPercent: 0.004001066100470686,
-                }),
-            ),
-        ).rejects.toThrow('Spread too big!');
+            service.getTransactions(senderAddress, spreadTooBigRoute()),
+        ).rejects.toMatchObject({
+            message: 'Spread too big!',
+            extensions: { code: 'BAD_USER_INPUT' },
+        });
+    });
+
+    it('should report a too big spread to the client as invalid input', async () => {
+        const resolver = new AutoRouterResolver(service);
+
+        await expect(
+            resolver.noAuthTransactions(spreadTooBigRoute(), senderAddress),
+        ).rejects.toMatchObject({
+            message: 'Spread too big!',
+            extensions: { code: 'BAD_USER_INPUT' },
+        });
     });
 
     it('should return the worst hop price deviation for a multi pair route', async () => {

@@ -18,6 +18,7 @@ import { Inject, forwardRef } from '@nestjs/common';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { getAllKeys } from 'src/utils/get.many.utils';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { ForbiddenError } from '@nestjs/apollo';
 
 export abstract class FarmServiceBase {
     constructor(
@@ -158,6 +159,7 @@ export abstract class FarmServiceBase {
 
     async requireOwner(farmAddress: string, sender: string) {
         const owner = await this.farmAbi.ownerAddress(farmAddress);
-        if (owner !== sender) throw new Error('You are not the owner.');
+        if (owner !== sender)
+            throw new ForbiddenError('You are not the owner.');
     }
 }

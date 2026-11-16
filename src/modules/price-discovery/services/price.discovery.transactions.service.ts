@@ -9,6 +9,7 @@ import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.s
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class PriceDiscoveryTransactionService {
@@ -163,7 +164,7 @@ export class PriceDiscoveryTransactionService {
                 inputToken.tokenID !== acceptedTokenID) ||
             inputToken.nonce > 0
         ) {
-            throw new Error('Invalid input tokens');
+            throw new UserInputError('Invalid input tokens');
         }
     }
 
@@ -180,7 +181,7 @@ export class PriceDiscoveryTransactionService {
             inputToken.nonce === 0 ||
             inputToken.nonce > 2
         ) {
-            throw new Error('Invalid input tokens');
+            throw new UserInputError('Invalid input tokens');
         }
     }
 }

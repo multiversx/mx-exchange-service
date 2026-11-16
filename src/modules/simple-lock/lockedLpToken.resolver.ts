@@ -8,8 +8,6 @@ import {
     LpProxyTokenAttributesModel,
 } from './models/simple.lock.model';
 import { SimpleLockService } from './services/simple.lock.service';
-import { GraphQLError } from 'graphql';
-import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(LpProxyTokenAttributesModel)
 export class LockedLpTokenResolver {
@@ -19,42 +17,26 @@ export class LockedLpTokenResolver {
     async firstTokenLockedAttributes(
         parent: LpProxyTokenAttributesModel,
     ): Promise<LockedTokenAttributesModel> {
-        try {
-            if (parent.firstTokenLockedNonce === 0) {
-                return null;
-            }
-            return await this.simpleLockService.getLockedTokenAttributes(
-                tokenCollection(parent.identifier),
-                parent.firstTokenLockedNonce,
-            );
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+        if (parent.firstTokenLockedNonce === 0) {
+            return null;
         }
+        return this.simpleLockService.getLockedTokenAttributes(
+            tokenCollection(parent.identifier),
+            parent.firstTokenLockedNonce,
+        );
     }
 
     @ResolveField()
     async secondTokenLockedAttributes(
         parent: LpProxyTokenAttributesModel,
     ): Promise<LockedTokenAttributesModel> {
-        try {
-            if (parent.secondTokenLockedNonce === 0) {
-                return null;
-            }
-            return await this.simpleLockService.getLockedTokenAttributes(
-                tokenCollection(parent.identifier),
-                parent.secondTokenLockedNonce,
-            );
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+        if (parent.secondTokenLockedNonce === 0) {
+            return null;
         }
+        return this.simpleLockService.getLockedTokenAttributes(
+            tokenCollection(parent.identifier),
+            parent.secondTokenLockedNonce,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -62,16 +44,6 @@ export class LockedLpTokenResolver {
     async lpProxyTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
     ): Promise<LpProxyTokenAttributesModel[]> {
-        try {
-            return this.simpleLockService.decodeBatchLpTokenProxyAttributes(
-                args,
-            );
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.simpleLockService.decodeBatchLpTokenProxyAttributes(args);
     }
 }

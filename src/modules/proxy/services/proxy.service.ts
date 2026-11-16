@@ -46,6 +46,7 @@ import { ProxyFarmAbiService } from './proxy-farm/proxy.farm.abi.service';
 import { proxyVersion } from 'src/utils/proxy.utils';
 import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class ProxyService {
@@ -360,6 +361,6 @@ export class ProxyService {
             return scAddress.proxyDexAddress.v2;
         }
 
-        throw new Error('invalid locked token identifier');
+        throw new UserInputError('invalid locked token identifier');
     }
 }

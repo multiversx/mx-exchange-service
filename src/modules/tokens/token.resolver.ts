@@ -6,8 +6,6 @@ import {
     TokensFiltersArgs,
 } from './models/tokens.filter.args';
 import { TokenService } from './services/token.service';
-import { GraphQLError } from 'graphql';
-import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { TokensResponse } from './models/tokens.response';
 import ConnectionArgs, {
     getPagingParameters,
@@ -31,15 +29,7 @@ export class TokensResolver {
     })
     @UsePipes(new QueryArgsValidationPipe())
     async tokens(@Args() filters: TokensFiltersArgs): Promise<EsdtToken[]> {
-        try {
-            return await this.tokenService.getTokens(filters);
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.tokenService.getTokens(filters);
     }
 
     @Query(() => TokensResponse, {

@@ -28,6 +28,7 @@ import { ProxyAddressValidationPipe } from './validators/proxy.address.validator
 import { GraphQLError } from 'graphql';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { EnergyAbiService } from '../energy/services/energy.abi.service';
+import { UserInputError } from '@nestjs/apollo';
 
 @Resolver()
 export class ProxyTransactionResolver {
@@ -282,7 +283,7 @@ export class ProxyTransactionResolver {
         );
 
         if (proxyAddress !== scAddress.proxyDexAddress.v2) {
-            throw new Error('Wrapped token is not supported');
+            throw new UserInputError('Wrapped token is not supported');
         }
 
         const lockOptions = await this.energyAbi.lockOptions();
@@ -290,7 +291,7 @@ export class ProxyTransactionResolver {
             lockOptions.find((option) => option.lockEpochs === lockEpochs) ===
             undefined
         ) {
-            throw new Error('Invalid lock epochs!');
+            throw new UserInputError('Invalid lock epochs!');
         }
 
         return proxyAddress;

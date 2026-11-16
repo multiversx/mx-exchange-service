@@ -1,5 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Int, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { ForbiddenError } from '@nestjs/apollo';
 import { leaguesConfig, scAddress } from 'src/config';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
@@ -22,8 +23,6 @@ import { EnergyTransactionService } from './services/energy.transaction.service'
 import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.validator';
 import { EnergyAbiService } from './services/energy.abi.service';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
-import { GraphQLError } from 'graphql';
-import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { EnergyComputeService } from './services/energy.compute.service';
 import BigNumber from 'bignumber.js';
 
@@ -170,11 +169,7 @@ export class EnergyResolver {
     ): Promise<TransactionModel> {
         const owner = await this.energyAbi.ownerAddress();
         if (user.address !== owner) {
-            throw new GraphQLError('Invalid owner address', {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+            throw new ForbiddenError('Invalid owner address');
         }
 
         return this.energyTransaction.addLockOptions(user.address, lockOptions);

@@ -6,6 +6,7 @@ import { LockOption } from '../models/simple.lock.energy.model';
 import { IEnergyComputeService } from './interfaces';
 import { EnergyAbiService } from './energy.abi.service';
 import { denominateAmount } from 'src/utils/token.converters';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class EnergyComputeService implements IEnergyComputeService {
@@ -82,7 +83,7 @@ export class EnergyComputeService implements IEnergyComputeService {
         const lastLockOption = lockOptions[lockOptions.length - 1];
 
         if (lockEpochsRemaining > lastLockOption.lockEpochs) {
-            throw new Error('Invalid lock epochs');
+            throw new UserInputError('Invalid lock epochs');
         }
 
         let prevOption = new LockOption({

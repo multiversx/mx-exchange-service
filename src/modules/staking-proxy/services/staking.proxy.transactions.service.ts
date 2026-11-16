@@ -24,6 +24,7 @@ import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.servi
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class StakingProxyTransactionService {
@@ -94,7 +95,7 @@ export class StakingProxyTransactionService {
         );
         for (const payment of args.payments) {
             if (payment.tokenID !== dualYieldTokenID) {
-                throw new Error('invalid dual yield token for claim');
+                throw new UserInputError('invalid dual yield token for claim');
             }
         }
 
@@ -274,7 +275,7 @@ export class StakingProxyTransactionService {
         ]);
 
         if (tokens[0].tokenID !== lpFarmTokenID) {
-            throw new Error('invalid lp farm token provided');
+            throw new UserInputError('invalid lp farm token provided');
         }
 
         for (const inputToken of tokens.slice(1)) {
@@ -282,7 +283,7 @@ export class StakingProxyTransactionService {
                 inputToken.tokenID !== dualYieldTokenID ||
                 inputToken.nonce === 0
             ) {
-                throw new Error('invalid dual yield token provided');
+                throw new UserInputError('invalid dual yield token provided');
             }
         }
     }

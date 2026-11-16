@@ -3,7 +3,11 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { createWsClient, firstResult } from './harness/drivers';
 import { createEdgeApp, EdgeApp, graphqlRequest } from './harness/edge.app';
-import { STUB_INTERNAL_ERROR } from './harness/stub.module';
+import {
+    STUB_FORBIDDEN_ERROR,
+    STUB_INPUT_ERROR,
+    STUB_INTERNAL_ERROR,
+} from './harness/stub.module';
 
 const INTROSPECTION_QUERY = '{ __schema { queryType { name } } }';
 
@@ -65,6 +69,22 @@ describe('GraphQL and HTTP hardening', () => {
                 }),
             );
         });
+
+        it.each([
+            ['rejectedInput', STUB_INPUT_ERROR, 'BAD_USER_INPUT'],
+            ['refusedCaller', STUB_FORBIDDEN_ERROR, 'FORBIDDEN'],
+        ])(
+            'keep the message of a client-facing error (%s)',
+            async (field, message, code) => {
+                const response = await graphqlRequest(edge, {
+                    query: `{ ${field} }`,
+                });
+
+                expect(response.body.errors).toEqual([
+                    { message, path: [field], extensions: { code } },
+                ]);
+            },
+        );
 
         it.each(['failingSubscription', 'failingStream'])(
             'hide internal error details over WebSocket and log them (%s)',

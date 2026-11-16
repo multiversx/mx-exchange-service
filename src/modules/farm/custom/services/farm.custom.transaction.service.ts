@@ -7,6 +7,7 @@ import {
     ExitFarmArgs,
 } from '../../models/farm.args';
 import { TransactionsFarmService } from '../../base-module/services/farm.transaction.service';
+import { ForbiddenError } from '@nestjs/apollo';
 
 @Injectable()
 export class FarmCustomTransactionService extends TransactionsFarmService {
@@ -14,7 +15,7 @@ export class FarmCustomTransactionService extends TransactionsFarmService {
         sender: string,
         args: EnterFarmArgs,
     ): Promise<TransactionModel> {
-        throw new Error(
+        throw new ForbiddenError(
             `whitelisted addresses only for farm ${args.farmAddress}`,
         );
     }
@@ -23,7 +24,7 @@ export class FarmCustomTransactionService extends TransactionsFarmService {
         sender: string,
         args: ExitFarmArgs,
     ): Promise<TransactionModel> {
-        throw new Error(
+        throw new ForbiddenError(
             `whitelisted addresses only for farm ${args.farmAddress}`,
         );
     }
@@ -32,7 +33,7 @@ export class FarmCustomTransactionService extends TransactionsFarmService {
         sender: string,
         args: ClaimRewardsArgs,
     ): Promise<TransactionModel> {
-        throw new Error(
+        throw new ForbiddenError(
             `whitelisted addresses only for farm ${args.farmAddress}`,
         );
     }
@@ -41,7 +42,7 @@ export class FarmCustomTransactionService extends TransactionsFarmService {
         sender: string,
         args: CompoundRewardsArgs,
     ): Promise<TransactionModel> {
-        throw new Error(
+        throw new ForbiddenError(
             `whitelisted addresses only for farm ${args.farmAddress}`,
         );
     }
