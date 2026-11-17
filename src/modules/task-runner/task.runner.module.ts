@@ -10,6 +10,7 @@ import { TokenModule } from '../tokens/token.module';
 import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { WeekTimekeepingModule } from 'src/submodules/week-timekeeping/week-timekeeping.module';
 import { TaskRunnerTransactionService } from './services/task.runner.transaction.service';
+import { XoxnoTasksService } from './services/xoxno.tasks.service';
 
 @Module({
     imports: [
@@ -24,7 +25,11 @@ import { TaskRunnerTransactionService } from './services/task.runner.transaction
         TokenModule,
         WeekTimekeepingModule,
     ],
-    providers: [TaskRunnerTransactionService, FeesCollectorTasksService],
-    exports: [FeesCollectorTasksService],
+    providers: [
+        TaskRunnerTransactionService,
+        FeesCollectorTasksService,
+        XoxnoTasksService,
+    ],
+    exports: [FeesCollectorTasksService, XoxnoTasksService],
 })
 export class TaskRunnerModule {}

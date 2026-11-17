@@ -492,8 +492,13 @@ export class ApiConfigService {
     }
 
     getXoxnoReferralID(): number | undefined {
-        const id = this.configService.get<number>('XOXNO_REFERRAL_ID');
-        if (id === undefined || id === null) {
+        const raw = this.configService.get<string>('XOXNO_REFERRAL_ID');
+        if (raw === undefined || raw === null || raw.trim() === '') {
+            return undefined;
+        }
+        // Referral IDs start at 1
+        const id = Number(raw);
+        if (!Number.isSafeInteger(id) || id < 1) {
             return undefined;
         }
         return id;
