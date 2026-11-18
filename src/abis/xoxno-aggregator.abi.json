@@ -1,0 +1,127 @@
+{
+    "buildInfo": {
+        "framework": {
+            "name": "multiversx-sc"
+        }
+    },
+    "docs": [
+        "Subset of the XOXNO rs-aggregator ABI covering referral fees and storage views.",
+        "Sources: https://github.com/XOXNO/rs-aggregator/blob/main/src/config.rs",
+        "https://github.com/XOXNO/rs-aggregator/blob/main/src/storage/mod.rs"
+    ],
+    "name": "Aggregator",
+    "endpoints": [
+        {
+            "docs": [
+                "Claim accumulated referral fees for a given referral ID",
+                "Can be called by anyone, fees are always sent to the referral owner",
+                "Limited to 90 unique tokens per call to prevent out-of-gas"
+            ],
+            "name": "claimReferralFees",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "referral_id",
+                    "type": "u64"
+                },
+                {
+                    "name": "tokens",
+                    "type": "variadic<TokenId>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": ["Get all accumulated balances for a referrer"],
+            "name": "getReferrerBalances",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "referral_id",
+                    "type": "u64"
+                },
+                {
+                    "name": "tokens",
+                    "type": "variadic<TokenId>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<tuple<TokenId,BigUint>>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getReferralIdCounter",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getReferralConfig",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "ReferralConfig"
+                }
+            ]
+        },
+        {
+            "name": "getStaticFee",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getWhitelistedTokens",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<TokenId>",
+                    "multi_result": true
+                }
+            ]
+        }
+    ],
+    "esdtAttributes": [],
+    "hasCallback": false,
+    "types": {
+        "ReferralConfig": {
+            "type": "struct",
+            "docs": ["Referral configuration stored per referral ID"],
+            "fields": [
+                {
+                    "name": "owner",
+                    "type": "Address"
+                },
+                {
+                    "docs": ["basis points (10,000 = 100%)"],
+                    "name": "fee",
+                    "type": "u32"
+                },
+                {
+                    "name": "active",
+                    "type": "bool"
+                }
+            ]
+        }
+    }
+}

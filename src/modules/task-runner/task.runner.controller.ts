@@ -2,11 +2,13 @@ import { Controller } from '@nestjs/common';
 import { EventPattern } from '@nestjs/microservices';
 import { RunnerTasks, TRIGGER_TASK_EVENT } from './constants';
 import { FeesCollectorTasksService } from './services/fees.collector.tasks.service';
+import { XoxnoTasksService } from './services/xoxno.tasks.service';
 
 @Controller()
 export class TaskRunnerController {
     constructor(
         private readonly feesCollectorTaskService: FeesCollectorTasksService,
+        private readonly xoxnoTaskService: XoxnoTasksService,
     ) {}
 
     @EventPattern(TRIGGER_TASK_EVENT)
@@ -19,6 +21,9 @@ export class TaskRunnerController {
                 break;
             case RunnerTasks.FEES_COLLECTOR_SWAP_TOKENS:
                 await this.feesCollectorTaskService.executeSwapTokensTask();
+                break;
+            case RunnerTasks.XOXNO_CLAIM_REFERRAL_FEES:
+                await this.xoxnoTaskService.executeClaimReferralFeesTask();
                 break;
             default:
                 break;

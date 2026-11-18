@@ -434,6 +434,21 @@ export class MXProxyService {
         );
     }
 
+    async getXoxnoAggregatorAbi(): Promise<AbiRegistry> {
+        return this.getAbi(abiConfig.xoxnoAggregator, 'XoxnoAggregator');
+    }
+
+    async getXoxnoAggregatorSmartContractTransaction(
+        options: TransactionOptions,
+    ): Promise<TransactionModel> {
+        return this.getSmartContractTransaction(
+            scAddress.xoxnoAggregator,
+            abiConfig.xoxnoAggregator,
+            'XoxnoAggregator',
+            options,
+        );
+    }
+
     async getAbi(
         contractAbiPath: string,
         contractInterface: string,

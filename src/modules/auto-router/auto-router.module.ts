@@ -18,6 +18,8 @@ import { SmartRouterService } from './services/smart.router.service';
 import { SmartRouterEvaluationModule } from '../smart-router-evaluation/smart.router.evaluation.module';
 import { StateModule } from '../state/state.module';
 import { XoxnoAggregatorService } from './services/xoxno-aggregator.service';
+import { XoxnoAggregatorAbiService } from './services/xoxno-aggregator.abi.service';
+import { XoxnoAggregatorTransactionService } from './services/xoxno-aggregator.transactions.service';
 
 @Module({
     imports: [
@@ -43,7 +45,14 @@ import { XoxnoAggregatorService } from './services/xoxno-aggregator.service';
         PairTransactionService,
         SmartRouterService,
         XoxnoAggregatorService,
+        XoxnoAggregatorAbiService,
+        XoxnoAggregatorTransactionService,
     ],
-    exports: [AutoRouterService, AutoRouterTransactionService],
+    exports: [
+        AutoRouterService,
+        AutoRouterTransactionService,
+        XoxnoAggregatorAbiService,
+        XoxnoAggregatorTransactionService,
+    ],
 })
 export class AutoRouterModule {}

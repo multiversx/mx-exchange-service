@@ -5,12 +5,14 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { LockAndRetry } from 'src/helpers/decorators/lock.retry.decorator';
 import { Logger } from 'winston';
 import { FeesCollectorTasksService } from './fees.collector.tasks.service';
+import { XoxnoTasksService } from './xoxno.tasks.service';
 
 @Injectable()
 export class TaskRunnerCronService {
     constructor(
         private readonly redLockService: RedlockService,
         private readonly feesCollectorTasks: FeesCollectorTasksService,
+        private readonly xoxnoTasks: XoxnoTasksService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -34,5 +36,16 @@ export class TaskRunnerCronService {
     })
     async redistributeRewards(): Promise<void> {
         await this.feesCollectorTasks.executeRedistributeRewardsTask();
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_NOON)
+    @LockAndRetry({
+        lockKey: TaskRunnerCronService.name,
+        lockName: 'claimXoxnoReferralFees',
+        maxLockRetries: 0,
+        maxOperationRetries: 2,
+    })
+    async claimXoxnoReferralFees(): Promise<void> {
+        await this.xoxnoTasks.executeClaimReferralFeesTask();
     }
 }
