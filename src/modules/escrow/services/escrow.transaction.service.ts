@@ -10,6 +10,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class EscrowTransactionService {
@@ -55,7 +56,7 @@ export class EscrowTransactionService {
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
         if (senderAddress === receiverAddress) {
-            throw new Error('Sender and receiver cannot be the same');
+            throw new UserInputError('Sender and receiver cannot be the same');
         }
 
         return await this.mxProxy.getEscrowSmartContractTransaction(

@@ -18,6 +18,7 @@ import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from './models/farm.model';
 import { FarmTransactionFactory } from './farm.transaction.factory';
 import { JwtOrNativeAdminGuard } from '../auth/jwt.or.native.admin.guard';
+import { UserInputError } from '@nestjs/apollo';
 
 @Resolver()
 export class FarmTransactionResolver {
@@ -257,7 +258,7 @@ export class FarmTransactionResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         if (farmVersion(args.farmAddress) !== FarmVersion.V1_2) {
-            throw new Error('invalid farm version');
+            throw new UserInputError('invalid farm version');
         }
         return this.farmTransactionV1_2.migrateToNewFarm(user.address, args);
     }
@@ -269,7 +270,7 @@ export class FarmTransactionResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         if (farmVersion(args.oldFarmAddress) !== FarmVersion.V1_2) {
-            throw new Error('invalid farm version');
+            throw new UserInputError('invalid farm version');
         }
         await this.farmFactory
             .useService(args.oldFarmAddress)
@@ -287,7 +288,7 @@ export class FarmTransactionResolver {
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         if (farmVersion(farmAddress) !== FarmVersion.V1_2) {
-            throw new Error('invalid farm version');
+            throw new UserInputError('invalid farm version');
         }
         await this.farmFactory
             .useService(farmAddress)

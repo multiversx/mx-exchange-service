@@ -14,6 +14,7 @@ import { MXDataApiService } from '../multiversx-communication/mx.data.api.servic
 import { Locker } from '@multiversx/sdk-nestjs-common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { truncateForLog } from 'src/utils/log.utils';
 
 @Injectable()
 export class CacheWarmerService {
@@ -78,16 +79,15 @@ export class CacheWarmerService {
             keysToCompute.map(async (key) => {
                 await Locker.lock(key, async () => {
                     const parsedKey = `${prefix}.${key}.body`;
-                    const keyValue: object = await this.cachingService.get(
-                        parsedKey,
-                    );
+                    const keyValue: object =
+                        await this.cachingService.get(parsedKey);
 
                     if (!keyValue) {
                         return Promise.resolve();
                     }
 
-                    this.logger.info(
-                        `Started warming up query '${JSON.stringify(
+                    this.logger.debug(
+                        `Started warming up query '${truncateForLog(
                             keyValue,
                         )}' for url '${process.env.MX_DEX_URL}'`,
                         { context: 'GuestCache' },
@@ -110,8 +110,8 @@ export class CacheWarmerService {
                         profiler.stop();
                         const data = response.data;
 
-                        this.logger.info(
-                            `Finished warming up query '${JSON.stringify(
+                        this.logger.debug(
+                            `Finished warming up query '${truncateForLog(
                                 keyValue,
                             )}' for url '${
                                 process.env.MX_DEX_URL
@@ -129,7 +129,7 @@ export class CacheWarmerService {
                         return data;
                     } catch (error) {
                         this.logger.error(
-                            `An error occurred while warming up query '${JSON.stringify(
+                            `An error occurred while warming up query '${truncateForLog(
                                 keyValue,
                             )}' for url '${process.env.MX_DEX_URL}'`,
                             { context: 'GuestCache', trace: error.stack },

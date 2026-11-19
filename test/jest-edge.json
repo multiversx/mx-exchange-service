@@ -1,0 +1,12 @@
+{
+    "moduleFileExtensions": ["js", "json", "ts"],
+    "modulePaths": ["<rootDir>"],
+    "rootDir": "../",
+    "testRegex": "test/edge/.*\\.edge-spec\\.ts$",
+    "testEnvironment": "node",
+    "transform": {
+        "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "setupFiles": ["<rootDir>/test/edge/setup.ts"],
+    "testTimeout": 30000
+}

@@ -12,6 +12,7 @@ import {
 import { Address } from '@multiversx/sdk-core';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { MetricsCollector } from 'src/utils/metrics.collector';
+import { httpErrorDetails } from 'src/utils/log.utils';
 
 @Injectable()
 export class XoxnoAggregatorService {
@@ -68,9 +69,7 @@ export class XoxnoAggregatorService {
                 {
                     method: 'GET',
                     url: `${this.baseUrl}/quote`,
-                    response: error.response?.data,
-                    status: error.response?.status,
-                    message: error.message,
+                    ...httpErrorDetails(error),
                 },
             );
 

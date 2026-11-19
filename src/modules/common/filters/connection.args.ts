@@ -6,6 +6,7 @@ import {
 import { Field, Int, InputType } from '@nestjs/graphql';
 import { IsInt, IsOptional, Max } from 'class-validator';
 import { PaginationArgs } from 'src/modules/dex.model';
+import { UserInputError } from '@nestjs/apollo';
 
 type PagingMeta =
     | { pagingType: 'forward'; after?: string; first: number }
@@ -21,18 +22,20 @@ function checkPagingSanity(args: ConnectionArgs): PagingMeta {
     const isForwardPaging = !!first || !!after;
     const isBackwardPaging = !!last || !!before;
     if (isForwardPaging && isBackwardPaging) {
-        throw new Error(
+        throw new UserInputError(
             'Relay pagination cannot be both forward and backward!',
         );
     }
     if ((isForwardPaging && before) || (isBackwardPaging && after)) {
-        throw new Error('Paging must use either first/after or last/before!');
+        throw new UserInputError(
+            'Paging must use either first/after or last/before!',
+        );
     }
     if ((isForwardPaging && first < 0) || (isBackwardPaging && last < 0)) {
-        throw new Error('Paging limit must be positive!');
+        throw new UserInputError('Paging limit must be positive!');
     }
     if (last && !before) {
-        throw new Error(
+        throw new UserInputError(
             "When paging backwards, a 'before' argument is required!",
         );
     }

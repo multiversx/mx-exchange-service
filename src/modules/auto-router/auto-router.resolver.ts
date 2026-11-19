@@ -49,11 +49,7 @@ export class AutoRouterResolver extends SwapRouteResolver {
                     },
                 });
             }
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
+            throw error;
         }
     }
 
@@ -63,18 +59,7 @@ export class AutoRouterResolver extends SwapRouteResolver {
         @Parent() parent: AutoRouteModel,
         @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
-        try {
-            return await this.autoRouterService.getTransactions(
-                user.address,
-                parent,
-            );
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.autoRouterService.getTransactions(user.address, parent);
     }
 
     @ResolveField(() => [TransactionModel])
@@ -82,14 +67,6 @@ export class AutoRouterResolver extends SwapRouteResolver {
         @Parent() parent: AutoRouteModel,
         @Args('sender') sender: string,
     ) {
-        try {
-            return await this.autoRouterService.getTransactions(sender, parent);
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.autoRouterService.getTransactions(sender, parent);
     }
 }

@@ -10,6 +10,7 @@ import {
 import { RouterAbiService } from './router.abi.service';
 import { CollectionType } from 'src/modules/common/collection.type';
 import { PairsStateService } from 'src/modules/state/services/pairs.state.service';
+import { ForbiddenError } from '@nestjs/apollo';
 
 @Injectable()
 export class RouterService {
@@ -70,6 +71,6 @@ export class RouterService {
 
     async requireOwner(sender: string) {
         if ((await this.routerAbi.owner()) !== sender)
-            throw new Error('You are not the owner.');
+            throw new ForbiddenError('You are not the owner.');
     }
 }

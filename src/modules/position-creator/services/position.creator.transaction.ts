@@ -31,6 +31,7 @@ import { EnergyAbiService } from 'src/modules/energy/services/energy.abi.service
 import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class PositionCreatorTransactionService {
@@ -64,7 +65,7 @@ export class PositionCreatorTransactionService {
             !uniqueTokensIDs.includes(payment.tokenIdentifier) &&
             payment.tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
-            throw new Error('Invalid ESDT token payment');
+            throw new UserInputError('Invalid ESDT token payment');
         }
 
         const swapRouteArgs =
@@ -186,12 +187,12 @@ export class PositionCreatorTransactionService {
             !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
             payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
-            throw new Error('Invalid ESDT token payment');
+            throw new UserInputError('Invalid ESDT token payment');
         }
 
         for (const payment of payments.slice(1)) {
             if (payment.tokenIdentifier !== farmTokenID) {
-                throw new Error('Invalid farm token payment');
+                throw new UserInputError('Invalid farm token payment');
             }
         }
 
@@ -342,12 +343,12 @@ export class PositionCreatorTransactionService {
             payments[0].tokenIdentifier !== lpTokenID &&
             payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
-            throw new Error('Invalid ESDT token payment');
+            throw new UserInputError('Invalid ESDT token payment');
         }
 
         for (const payment of payments.slice(1)) {
             if (payment.tokenIdentifier !== dualYieldTokenID) {
-                throw new Error('Invalid dual yield token payment');
+                throw new UserInputError('Invalid dual yield token payment');
             }
         }
 
@@ -445,12 +446,12 @@ export class PositionCreatorTransactionService {
             !uniqueTokensIDs.includes(payments[0].tokenIdentifier) &&
             payments[0].tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
-            throw new Error('Invalid ESDT token payment');
+            throw new UserInputError('Invalid ESDT token payment');
         }
 
         for (const payment of payments.slice(1)) {
             if (payment.tokenIdentifier !== farmTokenID) {
-                throw new Error('Invalid staking token payment');
+                throw new UserInputError('Invalid staking token payment');
             }
         }
 
@@ -579,7 +580,7 @@ export class PositionCreatorTransactionService {
                 xmexTokenID,
             )
         ) {
-            throw new Error('Invalid locked tokens payments');
+            throw new UserInputError('Invalid locked tokens payments');
         }
 
         if (
@@ -590,19 +591,21 @@ export class PositionCreatorTransactionService {
                 secondTokenID,
             )
         ) {
-            throw new Error('Invalid ESDT tokens payments');
+            throw new UserInputError('Invalid ESDT tokens payments');
         }
 
         if (!isLockedToken) {
             for (const payment of payments.slice(2)) {
                 if (payment.tokenIdentifier !== farmTokenID) {
-                    throw new Error('Invalid farm token payment');
+                    throw new UserInputError('Invalid farm token payment');
                 }
             }
         } else {
             for (const payment of payments.slice(2)) {
                 if (payment.tokenIdentifier !== wrappedFarmTokenID) {
-                    throw new Error('Invalid wrapped farm token payment');
+                    throw new UserInputError(
+                        'Invalid wrapped farm token payment',
+                    );
                 }
             }
         }
@@ -708,12 +711,12 @@ export class PositionCreatorTransactionService {
             ]);
 
         if (!this.checkTokensPayments(payments, firstTokenID, secondTokenID)) {
-            throw new Error('Invalid ESDT tokens payments');
+            throw new UserInputError('Invalid ESDT tokens payments');
         }
 
         for (const payment of payments.slice(2)) {
             if (payment.tokenIdentifier !== dualYieldTokenID) {
-                throw new Error('Invalid dual farm token payment');
+                throw new UserInputError('Invalid dual farm token payment');
             }
         }
 
@@ -786,7 +789,7 @@ export class PositionCreatorTransactionService {
         ]);
 
         if (payment.tokenIdentifier !== farmTokenID) {
-            throw new Error('Invalid farm token payment');
+            throw new UserInputError('Invalid farm token payment');
         }
 
         const liquidityPosition = await this.pairService.getLiquidityPosition(
@@ -840,7 +843,7 @@ export class PositionCreatorTransactionService {
             !uniqueTokensIDs.includes(payment.tokenIdentifier) &&
             payment.tokenIdentifier !== mxConfig.EGLDIdentifier
         ) {
-            throw new Error('Invalid ESDT token payment');
+            throw new UserInputError('Invalid ESDT token payment');
         }
 
         const amountOutMin = new BigNumber(swapRoute.amountOut)

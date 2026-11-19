@@ -10,6 +10,7 @@ import { constantsConfig } from '../../../config';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class EnergyService {
@@ -74,7 +75,7 @@ export class EnergyService {
                     (lockOption) => lockOption.lockEpochs === newLockPeriod,
                 ) === undefined
             ) {
-                throw new Error('Invalid new lock epochs');
+                throw new UserInputError('Invalid new lock epochs');
             }
 
             const tentativeNewUnlockEpoch = currentEpoch + newLockPeriod;
@@ -92,7 +93,7 @@ export class EnergyService {
         }
 
         if (newLockPeriod > prevLockEpochs) {
-            throw new Error('Invalid new lock epoch');
+            throw new UserInputError('Invalid new lock epoch');
         }
 
         if (vmQuery) {

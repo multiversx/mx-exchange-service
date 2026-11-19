@@ -14,6 +14,7 @@ import {
     DustConvertSwapModel,
     DustConvertFailedTokenModel,
 } from '../models/dust.converter.model';
+import { httpErrorDetails } from 'src/utils/log.utils';
 
 @Injectable()
 export class DustConverterService {
@@ -57,9 +58,7 @@ export class DustConverterService {
             const errorDetails = {
                 method: 'POST',
                 url: `${this.baseUrl}/multi-swap`,
-                response: error.response?.data,
-                status: error.response?.status,
-                message: error.message,
+                ...httpErrorDetails(error),
             };
 
             this.logger.error(

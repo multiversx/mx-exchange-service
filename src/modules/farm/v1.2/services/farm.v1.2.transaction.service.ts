@@ -24,6 +24,7 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { FarmAbiServiceV1_2 } from './farm.v1.2.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
@@ -153,7 +154,7 @@ export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
         ]);
 
         if (farmedTokenID !== farmingTokenID) {
-            throw new Error('failed to compound different tokens');
+            throw new UserInputError('failed to compound different tokens');
         }
 
         return this.mxProxy.getFarmSmartContractTransaction(

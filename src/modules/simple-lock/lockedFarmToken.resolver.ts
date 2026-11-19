@@ -10,8 +10,6 @@ import {
     LpProxyTokenAttributesModel,
 } from './models/simple.lock.model';
 import { SimpleLockService } from './services/simple.lock.service';
-import { GraphQLError } from 'graphql';
-import { ApolloServerErrorCode } from '@apollo/server/errors';
 
 @Resolver(() => FarmProxyTokenAttributesModel)
 export class LockedFarmTokenResolver {
@@ -21,18 +19,10 @@ export class LockedFarmTokenResolver {
     async farmingTokenAttributes(
         parent: FarmProxyTokenAttributesModel,
     ): Promise<LpProxyTokenAttributesModel> {
-        try {
-            return await this.simpleLockService.getLpTokenProxyAttributes(
-                tokenCollection(parent.identifier),
-                parent.farmingTokenLockedNonce,
-            );
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.simpleLockService.getLpTokenProxyAttributes(
+            tokenCollection(parent.identifier),
+            parent.farmingTokenLockedNonce,
+        );
     }
 
     @ResolveField()
@@ -46,19 +36,11 @@ export class LockedFarmTokenResolver {
         if (simpleLockAddress === undefined) {
             throw new UserInputError('invalid locked farm token identifier');
         }
-        try {
-            return await this.simpleLockService.getFarmTokenAttributes(
-                parent.farmTokenID,
-                parent.farmTokenNonce,
-                simpleLockAddress,
-            );
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.simpleLockService.getFarmTokenAttributes(
+            parent.farmTokenID,
+            parent.farmTokenNonce,
+            simpleLockAddress,
+        );
     }
 
     @UseGuards(JwtOrNativeAuthGuard)
@@ -66,16 +48,6 @@ export class LockedFarmTokenResolver {
     async farmProxyTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
     ): Promise<FarmProxyTokenAttributesModel[]> {
-        try {
-            return this.simpleLockService.decodeBatchFarmProxyTokenAttributes(
-                args,
-            );
-        } catch (error) {
-            throw new GraphQLError(error.message, {
-                extensions: {
-                    code: ApolloServerErrorCode.INTERNAL_SERVER_ERROR,
-                },
-            });
-        }
+        return this.simpleLockService.decodeBatchFarmProxyTokenAttributes(args);
     }
 }

@@ -29,6 +29,7 @@ import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { PairComputeService } from './pair.compute.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { ForbiddenError, UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class PairTransactionService {
@@ -117,7 +118,7 @@ export class PairTransactionService {
             args.pairAddress,
         );
         if (sender != initialLiquidityAdder) {
-            throw new Error('Invalid sender address');
+            throw new ForbiddenError('Invalid sender address');
         }
 
         const [firstTokenInput, secondTokenInput] = await this.validateTokens(
@@ -132,7 +133,7 @@ export class PairTransactionService {
             : new BigNumber(secondTokenInput.amount);
 
         if (minimumAmount.isLessThan(10 ** 3)) {
-            throw new Error(
+            throw new UserInputError(
                 'First tokens needs to be greater than minimum liquidity',
             );
         }
@@ -145,7 +146,7 @@ export class PairTransactionService {
             );
 
         if (permanentLockedAmountUSD.isGreaterThan(1.5)) {
-            throw new Error(
+            throw new UserInputError(
                 'Permanent locked amount must be less than 1.5 USD',
             );
         }
@@ -459,7 +460,7 @@ export class PairTransactionService {
         ]);
 
         if (tokens[0].nonce > 0 || tokens[1].nonce > 0) {
-            throw new Error('Only ESDT tokens allowed!');
+            throw new UserInputError('Only ESDT tokens allowed!');
         }
 
         if (
@@ -483,7 +484,7 @@ export class PairTransactionService {
             return [tokens[1], tokens[0]];
         }
 
-        throw new Error('invalid tokens received');
+        throw new UserInputError('invalid tokens received');
     }
 
     private async getTokensWithEGLD(
@@ -507,7 +508,7 @@ export class PairTransactionService {
                     secondTokenID,
                 );
             default:
-                throw new Error('Invalid tokens with EGLD');
+                throw new UserInputError('Invalid tokens with EGLD');
         }
     }
 

@@ -1,7 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { CacheService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { ContextTracker } from '@multiversx/sdk-nestjs-common';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import {
     formatNullOrUndefined,
@@ -27,9 +26,7 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
         const originalMethod = descriptor.value;
 
         descriptor.value = async function (...args: any[]) {
-            const context = ContextTracker.get();
-
-            let cacheKey = generateCacheKeyFromParams(
+            const cacheKey = generateCacheKeyFromParams(
                 cachingOptions.baseKey,
                 propertyKey,
                 ...args,
@@ -39,10 +36,6 @@ export function GetOrSetCache(cachingOptions: ICachingOptions) {
                 cachingOptions.baseKey,
                 propertyKey,
             );
-
-            if (context && context.deepHistoryTimestamp) {
-                cacheKey = `${cacheKey}.${context.deepHistoryTimestamp}`;
-            }
 
             const cachingService: CacheService = this.cachingService;
 

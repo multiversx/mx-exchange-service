@@ -6,6 +6,7 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { Logger } from 'winston';
 import { CacheService } from 'src/services/caching/cache.service';
+import { httpErrorDetails } from 'src/utils/log.utils';
 
 @Injectable()
 export class MXDataApiService {
@@ -30,9 +31,7 @@ export class MXDataApiService {
                     const customError = {
                         method: 'GET',
                         uri,
-                        response: error.response?.data,
-                        status: error.response?.status,
-                        message: error.message,
+                        ...httpErrorDetails(error),
                         name: error.name,
                     };
 

@@ -23,6 +23,7 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ProxyAbiServiceV2 } from 'src/modules/proxy/v2/services/proxy.v2.abi.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class ProxyPairTransactionsService {
@@ -60,7 +61,7 @@ export class ProxyPairTransactionsService {
                 );
                 break;
             default:
-                throw new Error('No EGLD to wrap found!');
+                throw new UserInputError('No EGLD to wrap found!');
         }
 
         transactions.push(
@@ -213,7 +214,9 @@ export class ProxyPairTransactionsService {
             gasConfig.defaultMergeWLPT * tokens.length >
             constantsConfig.MAX_GAS_LIMIT
         ) {
-            throw new Error('Number of merge tokens exeeds maximum gas limit!');
+            throw new UserInputError(
+                'Number of merge tokens exeeds maximum gas limit!',
+            );
         }
 
         const gasLimit = gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length;
@@ -272,7 +275,7 @@ export class ProxyPairTransactionsService {
         switch (mxConfig.EGLDIdentifier) {
             case tokens[0].tokenID:
                 if (tokens[0].nonce > 0) {
-                    throw new Error('Invalid nonce for EGLD token!');
+                    throw new UserInputError('Invalid nonce for EGLD token!');
                 }
                 return [
                     new InputTokenModel({
@@ -284,7 +287,7 @@ export class ProxyPairTransactionsService {
                 ];
             case tokens[1].tokenID:
                 if (tokens[1].nonce > 0) {
-                    throw new Error('Invalid nonce for EGLD token!');
+                    throw new UserInputError('Invalid nonce for EGLD token!');
                 }
                 return [
                     tokens[0],
@@ -313,24 +316,24 @@ export class ProxyPairTransactionsService {
         switch (firstTokenID) {
             case tokens[0].tokenID:
                 if (!secondTokenID.includes(tokens[1].tokenID)) {
-                    throw new Error('Invalid tokens received!');
+                    throw new UserInputError('Invalid tokens received!');
                 }
                 if (tokens[0].nonce > 0 || tokens[1].nonce < 1) {
-                    throw new Error('Invalid tokens nonce received!');
+                    throw new UserInputError('Invalid tokens nonce received!');
                 }
                 return tokens;
             case tokens[1].tokenID:
                 if (!secondTokenID.includes(tokens[0].tokenID)) {
-                    throw new Error('Invalid tokens received!');
+                    throw new UserInputError('Invalid tokens received!');
                 }
                 if (tokens[1].nonce > 0 || tokens[0].nonce < 1) {
-                    throw new Error('Invalid tokens nonce received!');
+                    throw new UserInputError('Invalid tokens nonce received!');
                 }
                 return [tokens[1], tokens[0], ...tokens.slice(2)];
             default:
                 break;
         }
 
-        throw new Error('Invalid tokens received!');
+        throw new UserInputError('Invalid tokens received!');
     }
 }

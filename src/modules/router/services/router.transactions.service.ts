@@ -26,6 +26,7 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { RouterAbiService } from './router.abi.service';
 import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { ForbiddenError, UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class RouterTransactionService {
@@ -49,7 +50,7 @@ export class RouterTransactionService {
         );
 
         if (pairAddress) {
-            throw new Error('Pair already exists');
+            throw new UserInputError('Pair already exists');
         }
 
         return this.mxProxy.getRouterSmartContractTransaction(
@@ -79,7 +80,7 @@ export class RouterTransactionService {
         );
 
         if (!pairAddress) {
-            throw new Error('Pair does not exist');
+            throw new UserInputError('Pair does not exist');
         }
 
         const initialLiquidityAdder = await this.pairAbi.initialLiquidityAdder(
@@ -87,7 +88,7 @@ export class RouterTransactionService {
         );
 
         if (sender !== initialLiquidityAdder) {
-            throw new Error('Invalid sender address');
+            throw new ForbiddenError('Invalid sender address');
         }
 
         const endpointArgs: TypedValue[] = [
@@ -122,7 +123,7 @@ export class RouterTransactionService {
         );
 
         if (!pairAddress) {
-            throw new Error('Pair does not exist');
+            throw new UserInputError('Pair does not exist');
         }
 
         return this.mxProxy.getRouterSmartContractTransaction(
@@ -147,7 +148,7 @@ export class RouterTransactionService {
     ): Promise<TransactionModel> {
         const lpTokeID = await this.pairAbi.lpTokenID(pairAddress);
         if (lpTokeID !== undefined) {
-            throw new Error('LP Token already issued');
+            throw new UserInputError('LP Token already issued');
         }
 
         return this.mxProxy.getRouterSmartContractTransaction(
@@ -274,7 +275,7 @@ export class RouterTransactionService {
             pairAddress,
         );
         if (sender !== initialLiquidityAdder) {
-            throw new Error('Invalid sender address');
+            throw new ForbiddenError('Invalid sender address');
         }
 
         return this.mxProxy.getRouterSmartContractTransaction(
@@ -455,7 +456,7 @@ export class RouterTransactionService {
             lockedTokensAttributes.originalTokenID,
         );
         if (!pairAddress) {
-            throw new Error('Invalid locked LP token');
+            throw new UserInputError('Invalid locked LP token');
         }
 
         const [
@@ -479,7 +480,7 @@ export class RouterTransactionService {
         } else if (commonTokensUserPair.includes(secondTokenID)) {
             commonToken = secondTokenID;
         } else {
-            throw new Error('Not a valid user defined pair');
+            throw new UserInputError('Not a valid user defined pair');
         }
 
         const [swapEnableConfig, currentEpoch] = await Promise.all([
@@ -488,7 +489,7 @@ export class RouterTransactionService {
         ]);
 
         if (inputTokens.tokenID !== swapEnableConfig.lockedTokenID) {
-            throw new Error('Invalid input token');
+            throw new UserInputError('Invalid input token');
         }
 
         const lpTokenLockedEpochs =
@@ -496,7 +497,7 @@ export class RouterTransactionService {
                 ? lockedTokensAttributes.unlockEpoch - currentEpoch
                 : 0;
         if (!(lpTokenLockedEpochs >= swapEnableConfig.minLockPeriodEpochs)) {
-            throw new Error('Token not locked for long enough');
+            throw new UserInputError('Token not locked for long enough');
         }
 
         let commonTokenValue: string;
@@ -505,7 +506,7 @@ export class RouterTransactionService {
         } else if (commonTokensUserPair.includes(secondTokenID)) {
             commonTokenValue = liquidityTokens.secondTokenAmount;
         } else {
-            throw new Error('Not a valid user defined pair');
+            throw new UserInputError('Not a valid user defined pair');
         }
         if (
             new BigNumber(commonTokenValue).isLessThan(
@@ -514,7 +515,7 @@ export class RouterTransactionService {
                 ),
             )
         ) {
-            throw new Error('Not enough value locked');
+            throw new UserInputError('Not enough value locked');
         }
 
         return pairAddress;

@@ -18,6 +18,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class StakingTransactionService {
@@ -434,12 +435,12 @@ export class StakingTransactionService {
         ]);
 
         if (tokens[0].tokenID !== farmingTokenID || tokens[0].nonce > 0) {
-            throw new Error('invalid farming token provided');
+            throw new UserInputError('invalid farming token provided');
         }
 
         for (const inputToken of tokens.slice(1)) {
             if (inputToken.tokenID !== farmTokenID || inputToken.nonce === 0) {
-                throw new Error('invalid farm token provided');
+                throw new UserInputError('invalid farm token provided');
             }
         }
     }

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { RouterService } from '../services/router.service';
 import { PairFilterArgs } from '../models/filter.args';
 import { RouterAbiServiceProvider } from '../mocks/router.abi.service.mock';
+import { RouterAbiService } from '../services/router.abi.service';
 import { Address } from '@multiversx/sdk-core';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
@@ -157,5 +158,16 @@ describe('RouterService', () => {
                 ).toBech32(),
             ),
         ]);
+    });
+
+    it('should refuse a sender that is not the owner', async () => {
+        const service = module.get<RouterService>(RouterService);
+        const routerAbi = module.get<RouterAbiService>(RouterAbiService);
+        jest.spyOn(routerAbi, 'owner').mockResolvedValue('erd1owner');
+
+        await expect(service.requireOwner('erd1other')).rejects.toMatchObject({
+            message: 'You are not the owner.',
+            extensions: { code: 'FORBIDDEN' },
+        });
     });
 });

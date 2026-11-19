@@ -26,6 +26,7 @@ import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class SimpleLockTransactionService {
@@ -103,7 +104,7 @@ export class SimpleLockTransactionService {
         const wrappedTokenID = await this.wrapAbi.wrappedEgldTokenID();
 
         if (inputTokens.length !== 2) {
-            throw new Error('Invalid input tokens length');
+            throw new UserInputError('Invalid input tokens length');
         }
 
         const [firstTokenInput, secondTokenInput] = inputTokens;
@@ -350,7 +351,7 @@ export class SimpleLockTransactionService {
         exitAmount?: string,
     ): Promise<TransactionModel> {
         if (!exitAmount && farmVersion === FarmVersion.V2) {
-            throw new Error('Invalid exit amount!');
+            throw new UserInputError('Invalid exit amount!');
         }
 
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
@@ -463,7 +464,7 @@ export class SimpleLockTransactionService {
                 lpProxyToken.nonce;
             const sameFarmType = decodedAttributes.farmType === farmType;
             if (!(sameFarmingToken && sameFarmingTokenNonce && sameFarmType)) {
-                throw new Error('Invalid farm proxy token');
+                throw new UserInputError('Invalid farm proxy token');
             }
         }
     }
@@ -477,7 +478,7 @@ export class SimpleLockTransactionService {
         );
 
         if (inputTokens.tokenID !== farmProxyTokenID || inputTokens.nonce < 1) {
-            throw new Error('Invalid input token');
+            throw new UserInputError('Invalid input token');
         }
     }
 }

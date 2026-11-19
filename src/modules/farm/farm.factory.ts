@@ -10,6 +10,7 @@ import { FarmServiceV1_3 } from './v1.3/services/farm.v1.3.service';
 import { FarmServiceV2 } from './v2/services/farm.v2.service';
 import { FarmServiceBase } from './base-module/services/farm.base.service';
 import { FarmsFilter } from './models/farm.args';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class FarmFactoryService {
@@ -83,7 +84,9 @@ export class FarmFactoryService {
             case FarmVersion.V2:
                 return this.farmServiceV2;
             default:
-                throw new Error(`${farmAddress} is not a known farm address`);
+                throw new UserInputError(
+                    `${farmAddress} is not a known farm address`,
+                );
         }
     }
 }

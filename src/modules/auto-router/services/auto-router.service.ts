@@ -47,6 +47,7 @@ import {
 } from '../models/xoxno-aggregator.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { Address } from '@multiversx/sdk-core';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class AutoRouterService {
@@ -94,7 +95,7 @@ export class AutoRouterService {
 
     async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
         if (args.amountIn && args.amountOut)
-            throw new Error("Can't have both amountIn & amountOut");
+            throw new UserInputError("Can't have both amountIn & amountOut");
 
         const [tokenInID, tokenOutID] = await this.toWrappedIfEGLD([
             args.tokenInID,
@@ -132,7 +133,7 @@ export class AutoRouterService {
                     swapType,
                 );
             } else {
-                throw new Error('Multi swap disabled!');
+                throw new UserInputError('Multi swap disabled!');
             }
         }
 
@@ -268,7 +269,7 @@ export class AutoRouterService {
                 (pair.lockedTokensInfo !== undefined &&
                     swapRoute.addressRoute.length > 1)
             ) {
-                throw new Error('No swap route found');
+                throw new UserInputError('No swap route found');
             }
         }
 
@@ -393,7 +394,9 @@ export class AutoRouterService {
 
     getSwapType(amountIn: string, amountOut: string): SWAP_TYPE {
         if (amountIn && amountOut)
-            throw new Error("Can't have both fixedInput & fixedOutput");
+            throw new UserInputError(
+                "Can't have both fixedInput & fixedOutput",
+            );
 
         if (amountIn) return SWAP_TYPE.fixedInput;
         else if (amountOut) return SWAP_TYPE.fixedOutput;
@@ -580,7 +583,7 @@ export class AutoRouterService {
                 parent.smartSwap.tokensPriceDeviationPercent >
                     parent.maxPriceDeviationPercent
             ) {
-                throw new Error('Spread too big!');
+                throw new UserInputError('Spread too big!');
             }
 
             try {
@@ -659,7 +662,7 @@ export class AutoRouterService {
         if (
             parent.tokensPriceDeviationPercent > parent.maxPriceDeviationPercent
         ) {
-            throw new Error('Spread too big!');
+            throw new UserInputError('Spread too big!');
         }
 
         const transactions =

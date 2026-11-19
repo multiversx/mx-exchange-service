@@ -36,6 +36,7 @@ import {
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 @Injectable()
 export class ProxyFarmTransactionsService {
@@ -239,7 +240,9 @@ export class ProxyFarmTransactionsService {
             gasConfig.defaultMergeWFMT * tokens.length >
             constantsConfig.MAX_GAS_LIMIT
         ) {
-            throw new Error('Number of merge tokens exeeds maximum gas limit!');
+            throw new UserInputError(
+                'Number of merge tokens exeeds maximum gas limit!',
+            );
         }
 
         const gasLimit = gasConfig.proxy.farms.defaultMergeWFMT * tokens.length;

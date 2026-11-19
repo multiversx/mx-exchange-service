@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
     EsdtToken,
     EsdtTokenType,
@@ -11,6 +11,8 @@ import { FarmModelV2 } from 'src/modules/farm/models/farm.v2.model';
 
 @Injectable()
 export class StateStore {
+    private readonly logger = new Logger(StateStore.name);
+
     // Primary data stores
     private readonly _tokens = new Map<string, EsdtToken>();
     private readonly _pairs = new Map<string, PairModel>();
@@ -139,7 +141,7 @@ export class StateStore {
     }
 
     setInitialized(initialized: boolean): void {
-        console.log(`DEX STATE STORE INITIALIZED: ${initialized}`);
+        this.logger.log(`DEX STATE STORE INITIALIZED: ${initialized}`);
         this._initialized = initialized;
     }
 

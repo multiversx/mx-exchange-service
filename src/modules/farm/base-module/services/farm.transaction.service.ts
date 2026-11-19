@@ -20,6 +20,7 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { FarmAbiService } from './farm.abi.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
+import { UserInputError } from '@nestjs/apollo';
 
 export abstract class TransactionsFarmService {
     constructor(
@@ -59,12 +60,12 @@ export abstract class TransactionsFarmService {
         ]);
 
         if (tokens[0].tokenID !== farmingTokenID || tokens[0].nonce > 0) {
-            throw new Error('invalid farming token provided');
+            throw new UserInputError('invalid farming token provided');
         }
 
         for (const inputToken of tokens.slice(1)) {
             if (inputToken.tokenID !== farmTokenID || inputToken.nonce === 0) {
-                throw new Error('invalid farm token provided');
+                throw new UserInputError('invalid farm token provided');
             }
         }
     }
