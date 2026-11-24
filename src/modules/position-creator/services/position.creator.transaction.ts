@@ -468,6 +468,20 @@ export class PositionCreatorTransactionService {
 
         const multiSwapArgs = this.serializeSwapRouteArgs(swapRoute);
 
+        // The contract checks swap output plus merged farm tokens
+        const mergedFarmTokens = payments
+            .slice(1)
+            .reduce(
+                (sum, payment) => sum.plus(payment.amount),
+                new BigNumber(0),
+            );
+        const minAmountOut = swapMinOut(
+            swapRoute.intermediaryAmounts[
+                swapRoute.intermediaryAmounts.length - 1
+            ],
+            swapRoute.tolerance,
+        ).plus(mergedFarmTokens);
+
         const gasLimit =
             gasConfig.positionCreator.singleToken.stakingPosition +
             gasConfig.stake.stakeFarm.withTokenMerge +
@@ -481,13 +495,7 @@ export class PositionCreatorTransactionService {
             function: 'createFarmStakingPosFromSingleToken',
             arguments: [
                 new AddressValue(Address.newFromBech32(stakingAddress)),
-                new BigUIntValue(
-                    new BigNumber(
-                        swapRoute.intermediaryAmounts[
-                            swapRoute.intermediaryAmounts.length - 1
-                        ],
-                    ),
-                ),
+                new BigUIntValue(minAmountOut),
                 VariadicValue.fromItems(...multiSwapArgs),
             ],
         });
