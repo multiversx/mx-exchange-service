@@ -125,14 +125,15 @@ export class AutoRouterTransactionService {
         const feePercentage =
             await this.composeTasksAbi.smartSwapFeePercentage();
 
-        const toleranceAmount = amountOut.multipliedBy(args.tolerance);
+        // The contract takes floor(out * fee) before its final check
+        const feeAmount = amountOut
+            .multipliedBy(feePercentage)
+            .integerValue(BigNumber.ROUND_DOWN);
 
-        const feeAmount = amountOut.multipliedBy(feePercentage);
-
-        const amountOutMin = amountOut
-            .minus(toleranceAmount)
-            .minus(feeAmount)
-            .integerValue();
+        const amountOutMin = swapMinOut(
+            amountOut.minus(feeAmount),
+            args.tolerance,
+        );
 
         const typedArgs = this.getSmartSwapTypedArgs(args);
 

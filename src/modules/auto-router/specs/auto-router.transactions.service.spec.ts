@@ -50,11 +50,12 @@ describe('AutoRouterTransactionService', () => {
     const composeTasks = {
         getComposeTasksTransaction: jest.fn().mockResolvedValue({}),
     };
+    const composeTasksAbi = { smartSwapFeePercentage: jest.fn() };
     const service = new AutoRouterTransactionService(
         {} as MXProxyService,
         {} as WrapTransactionsService,
         composeTasks as unknown as ComposableTasksTransactionService,
-        {} as ComposableTasksAbiService,
+        composeTasksAbi as unknown as ComposableTasksAbiService,
     );
 
     beforeEach(() => composeTasks.getComposeTasksTransaction.mockClear());
@@ -124,5 +125,58 @@ describe('AutoRouterTransactionService', () => {
                 new BigNumber(args.intermediaryAmounts[2]).toFixed(),
             );
         });
+    });
+
+    describe('smartSwap overall minimum', () => {
+        const allocations = [
+            {
+                tokenRoute: ['WEGLD-123456', 'MEX-123456'],
+                intermediaryAmounts: [
+                    '400000000000000000',
+                    '394863213758824519540',
+                ],
+                addressRoute: [pairAddress(1)],
+            },
+            {
+                tokenRoute: ['WEGLD-123456', 'USDC-123456', 'MEX-123456'],
+                intermediaryAmounts: [
+                    '600000000000000000',
+                    '27080923269',
+                    '592294820638236779311',
+                ],
+                addressRoute: [pairAddress(2), pairAddress(3)],
+            },
+        ];
+        const grossOut = 394863213758824519540n + 592294820638236779311n;
+
+        it.each([
+            [100, 50],
+            [100, 100],
+            [250, 50],
+            [250, 100],
+        ])(
+            'fee %i / 100000 at %i bp is floor((A - fee) / (1 + t))',
+            async (feeRaw, bp) => {
+                composeTasksAbi.smartSwapFeePercentage.mockResolvedValue(
+                    new BigNumber(feeRaw).dividedBy(100000).toNumber(),
+                );
+
+                await service.smartSwap('erd1', {
+                    tokenInID: 'WEGLD-123456',
+                    tokenOutID: 'MEX-123456',
+                    amountIn: '1000000000000000000',
+                    allocations,
+                    tolerance: bp / 10000,
+                });
+
+                // composable tasks deduct floor(out * fee / MAX) first
+                const fee = (grossOut * BigInt(feeRaw)) / 100000n;
+                const expected = refSwapMinOut((grossOut - fee).toString(), bp);
+                expect(
+                    composeTasks.getComposeTasksTransaction.mock.calls[0][2]
+                        .amount,
+                ).toEqual(expected);
+            },
+        );
     });
 });
