@@ -32,6 +32,14 @@ export default new DataSource({
     username: configService.get('TIMESCALEDB_USERNAME'),
     password: configService.get('TIMESCALEDB_PASSWORD'),
     database: configService.get('TIMESCALEDB_DATABASE'),
+    ...(process.env.GH_ACTIONS !== 'true' && {
+        ssl: true,
+        extra: {
+            ssl: {
+                rejectUnauthorized: false,
+            },
+        },
+    }),
     migrationsTransactionMode: 'each',
     entities: [
         XExchangeAnalyticsEntity,
