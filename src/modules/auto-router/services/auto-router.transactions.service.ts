@@ -29,7 +29,7 @@ import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { decimalToHex } from 'src/utils/token.converters';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { ComposableTasksAbiService } from 'src/modules/composable-tasks/services/composable.tasks.abi.service';
-import { swapMaxIn } from 'src/utils/slippage.utils';
+import { swapMaxIn, swapMinOut } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class AutoRouterTransactionService {
@@ -182,24 +182,17 @@ export class AutoRouterTransactionService {
 
     multiPairFixedInputSwaps(args: MultiSwapTokensArgs): TypedValue[] {
         const swaps: TypedValue[] = [];
-
-        const intermediaryTolerance = args.tolerance / args.addressRoute.length;
+        const lastHop = args.addressRoute.length - 1;
 
         for (const [index, address] of args.addressRoute.entries()) {
-            const intermediaryToleranceMultiplier =
-                args.addressRoute.length - index;
-
-            const toleranceAmount = new BigNumber(
-                args.intermediaryAmounts[index + 1],
-            ).multipliedBy(
-                intermediaryToleranceMultiplier * intermediaryTolerance,
-            );
-
-            const amountOutMin = new BigNumber(
-                args.intermediaryAmounts[index + 1],
-            )
-                .minus(toleranceAmount)
-                .integerValue();
+            // No final check in the router: the last hop holds the tolerance
+            const amountOutMin =
+                index === lastHop
+                    ? swapMinOut(
+                          args.intermediaryAmounts[index + 1],
+                          args.tolerance,
+                      )
+                    : new BigNumber(1);
 
             swaps.push(
                 ...[
@@ -344,12 +337,7 @@ export class AutoRouterTransactionService {
 
         const amountOutMin =
             args.swapType === SWAP_TYPE.fixedInput
-                ? new BigNumber(1)
-                      .dividedBy(new BigNumber(1).plus(args.tolerance))
-                      .decimalPlaces(2)
-                      .multipliedBy(amountOut)
-                      .integerValue()
-                      .toFixed()
+                ? swapMinOut(amountOut, args.tolerance).toFixed()
                 : amountOut.toFixed();
 
         return this.composeTasksTransactionService.getComposeTasksTransaction(
@@ -394,12 +382,7 @@ export class AutoRouterTransactionService {
 
         const amountOutMin =
             args.swapType === SWAP_TYPE.fixedInput
-                ? new BigNumber(1)
-                      .dividedBy(new BigNumber(1).plus(args.tolerance))
-                      .decimalPlaces(2)
-                      .multipliedBy(amountOut)
-                      .integerValue()
-                      .toFixed()
+                ? swapMinOut(amountOut, args.tolerance).toFixed()
                 : amountOut.toFixed();
 
         return this.composeTasksTransactionService.getComposeTasksTransaction(
