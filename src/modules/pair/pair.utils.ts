@@ -38,7 +38,7 @@ export function getAmountOut(
         .multipliedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
         .plus(amountInWithFee);
 
-    return numerator.dividedBy(denominator).integerValue();
+    return numerator.idiv(denominator);
 }
 
 export function getAmountIn(
@@ -63,10 +63,7 @@ export function getAmountIn(
                 fee * constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS,
         );
 
-    return numerator
-        .dividedBy(denominator)
-        .plus(1)
-        .integerValue();
+    return numerator.idiv(denominator).plus(1);
 }
 
 export function getTokenForGivenPosition(
@@ -82,10 +79,7 @@ export function getTokenForGivenPosition(
     const tokenReservesBig = new BigNumber(tokenReserves);
     const totalSupplyBig = new BigNumber(totalSupply);
 
-    return liquidityBig
-        .multipliedBy(tokenReservesBig)
-        .dividedBy(totalSupplyBig)
-        .integerValue();
+    return liquidityBig.multipliedBy(tokenReservesBig).idiv(totalSupplyBig);
 }
 
 export function isSpreadTooBig(

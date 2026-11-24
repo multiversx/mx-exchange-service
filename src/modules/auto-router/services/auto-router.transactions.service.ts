@@ -29,6 +29,7 @@ import { EgldOrEsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { decimalToHex } from 'src/utils/token.converters';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { ComposableTasksAbiService } from 'src/modules/composable-tasks/services/composable.tasks.abi.service';
+import { swapMaxIn } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class AutoRouterTransactionService {
@@ -43,11 +44,10 @@ export class AutoRouterTransactionService {
         sender: string,
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
-        const amountIn = new BigNumber(args.intermediaryAmounts[0]).plus(
-            new BigNumber(args.intermediaryAmounts[0]).multipliedBy(
-                args.swapType === SWAP_TYPE.fixedOutput ? args.tolerance : 0,
-            ),
-        );
+        const amountIn =
+            args.swapType === SWAP_TYPE.fixedOutput
+                ? swapMaxIn(args.intermediaryAmounts[0], args.tolerance)
+                : new BigNumber(args.intermediaryAmounts[0]);
 
         if (args.tokenInID === mxConfig.EGLDIdentifier) {
             return [

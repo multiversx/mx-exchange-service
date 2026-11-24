@@ -25,6 +25,7 @@ import { StakingAbiService } from 'src/modules/staking/services/staking.abi.serv
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { UserInputError } from '@nestjs/apollo';
+import { liquidityMin } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class StakingProxyTransactionService {
@@ -169,12 +170,14 @@ export class StakingProxyTransactionService {
             pairAddress,
             exitFarmPosition.farmingTokens,
         );
-        const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(liquidityPosition.secondTokenAmount)
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(
+            liquidityPosition.firstTokenAmount,
+            args.tolerance,
+        );
+        const amount1Min = liquidityMin(
+            liquidityPosition.secondTokenAmount,
+            args.tolerance,
+        );
 
         return this.mxProxy.getStakingProxySmartContractTransaction(
             args.proxyStakingAddress,

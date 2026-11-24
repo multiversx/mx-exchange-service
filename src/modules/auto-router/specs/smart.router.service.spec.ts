@@ -408,7 +408,7 @@ describe('SmartRouterService', () => {
                 senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: 30500000,
-                data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwOTM0ZmJlZTMwYTY3M2I4YWU5YkBAQDAyQDAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDA5MzRmYmVlMzBhNjczYjhhZTli',
+                data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwOTM0ZmJlZTMwYTY3M2I4YWVhNUBAQDAyQDAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDA5MzRmYmVlMzBhNjczYjhhZWE1',
                 chainID: 'T',
                 version: 2,
                 options: undefined,

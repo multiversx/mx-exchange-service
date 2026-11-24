@@ -48,6 +48,7 @@ import {
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { Address } from '@multiversx/sdk-core';
 import { UserInputError } from '@nestjs/apollo';
+import { swapMaxIn } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class AutoRouterService {
@@ -410,10 +411,7 @@ export class AutoRouterService {
     }
 
     addTolerance(amountIn: string, tolerance: number): string {
-        return new BigNumber(amountIn)
-            .plus(new BigNumber(amountIn).multipliedBy(tolerance))
-            .integerValue()
-            .toFixed();
+        return swapMaxIn(amountIn, tolerance).toFixed();
     }
 
     private async getAllActivePairs(): Promise<PairModel[]> {

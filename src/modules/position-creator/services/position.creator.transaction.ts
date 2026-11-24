@@ -32,6 +32,7 @@ import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { UserInputError } from '@nestjs/apollo';
+import { liquidityMin, swapMinOut } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class PositionCreatorTransactionService {
@@ -610,12 +611,8 @@ export class PositionCreatorTransactionService {
             }
         }
 
-        const amount0Min = new BigNumber(firstPayment.amount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(secondPayment.amount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(firstPayment.amount, tolerance);
+        const amount1Min = liquidityMin(secondPayment.amount, tolerance);
 
         const endpointArgs = isLockedToken
             ? [new BigUIntValue(amount0Min), new BigUIntValue(amount1Min)]
@@ -725,12 +722,8 @@ export class PositionCreatorTransactionService {
                 ? [payments[0], payments[1]]
                 : [payments[1], payments[0]];
 
-        const amount0Min = new BigNumber(firstPayment.amount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(secondPayment.amount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(firstPayment.amount, tolerance);
+        const amount1Min = liquidityMin(secondPayment.amount, tolerance);
 
         const transactionOptions = new TransactionOptions({
             sender: sender,
@@ -796,12 +789,14 @@ export class PositionCreatorTransactionService {
             pairAddress,
             payment.amount,
         );
-        const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(liquidityPosition.secondTokenAmount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(
+            liquidityPosition.firstTokenAmount,
+            tolerance,
+        );
+        const amount1Min = liquidityMin(
+            liquidityPosition.secondTokenAmount,
+            tolerance,
+        );
 
         const transactionOptions = new TransactionOptions({
             sender: sender,
@@ -846,9 +841,10 @@ export class PositionCreatorTransactionService {
             throw new UserInputError('Invalid ESDT token payment');
         }
 
-        const amountOutMin = new BigNumber(swapRoute.amountOut)
-            .multipliedBy(1 - swapRoute.tolerance)
-            .integerValue();
+        const amountOutMin = swapMinOut(
+            swapRoute.amountOut,
+            swapRoute.tolerance,
+        );
 
         const swapRouteArgs = this.serializeSwapRouteArgs(swapRoute);
         let gasLimit =

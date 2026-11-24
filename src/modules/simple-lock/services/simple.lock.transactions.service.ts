@@ -27,6 +27,7 @@ import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { UserInputError } from '@nestjs/apollo';
+import { liquidityMin } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class SimpleLockTransactionService {
@@ -188,11 +189,8 @@ export class SimpleLockTransactionService {
             ];
         }
 
-        const amount0 = new BigNumber(firstInputToken.amount);
-        const amount1 = new BigNumber(secondInputToken.amount);
-
-        const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
-        const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
+        const amount0Min = liquidityMin(firstInputToken.amount, tolerance);
+        const amount1Min = liquidityMin(secondInputToken.amount, tolerance);
 
         return this.mxProxy.getSimpleLockSmartContractTransaction(
             simpleLockAddress,
@@ -247,16 +245,14 @@ export class SimpleLockTransactionService {
             inputTokens.amount,
         );
 
-        const amount0Min = new BigNumber(
+        const amount0Min = liquidityMin(
             liquidityPosition.firstTokenAmount.toString(),
-        )
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(
+            tolerance,
+        );
+        const amount1Min = liquidityMin(
             liquidityPosition.secondTokenAmount.toString(),
-        )
-            .multipliedBy(1 - tolerance)
-            .integerValue();
+            tolerance,
+        );
 
         const transaction =
             await this.mxProxy.getSimpleLockSmartContractTransaction(
