@@ -8,7 +8,11 @@ import {
     SwapRouteModel,
 } from 'src/modules/auto-router/models/auto-route.model';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
-import { PairService } from 'src/modules/pair/services/pair.service';
+import {
+    reservesAfterSwap,
+    zapLiquidityAmounts,
+} from 'src/modules/pair/pair.utils';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { StakingPositionSingleTokenModel } from '../models/position.creator.model';
 import { StakingAbiService } from 'src/modules/staking/services/staking.abi.service';
@@ -26,32 +30,12 @@ export type PositionCreatorSingleTokenInput = {
 @Injectable()
 export class PositionCreatorComputeService {
     constructor(
-        private readonly pairService: PairService,
         private readonly routerAbi: RouterAbiService,
         private readonly stakingAbi: StakingAbiService,
         private readonly autoRouterService: AutoRouterService,
         private readonly wrapAbi: WrapAbiService,
         private readonly pairsState: PairsStateService,
     ) {}
-
-    async computeSwap(
-        pairAddress: string,
-        fromTokenID: string,
-        toTokenID: string,
-        amount: string,
-    ): Promise<BigNumber> {
-        if (fromTokenID === toTokenID) {
-            return new BigNumber(amount);
-        }
-
-        const amountOut = await this.pairService.getAmountOut(
-            pairAddress,
-            fromTokenID,
-            amount,
-        );
-
-        return new BigNumber(amountOut);
-    }
 
     async computeSingleTokenPairInput(
         pairAddress: string,
@@ -124,29 +108,27 @@ export class PositionCreatorComputeService {
 
         profiler.stop('swap route', true);
 
-        const halfPayment = new BigNumber(amountOut)
-            .dividedBy(2)
-            .integerValue()
-            .toFixed();
-
-        const remainingPayment = new BigNumber(amountOut)
-            .minus(halfPayment)
-            .toFixed();
-
-        const [amount0, amount1] = await Promise.all([
-            await this.computeSwap(
-                pairAddress,
-                tokenIn.identifier,
-                tokenIn.identifier,
-                halfPayment,
-            ),
-            await this.computeSwap(
-                pairAddress,
-                tokenIn.identifier,
-                tokenOut.identifier,
-                remainingPayment,
-            ),
-        ]);
+        // Amounts the contract adds after swapping half on this pair
+        const specialFeePercent = pair.feeState
+            ? (pair.specialFeePercent ?? 0)
+            : 0;
+        const tokenInIsFirst = tokenIn.identifier === firstToken.identifier;
+        const [reserves0, reserves1] = this.reservesBeforeZap(
+            pair,
+            specialFeePercent,
+            swapRoutes[0],
+        );
+        const [firstAmount, secondAmount] = zapLiquidityAmounts(
+            amountOut.toFixed(),
+            tokenInIsFirst,
+            reserves0,
+            reserves1,
+            pair.totalFeePercent,
+            specialFeePercent,
+        );
+        const [amount0, amount1] = tokenInIsFirst
+            ? [firstAmount, secondAmount]
+            : [secondAmount, firstAmount];
 
         const tokenInExchangeRate = new BigNumber(10)
             .pow(tokenIn.decimals)
@@ -202,6 +184,43 @@ export class PositionCreatorComputeService {
         );
 
         return swapRoutes;
+    }
+
+    // A first leg through the target pair moves its reserves before the zap
+    private reservesBeforeZap(
+        pair: PairModel,
+        specialFeePercent: number,
+        firstLeg?: SwapRouteModel,
+    ): [string, string] {
+        let reserves0 = new BigNumber(pair.info.reserves0);
+        let reserves1 = new BigNumber(pair.info.reserves1);
+
+        firstLeg?.pairs.forEach((hop, index) => {
+            if (hop.address !== pair.address) {
+                return;
+            }
+            const amountIn = firstLeg.intermediaryAmounts[index];
+            const amountOut = firstLeg.intermediaryAmounts[index + 1];
+            if (firstLeg.tokenRoute[index] === pair.firstToken.identifier) {
+                [reserves0, reserves1] = reservesAfterSwap(
+                    amountIn,
+                    amountOut,
+                    reserves0,
+                    reserves1,
+                    specialFeePercent,
+                );
+            } else {
+                [reserves1, reserves0] = reservesAfterSwap(
+                    amountIn,
+                    amountOut,
+                    reserves1,
+                    reserves0,
+                    specialFeePercent,
+                );
+            }
+        });
+
+        return [reserves0.toFixed(), reserves1.toFixed()];
     }
 
     async computeStakingPositionSingleToken(

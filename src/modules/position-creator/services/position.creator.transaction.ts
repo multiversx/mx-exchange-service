@@ -78,10 +78,9 @@ export class PositionCreatorTransactionService {
                 ? swapRoutes[0].pairs.length + 1
                 : swapRoutes.length;
 
-        const [amount0Min, amount1Min] =
-            await this.getMinimumAmountsForLiquidity(
-                swapRoutes[swapRoutes.length - 1],
-            );
+        const [amount0Min, amount1Min] = this.getMinimumAmountsForLiquidity(
+            swapRoutes[swapRoutes.length - 1],
+        );
 
         const gasLimit =
             gasConfig.positionCreator.singleToken.liquidityPosition +
@@ -216,10 +215,9 @@ export class PositionCreatorTransactionService {
                 ? swapRoutes[0].pairs.length + 1
                 : swapRoutes.length;
 
-        const [amount0Min, amount1Min] =
-            await this.getMinimumAmountsForLiquidity(
-                swapRoutes[swapRoutes.length - 1],
-            );
+        const [amount0Min, amount1Min] = this.getMinimumAmountsForLiquidity(
+            swapRoutes[swapRoutes.length - 1],
+        );
 
         const gasLimit =
             gasConfig.positionCreator.singleToken.farmPosition +
@@ -375,7 +373,7 @@ export class PositionCreatorTransactionService {
         const [amount0Min, amount1Min] =
             payments[0].tokenIdentifier === lpTokenID
                 ? [new BigNumber(0), new BigNumber(0)]
-                : await this.getMinimumAmountsForLiquidity(
+                : this.getMinimumAmountsForLiquidity(
                       swapRoutes[swapRoutes.length - 1],
                   );
 
@@ -897,37 +895,20 @@ export class PositionCreatorTransactionService {
         return [transaction];
     }
 
-    private async getMinimumAmountsForLiquidity(
+    // The zap route holds the amounts addLiquidity will use
+    private getMinimumAmountsForLiquidity(
         swapRoute: SwapRouteModel,
-    ): Promise<BigNumber[]> {
+    ): BigNumber[] {
         const pair = swapRoute.pairs[0];
-        let amount0: BigNumber;
-        let amount1: BigNumber;
+        const [amount0, amount1] =
+            swapRoute.tokenInID === pair.firstToken.identifier
+                ? [swapRoute.amountIn, swapRoute.amountOut]
+                : [swapRoute.amountOut, swapRoute.amountIn];
 
-        if (swapRoute.tokenInID === pair.firstToken.identifier) {
-            amount0 = await this.pairService.getEquivalentForLiquidity(
-                pair.address,
-                pair.secondToken.identifier,
-                swapRoute.amountOut,
-            );
-            amount1 = new BigNumber(swapRoute.amountOut);
-        } else {
-            amount0 = new BigNumber(swapRoute.amountOut);
-            amount1 = await this.pairService.getEquivalentForLiquidity(
-                pair.address,
-                pair.firstToken.identifier,
-                swapRoute.amountOut,
-            );
-        }
-
-        const amount0Min = amount0
-            .multipliedBy(1 - swapRoute.tolerance)
-            .integerValue();
-        const amount1Min = amount1
-            .multipliedBy(1 - swapRoute.tolerance)
-            .integerValue();
-
-        return [amount0Min, amount1Min];
+        return [
+            liquidityMin(amount0, swapRoute.tolerance),
+            liquidityMin(amount1, swapRoute.tolerance),
+        ];
     }
 
     private checkTokensPayments(

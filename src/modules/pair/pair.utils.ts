@@ -82,6 +82,78 @@ export function getTokenForGivenPosition(
     return liquidityBig.multipliedBy(tokenReservesBig).idiv(totalSupplyBig);
 }
 
+// Reserves after a fixed-input swap; the special fee leaves the pool
+export function reservesAfterSwap(
+    amountIn: BigNumber.Value,
+    amountOut: BigNumber.Value,
+    reserveIn: BigNumber.Value,
+    reserveOut: BigNumber.Value,
+    specialFeePercent: number,
+): [BigNumber, BigNumber] {
+    const specialFee = new BigNumber(amountIn)
+        .multipliedBy(specialFeePercent)
+        .integerValue(BigNumber.ROUND_DOWN);
+
+    return [
+        new BigNumber(reserveIn).plus(amountIn).minus(specialFee),
+        new BigNumber(reserveOut).minus(amountOut),
+    ];
+}
+
+// Amounts addLiquidity uses from the desired ones, as the pair contract
+export function optimalLiquidityAmounts(
+    firstAmount: BigNumber,
+    secondAmount: BigNumber,
+    firstReserve: BigNumber,
+    secondReserve: BigNumber,
+): [BigNumber, BigNumber] {
+    const secondOptimal = firstAmount
+        .multipliedBy(secondReserve)
+        .idiv(firstReserve);
+    if (secondOptimal.isLessThanOrEqualTo(secondAmount)) {
+        return [firstAmount, secondOptimal];
+    }
+
+    return [
+        secondAmount.multipliedBy(firstReserve).idiv(secondReserve),
+        secondAmount,
+    ];
+}
+
+// Position creator zap: swap half on the pair, add the rest as liquidity
+export function zapLiquidityAmounts(
+    amount: string,
+    tokenInIsFirst: boolean,
+    reserves0: string,
+    reserves1: string,
+    totalFeePercent: number,
+    specialFeePercent: number,
+): [BigNumber, BigNumber] {
+    const swapped = new BigNumber(amount).idiv(2);
+    const kept = new BigNumber(amount).minus(swapped);
+    const [reserveIn, reserveOut] = tokenInIsFirst
+        ? [reserves0, reserves1]
+        : [reserves1, reserves0];
+
+    const received = getAmountOut(
+        swapped.toFixed(),
+        reserveIn,
+        reserveOut,
+        totalFeePercent,
+    );
+    const [newReserveIn, newReserveOut] = reservesAfterSwap(
+        swapped,
+        received,
+        reserveIn,
+        reserveOut,
+        specialFeePercent,
+    );
+
+    return tokenInIsFirst
+        ? optimalLiquidityAmounts(kept, received, newReserveIn, newReserveOut)
+        : optimalLiquidityAmounts(received, kept, newReserveOut, newReserveIn);
+}
+
 export function isSpreadTooBig(
     amountInUSD: BigNumber,
     amountOutUSD: BigNumber,

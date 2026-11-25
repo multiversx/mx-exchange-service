@@ -178,7 +178,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        `ESDTTransfer@USDC-123456@100000000000000000000@createLpPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000012@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
+                        `ESDTTransfer@USDC-123456@100000000000000000000@createLpPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000012@494999999950351053164@220220220212842717661442@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
                     ),
                     chainID: 'T',
                     version: 2,
@@ -188,6 +188,44 @@ describe('PositionCreatorTransaction', () => {
                     guardianSignature: undefined,
                 },
             ]);
+        });
+
+        it('should apply a first leg through the target pair', async () => {
+            const service = module.get<PositionCreatorTransactionService>(
+                PositionCreatorTransactionService,
+            );
+            const posCreatorCompute = module.get<PositionCreatorComputeService>(
+                PositionCreatorComputeService,
+            );
+            const pairAddress = Address.newFromHex(
+                '0000000000000000000000000000000000000000000000000000000000000019',
+            ).toBech32();
+            const payment = new EsdtTokenPayment({
+                tokenIdentifier: 'TOK5-123456',
+                tokenNonce: 0,
+                amount: '100000000000000000000',
+            });
+
+            const swapRoutes =
+                await posCreatorCompute.computeSingleTokenPairInput(
+                    pairAddress,
+                    payment,
+                    0.01,
+                );
+            const transactions =
+                await service.createLiquidityPositionSingleToken(
+                    Address.Zero().toBech32(),
+                    pairAddress,
+                    payment,
+                    swapRoutes,
+                );
+
+            // TOK5 -> USDT -> WEGLD moves the 0x19 reserves before the zap
+            expect(transactions[0].data).toEqual(
+                encodeTransactionData(
+                    'ESDTTransfer@TOK5-123456@100000000000000000000@createLpPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000019@495214997359287583@4957142@0000000000000000000000000000000000000000000000000000000000000018@swapTokensFixedInput@USDT-123456@1@0000000000000000000000000000000000000000000000000000000000000019@swapTokensFixedInput@WEGLD-123456@993011278319826571',
+                ),
+            );
         });
     });
 
@@ -246,7 +284,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        `ESDTTransfer@USDC-123456@100000000000000000000@createPairPosFromSingleToken@1440@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
+                        `ESDTTransfer@USDC-123456@100000000000000000000@createPairPosFromSingleToken@1440@494999999950351053164@220220220212842717661442@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
                     ),
                     chainID: 'T',
                     version: 2,
@@ -312,7 +350,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        `createPairPosFromSingleToken@1440@47008144020574367766@47008144020574367766823`,
+                        `createPairPosFromSingleToken@1440@49500000000000000000@44904374094258363439674`,
                     ),
                     chainID: 'T',
                     version: 2,
@@ -438,7 +476,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        `createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@47008144020574367766@47008144020574367766823`,
+                        `createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@49500000000000000000@44904374094258363439674`,
                     ),
                     chainID: 'T',
                     version: 2,
@@ -505,7 +543,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        `ESDTTransfer@USDC-123456@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
+                        `ESDTTransfer@USDC-123456@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@494999999950351053164@220220220212842717661442@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
                     ),
                     chainID: 'T',
                     version: 2,
@@ -594,7 +632,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@47008144020574367766@47008144020574367766823`,
+                        `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@49500000000000000000@44904374094258363439674`,
                     ),
                     chainID: 'T',
                     version: 2,
@@ -665,7 +703,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
+                        `MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@EGLDMEXFL-abcdef@01@100000000000000000000@createFarmPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000021@494999999950351053164@220220220212842717661442@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
                     ),
                     chainID: 'T',
                     version: 2,
@@ -735,7 +773,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        `ESDTTransfer@USDC-123456@100000000000000000000@createFarmPosFromSingleToken@1440@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
+                        `ESDTTransfer@USDC-123456@100000000000000000000@createFarmPosFromSingleToken@1440@494999999950351053164@220220220212842717661442@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555`,
                     ),
                     chainID: 'T',
                     version: 2,
@@ -803,7 +841,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        `createFarmPosFromSingleToken@1440@47008144020574367766@47008144020574367766823`,
+                        `createFarmPosFromSingleToken@1440@49500000000000000000@44904374094258363439674`,
                     ),
                     chainID: 'T',
                     version: 2,
@@ -931,7 +969,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        'createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@47008144020574367766@47008144020574367766823',
+                        'createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@49500000000000000000@44904374094258363439674',
                     ),
                     chainID: 'T',
                     version: 2,
@@ -1006,7 +1044,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        'ESDTTransfer@USDC-123456@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555',
+                        'ESDTTransfer@USDC-123456@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@494999999950351053164@220220220212842717661442@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555',
                     ),
                     chainID: 'T',
                     version: 2,
@@ -1103,7 +1141,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@47008144020574367766@47008144020574367766823',
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@WEGLD-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@49500000000000000000@44904374094258363439674',
                     ),
                     chainID: 'T',
                     version: 2,
@@ -1182,7 +1220,7 @@ describe('PositionCreatorTransaction', () => {
                     gasPrice: 1000000000,
                     gasLimit: gasLimit,
                     data: encodeTransactionData(
-                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@329339339317295273252@329339339317295273252718@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555',
+                        'MultiESDTNFTTransfer@00000000000000000500bc458e2cd68bb69665812137dcdd988d9f69901e7ceb@02@USDC-123456@@100000000000000000000@METASTAKE-123456@01@100000000000000000000@createMetastakingPosFromSingleToken@0000000000000000000000000000000000000000000000000000000000000000@494999999950351053164@220220220212842717661442@0000000000000000000000000000000000000000000000000000000000000013@swapTokensFixedInput@WEGLD-123456@990099009801682274555',
                     ),
                     chainID: 'T',
                     version: 2,

@@ -2,6 +2,7 @@ import {
     getAmountIn,
     getAmountOut,
     getTokenForGivenPosition,
+    zapLiquidityAmounts,
 } from '../pair.utils';
 
 // Pair contract math (mx-exchange-sc amm.rs, liquidity_pool.rs)
@@ -11,6 +12,40 @@ const scAmountOut = (a: bigint, ri: bigint, ro: bigint, fee: bigint) =>
 const scAmountIn = (o: bigint, ri: bigint, ro: bigint, fee: bigint) =>
     (ri * o * MAX) / ((ro - o) * (MAX - fee)) + 1n;
 const scTokenForPosition = (l: bigint, r: bigint, s: bigint) => (l * r) / s;
+
+// Pair set_optimal_amounts on existing liquidity
+function scOptimalAmounts(
+    first: bigint,
+    second: bigint,
+    r0: bigint,
+    r1: bigint,
+): [bigint, bigint] {
+    const secondOptimal = (first * r1) / r0;
+    if (secondOptimal <= second) {
+        return [first, secondOptimal];
+    }
+    return [(second * r0) / r1, second];
+}
+
+// auto-pos-creator: swap half on the pair, then addLiquidity
+function scZap(
+    amount: bigint,
+    inIsFirst: boolean,
+    r0: bigint,
+    r1: bigint,
+    fee: bigint,
+    special: bigint,
+): [bigint, bigint] {
+    const swapped = amount / 2n;
+    const kept = amount - swapped;
+    const [ri, ro] = inIsFirst ? [r0, r1] : [r1, r0];
+    const received = scAmountOut(swapped, ri, ro, fee);
+    const ri2 = ri + swapped - (swapped * special) / MAX;
+    const ro2 = ro - received;
+    return inIsFirst
+        ? scOptimalAmounts(kept, received, ri2, ro2)
+        : scOptimalAmounts(received, kept, ro2, ri2);
+}
 
 // Uniswap V2 library, fee 997/1000
 const uniAmountOut = (a: bigint, ri: bigint, ro: bigint) =>
@@ -99,5 +134,54 @@ describe('pair utils', () => {
                 scTokenForPosition(liquidity, reserveIn, supply).toString(),
             );
         }
+    });
+
+    describe('zapLiquidityAmounts', () => {
+        // Payment as a share of the zapped token reserve, in basis points
+        const sharesBp = [1n, 10n, 50n, 100n, 300n, 1000n, 3000n];
+        const feeModes = [
+            [300n, 0n],
+            [300n, 50n],
+            [100n, 0n],
+            [1000n, 250n],
+        ];
+
+        it.each([true, false])(
+            'matches the contract when the input is first: %s',
+            (inIsFirst) => {
+                for (const [fee, special] of feeModes) {
+                    for (const { reserveIn, reserveOut, amount } of cases.slice(
+                        0,
+                        300,
+                    )) {
+                        const [r0, r1] = inIsFirst
+                            ? [reserveIn, reserveOut]
+                            : [reserveOut, reserveIn];
+                        for (const bp of sharesBp) {
+                            const payment =
+                                (reserveIn * bp) / 10000n + (amount % 1000n);
+                            const result = zapLiquidityAmounts(
+                                payment.toString(),
+                                inIsFirst,
+                                r0.toString(),
+                                r1.toString(),
+                                Number(fee) / 100000,
+                                Number(special) / 100000,
+                            );
+                            expect(result.map((a) => a.toFixed())).toEqual(
+                                scZap(
+                                    payment,
+                                    inIsFirst,
+                                    r0,
+                                    r1,
+                                    fee,
+                                    special,
+                                ).map(String),
+                            );
+                        }
+                    }
+                }
+            },
+        );
     });
 });
