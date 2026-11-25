@@ -50,8 +50,8 @@ export function getAmountIn(
     const tokenOutAmountBig = new BigNumber(tokenOutAmount);
     const tokenInReservesBig = new BigNumber(tokenInReserves);
     const tokenOutReservesBig = new BigNumber(tokenOutReserves);
-    if (tokenOutReservesBig.isLessThan(tokenOutAmountBig)) {
-        return new BigNumber(0).integerValue();
+    if (tokenOutReservesBig.isLessThanOrEqualTo(tokenOutAmountBig)) {
+        return new BigNumber(0);
     }
     const numerator = tokenInReservesBig
         .multipliedBy(tokenOutAmountBig)

@@ -5,11 +5,21 @@ import BigNumber from 'bignumber.js';
 
 const ONE = new BigNumber(1);
 
+// Tolerance is a fraction; liquidityMin needs 1 - t > 0
+export function assertTolerance(tolerance: number): void {
+    if (!Number.isFinite(tolerance) || tolerance < 0 || tolerance >= 1) {
+        throw new UserInputError(
+            'Tolerance must be at least 0 and less than 1',
+        );
+    }
+}
+
 // Fixed-input swap minimum: floor(amount / (1 + t))
 export function swapMinOut(
     amount: BigNumber.Value,
     tolerance: number,
 ): BigNumber {
+    assertTolerance(tolerance);
     return requirePositive(new BigNumber(amount).idiv(ONE.plus(tolerance)));
 }
 
@@ -18,6 +28,7 @@ export function swapMaxIn(
     amount: BigNumber.Value,
     tolerance: number,
 ): BigNumber {
+    assertTolerance(tolerance);
     return new BigNumber(amount)
         .multipliedBy(ONE.plus(tolerance))
         .integerValue(BigNumber.ROUND_DOWN);
@@ -28,6 +39,7 @@ export function liquidityMin(
     amount: BigNumber.Value,
     tolerance: number,
 ): BigNumber {
+    assertTolerance(tolerance);
     return requirePositive(
         new BigNumber(amount)
             .multipliedBy(ONE.minus(tolerance))

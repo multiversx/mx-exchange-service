@@ -121,6 +121,19 @@ describe('pair utils', () => {
         }
     });
 
+    it('getAmountIn returns 0 when the output reaches the reserve', () => {
+        // The contract requires reserve_out > amount_out
+        expect(getAmountIn('1000', '5000', '1000', 0.003).toFixed()).toEqual(
+            '0',
+        );
+        expect(getAmountIn('1001', '5000', '1000', 0.003).toFixed()).toEqual(
+            '0',
+        );
+        expect(getAmountIn('999', '5000', '1000', 0.003).toFixed()).toEqual(
+            scAmountIn(999n, 5000n, 1000n, 300n).toString(),
+        );
+    });
+
     it('getTokenForGivenPosition matches the pair contract', () => {
         for (const { reserveIn, reserveOut, amount } of cases) {
             const supply = reserveOut;

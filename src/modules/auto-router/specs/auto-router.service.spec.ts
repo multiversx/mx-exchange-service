@@ -40,6 +40,7 @@ import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state
 import { XoxnoAggregatorServiceProvider } from '../mocks/xoxno-aggregator.service.mock';
 import BigNumber from 'bignumber.js';
 import { TransactionModel } from 'src/models/transaction.model';
+import { swapMaxIn } from 'src/utils/slippage.utils';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -435,6 +436,59 @@ describe('AutoRouterService', () => {
             }),
         ).rejects.toThrow('No route found');
     });
+
+    describe('direct pair with multi swap disabled', () => {
+        const disableMultiSwap = () =>
+            jest
+                .spyOn(
+                    service['remoteConfigGetterService'],
+                    'getMultiSwapStatus',
+                )
+                .mockResolvedValueOnce(false);
+        const fixedOutputArgs = (amountOut: string) => ({
+            amountOut,
+            tokenInID: 'WEGLD-123456',
+            tokenOutID: 'MEX-123456',
+            tolerance: 0.01,
+        });
+
+        it('quotes a fixed-output swap like the multi swap route', async () => {
+            const args = fixedOutputArgs('1000000000000000000000');
+            const viaMultiSwap = await service.swap({ ...args });
+            disableMultiSwap();
+            const viaSingleSwap = await service.swap({ ...args });
+
+            // Only the returned amountIn carries the tolerance
+            expect(viaSingleSwap).toEqual(viaMultiSwap);
+            expect(viaSingleSwap.amountIn).toEqual(
+                swapMaxIn(viaSingleSwap.intermediaryAmounts[0], 0.01).toFixed(),
+            );
+        });
+
+        it('rejects an output equal to the reserve', async () => {
+            disableMultiSwap();
+            await expect(
+                service.swap(fixedOutputArgs('1000000000000000000000000')),
+            ).rejects.toThrow('Invalid amounts');
+        });
+    });
+
+    it.each([-0.01, 1])(
+        'should reject a tolerance of %d before quoting',
+        async (tolerance) => {
+            await expect(
+                service.swap({
+                    amountIn: '1000000000000000000',
+                    tokenInID: 'WEGLD-123456',
+                    tokenOutID: 'MEX-123456',
+                    tolerance,
+                }),
+            ).rejects.toMatchObject({
+                message: 'Tolerance must be at least 0 and less than 1',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
+        },
+    );
 
     it('should get a fixed output multi swap tx + unwrap tx', async () => {
         const transactions = await service.getTransactions(

@@ -1,5 +1,10 @@
 import { UserInputError } from '@nestjs/apollo';
-import { liquidityMin, swapMaxIn, swapMinOut } from '../slippage.utils';
+import {
+    assertTolerance,
+    liquidityMin,
+    swapMaxIn,
+    swapMinOut,
+} from '../slippage.utils';
 
 // Uniswap V2 SDK references, exact integer math on basis points
 const refSwapMinOut = (a: bigint, bp: bigint) => (a * 10000n) / (10000n + bp);
@@ -72,9 +77,31 @@ describe('slippage utils', () => {
     });
 
     it('rejects minimums that are not positive', () => {
-        expect(() => swapMinOut('1', 0.5)).toThrow(UserInputError);
-        expect(() => liquidityMin('1', 0.5)).toThrow(UserInputError);
-        expect(() => liquidityMin('1000', 1)).toThrow(UserInputError);
-        expect(() => swapMinOut('1000', -1)).toThrow(UserInputError);
+        expect(() => swapMinOut('1', 0.5)).toThrow(
+            'Amount too small for this tolerance',
+        );
+        expect(() => liquidityMin('1', 0.5)).toThrow(
+            'Amount too small for this tolerance',
+        );
+    });
+
+    it.each([-0.01, -1, 1, 1.5, NaN, Infinity])(
+        'rejects a tolerance of %d',
+        (tolerance) => {
+            for (const helper of [swapMinOut, swapMaxIn, liquidityMin]) {
+                expect(() => helper('1000000', tolerance)).toThrow(
+                    new UserInputError(
+                        'Tolerance must be at least 0 and less than 1',
+                    ),
+                );
+            }
+            expect(() => assertTolerance(tolerance)).toThrow(UserInputError);
+        },
+    );
+
+    it('accepts tolerances just below 1', () => {
+        expect(swapMinOut('1000000', 0.9999).toFixed()).toEqual('500025');
+        expect(swapMaxIn('1000000', 0.9999).toFixed()).toEqual('1999900');
+        expect(liquidityMin('1000000', 0.9999).toFixed()).toEqual('100');
     });
 });

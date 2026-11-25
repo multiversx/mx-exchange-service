@@ -48,7 +48,7 @@ import {
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { Address } from '@multiversx/sdk-core';
 import { UserInputError } from '@nestjs/apollo';
-import { swapMaxIn } from 'src/utils/slippage.utils';
+import { assertTolerance, swapMaxIn } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class AutoRouterService {
@@ -97,6 +97,8 @@ export class AutoRouterService {
     async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
         if (args.amountIn && args.amountOut)
             throw new UserInputError("Can't have both amountIn & amountOut");
+        // Also covers XOXNO quotes, which never reach our bound helpers
+        assertTolerance(args.tolerance);
 
         const [tokenInID, tokenOutID] = await this.toWrappedIfEGLD([
             args.tokenInID,
@@ -176,7 +178,7 @@ export class AutoRouterService {
             throw new BadRequestException('Invalid amounts');
         }
 
-        let [amountIn, amountOut] = this.isFixedInput(swapType)
+        const [amountIn, amountOut] = this.isFixedInput(swapType)
             ? [args.amountIn, result]
             : [result, args.amountOut];
 
@@ -187,10 +189,6 @@ export class AutoRouterService {
                 amountIn,
                 amountOut,
             );
-
-        if (!this.isFixedInput(swapType)) {
-            amountIn = this.addTolerance(amountIn, args.tolerance);
-        }
 
         const [priceDeviationPercent, fullPairs] = await Promise.all([
             this.getTokenPriceDeviationPercent(
@@ -216,7 +214,9 @@ export class AutoRouterService {
             ).toString(),
             tokenInPriceUSD: tokenIn.price,
             tokenOutPriceUSD: tokenOut.price,
-            amountIn: amountIn,
+            amountIn: this.isFixedInput(swapType)
+                ? amountIn
+                : this.addTolerance(amountIn, args.tolerance),
             amountOut: amountOut,
             intermediaryAmounts: [amountIn, amountOut],
             tokenRoute: [tokenInID, tokenOutID],
