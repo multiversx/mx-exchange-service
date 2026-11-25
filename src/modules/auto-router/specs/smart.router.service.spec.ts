@@ -77,6 +77,8 @@ describe('SmartRouterService', () => {
         tokenOutPriceUSD: '0.1',
         amountIn: '10000000000000000000',
         amountOut: '987158034397061298850',
+        amountOutMin: '977384192472337919653',
+        amountInMax: '10000000000000000000',
         intermediaryAmounts: ['10000000000000000000', '987158034397061298850'],
         tokenRoute: ['WEGLD-123456', 'TOK5-123456'],
         pairs: [availablePairs['WEGLD-TOK5']],
@@ -141,6 +143,8 @@ describe('SmartRouterService', () => {
         tokenOutPriceUSD: '0.1',
         amountIn: '40000000000000000000',
         amountOut: '3835057891295149440320',
+        amountOutMin: '3797087021084306376554',
+        amountInMax: '40000000000000000000',
         intermediaryAmounts: ['40000000000000000000', '3835057891295149440320'],
         tokenRoute: ['WEGLD-123456', 'TOK5-123456'],
         pairs: [availablePairs['WEGLD-TOK5']],
@@ -192,7 +196,8 @@ describe('SmartRouterService', () => {
             totalResult: '3884256943682064342173',
         },
         smartSwap: new SmartSwapModel({
-            amountOut: '3864835658963654020462',
+            amountOut: '3864835658963654020463',
+            amountOutMin: '3826569959369954475705',
             routes: [
                 new SmartSwapRoute({
                     fees: ['0.072325244771647452519'],
@@ -462,6 +467,47 @@ describe('SmartRouterService', () => {
         await expect(
             autoRouterService.getTransactions(senderAddress, autoRouteModel),
         ).rejects.toThrow('Spread too big!');
+    });
+
+    describe('route bounds match the composable minimum', () => {
+        // getComposeTasksTransaction(sender, payment, expectedOut, tasks)
+        async function signedMinimum(route: AutoRouteModel): Promise<string> {
+            const composeTasks =
+                autoRouterService['autoRouterTransactionService'][
+                    'composeTasksTransactionService'
+                ];
+            const spy = jest.spyOn(composeTasks, 'getComposeTasksTransaction');
+            await autoRouterService.getTransactions(senderAddress, route);
+            const minimum = spy.mock.calls[0][2].amount;
+            spy.mockRestore();
+            return minimum;
+        }
+
+        it('internal smart swap encodes smartSwap.amountOutMin', async () => {
+            const route = await autoRouterService.swap({
+                amountIn: '40000000000000000000',
+                tokenInID: 'WEGLD-123456',
+                tokenOutID: 'TOK5-123456',
+                tolerance: 0.01,
+            });
+
+            expect(route.smartSwap?.source).toEqual('internal');
+            expect(await signedMinimum(route)).toEqual(
+                route.smartSwap.amountOutMin,
+            );
+        });
+
+        it('EGLD single pair encodes amountOutMin', async () => {
+            const route = await autoRouterService.swap({
+                amountIn: '10000000000000000000',
+                tokenInID: 'EGLD',
+                tokenOutID: 'TOK5-123456',
+                tolerance: 0.01,
+            });
+
+            expect(route.smartSwap).toBeUndefined();
+            expect(await signedMinimum(route)).toEqual(route.amountOutMin);
+        });
     });
 });
 

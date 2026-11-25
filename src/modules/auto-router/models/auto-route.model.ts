@@ -84,6 +84,11 @@ export class SmartSwapModel {
     @Field()
     amountOut: string;
 
+    @Field({
+        description: 'Minimum output the smart swap transaction accepts',
+    })
+    amountOutMin: string;
+
     @Field()
     tokenInExchangeRate: string;
 
@@ -162,6 +167,18 @@ export class SmartSwapRoute {
 
 @ObjectType()
 export class AutoRouteModel extends SwapRouteModel {
+    @Field({
+        description:
+            'Minimum output the transaction accepts; amountOut on fixed output',
+    })
+    amountOutMin: string;
+
+    @Field({
+        description:
+            'Maximum input the transaction pays; amountIn on fixed input',
+    })
+    amountInMax: string;
+
     @Field(() => [TransactionModel], { nullable: true })
     transactions: TransactionModel[];
 

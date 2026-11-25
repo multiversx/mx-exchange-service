@@ -30,6 +30,7 @@ import { decimalToHex } from 'src/utils/token.converters';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { ComposableTasksAbiService } from 'src/modules/composable-tasks/services/composable.tasks.abi.service';
 import { swapMaxIn, swapMinOut } from 'src/utils/slippage.utils';
+import { smartSwapFeeAmount } from 'src/utils/router.utils';
 
 @Injectable()
 export class AutoRouterTransactionService {
@@ -126,9 +127,7 @@ export class AutoRouterTransactionService {
             await this.composeTasksAbi.smartSwapFeePercentage();
 
         // The contract takes floor(out * fee) before its final check
-        const feeAmount = amountOut
-            .multipliedBy(feePercentage)
-            .integerValue(BigNumber.ROUND_DOWN);
+        const feeAmount = smartSwapFeeAmount(amountOut, feePercentage);
 
         const amountOutMin = swapMinOut(
             amountOut.minus(feeAmount),
