@@ -32,6 +32,7 @@ import { WrapAbiService } from 'src/modules/wrapping/services/wrap.abi.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { UserInputError } from '@nestjs/apollo';
+import { liquidityMin, swapMinOut } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class PositionCreatorTransactionService {
@@ -77,10 +78,9 @@ export class PositionCreatorTransactionService {
                 ? swapRoutes[0].pairs.length + 1
                 : swapRoutes.length;
 
-        const [amount0Min, amount1Min] =
-            await this.getMinimumAmountsForLiquidity(
-                swapRoutes[swapRoutes.length - 1],
-            );
+        const [amount0Min, amount1Min] = this.getMinimumAmountsForLiquidity(
+            swapRoutes[swapRoutes.length - 1],
+        );
 
         const gasLimit =
             gasConfig.positionCreator.singleToken.liquidityPosition +
@@ -215,10 +215,9 @@ export class PositionCreatorTransactionService {
                 ? swapRoutes[0].pairs.length + 1
                 : swapRoutes.length;
 
-        const [amount0Min, amount1Min] =
-            await this.getMinimumAmountsForLiquidity(
-                swapRoutes[swapRoutes.length - 1],
-            );
+        const [amount0Min, amount1Min] = this.getMinimumAmountsForLiquidity(
+            swapRoutes[swapRoutes.length - 1],
+        );
 
         const gasLimit =
             gasConfig.positionCreator.singleToken.farmPosition +
@@ -374,7 +373,7 @@ export class PositionCreatorTransactionService {
         const [amount0Min, amount1Min] =
             payments[0].tokenIdentifier === lpTokenID
                 ? [new BigNumber(0), new BigNumber(0)]
-                : await this.getMinimumAmountsForLiquidity(
+                : this.getMinimumAmountsForLiquidity(
                       swapRoutes[swapRoutes.length - 1],
                   );
 
@@ -467,6 +466,20 @@ export class PositionCreatorTransactionService {
 
         const multiSwapArgs = this.serializeSwapRouteArgs(swapRoute);
 
+        // The contract checks swap output plus merged farm tokens
+        const mergedFarmTokens = payments
+            .slice(1)
+            .reduce(
+                (sum, payment) => sum.plus(payment.amount),
+                new BigNumber(0),
+            );
+        const minAmountOut = swapMinOut(
+            swapRoute.intermediaryAmounts[
+                swapRoute.intermediaryAmounts.length - 1
+            ],
+            swapRoute.tolerance,
+        ).plus(mergedFarmTokens);
+
         const gasLimit =
             gasConfig.positionCreator.singleToken.stakingPosition +
             gasConfig.stake.stakeFarm.withTokenMerge +
@@ -480,13 +493,7 @@ export class PositionCreatorTransactionService {
             function: 'createFarmStakingPosFromSingleToken',
             arguments: [
                 new AddressValue(Address.newFromBech32(stakingAddress)),
-                new BigUIntValue(
-                    new BigNumber(
-                        swapRoute.intermediaryAmounts[
-                            swapRoute.intermediaryAmounts.length - 1
-                        ],
-                    ),
-                ),
+                new BigUIntValue(minAmountOut),
                 VariadicValue.fromItems(...multiSwapArgs),
             ],
         });
@@ -610,12 +617,8 @@ export class PositionCreatorTransactionService {
             }
         }
 
-        const amount0Min = new BigNumber(firstPayment.amount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(secondPayment.amount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(firstPayment.amount, tolerance);
+        const amount1Min = liquidityMin(secondPayment.amount, tolerance);
 
         const endpointArgs = isLockedToken
             ? [new BigUIntValue(amount0Min), new BigUIntValue(amount1Min)]
@@ -725,12 +728,8 @@ export class PositionCreatorTransactionService {
                 ? [payments[0], payments[1]]
                 : [payments[1], payments[0]];
 
-        const amount0Min = new BigNumber(firstPayment.amount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(secondPayment.amount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(firstPayment.amount, tolerance);
+        const amount1Min = liquidityMin(secondPayment.amount, tolerance);
 
         const transactionOptions = new TransactionOptions({
             sender: sender,
@@ -796,12 +795,14 @@ export class PositionCreatorTransactionService {
             pairAddress,
             payment.amount,
         );
-        const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(liquidityPosition.secondTokenAmount)
-            .multipliedBy(1 - tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(
+            liquidityPosition.firstTokenAmount,
+            tolerance,
+        );
+        const amount1Min = liquidityMin(
+            liquidityPosition.secondTokenAmount,
+            tolerance,
+        );
 
         const transactionOptions = new TransactionOptions({
             sender: sender,
@@ -846,9 +847,10 @@ export class PositionCreatorTransactionService {
             throw new UserInputError('Invalid ESDT token payment');
         }
 
-        const amountOutMin = new BigNumber(swapRoute.amountOut)
-            .multipliedBy(1 - swapRoute.tolerance)
-            .integerValue();
+        const amountOutMin = swapMinOut(
+            swapRoute.amountOut,
+            swapRoute.tolerance,
+        );
 
         const swapRouteArgs = this.serializeSwapRouteArgs(swapRoute);
         let gasLimit =
@@ -893,37 +895,13 @@ export class PositionCreatorTransactionService {
         return [transaction];
     }
 
-    private async getMinimumAmountsForLiquidity(
+    // From the amounts addLiquidity uses, not the swap result
+    private getMinimumAmountsForLiquidity(
         swapRoute: SwapRouteModel,
-    ): Promise<BigNumber[]> {
-        const pair = swapRoute.pairs[0];
-        let amount0: BigNumber;
-        let amount1: BigNumber;
-
-        if (swapRoute.tokenInID === pair.firstToken.identifier) {
-            amount0 = await this.pairService.getEquivalentForLiquidity(
-                pair.address,
-                pair.secondToken.identifier,
-                swapRoute.amountOut,
-            );
-            amount1 = new BigNumber(swapRoute.amountOut);
-        } else {
-            amount0 = new BigNumber(swapRoute.amountOut);
-            amount1 = await this.pairService.getEquivalentForLiquidity(
-                pair.address,
-                pair.firstToken.identifier,
-                swapRoute.amountOut,
-            );
-        }
-
-        const amount0Min = amount0
-            .multipliedBy(1 - swapRoute.tolerance)
-            .integerValue();
-        const amount1Min = amount1
-            .multipliedBy(1 - swapRoute.tolerance)
-            .integerValue();
-
-        return [amount0Min, amount1Min];
+    ): BigNumber[] {
+        return swapRoute.liquidityAmounts.map((amount) =>
+            liquidityMin(amount, swapRoute.tolerance),
+        );
     }
 
     private checkTokensPayments(

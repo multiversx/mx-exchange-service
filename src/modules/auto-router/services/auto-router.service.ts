@@ -48,6 +48,12 @@ import {
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { Address } from '@multiversx/sdk-core';
 import { UserInputError } from '@nestjs/apollo';
+import {
+    assertTolerance,
+    swapMaxIn,
+    swapMinOut,
+} from 'src/utils/slippage.utils';
+import { smartSwapFeeAmount } from 'src/utils/router.utils';
 
 @Injectable()
 export class AutoRouterService {
@@ -96,6 +102,8 @@ export class AutoRouterService {
     async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
         if (args.amountIn && args.amountOut)
             throw new UserInputError("Can't have both amountIn & amountOut");
+        // Also covers XOXNO quotes, which never reach our bound helpers
+        assertTolerance(args.tolerance);
 
         const [tokenInID, tokenOutID] = await this.toWrappedIfEGLD([
             args.tokenInID,
@@ -175,7 +183,7 @@ export class AutoRouterService {
             throw new BadRequestException('Invalid amounts');
         }
 
-        let [amountIn, amountOut] = this.isFixedInput(swapType)
+        const [amountIn, amountOut] = this.isFixedInput(swapType)
             ? [args.amountIn, result]
             : [result, args.amountOut];
 
@@ -186,10 +194,12 @@ export class AutoRouterService {
                 amountIn,
                 amountOut,
             );
-
-        if (!this.isFixedInput(swapType)) {
-            amountIn = this.addTolerance(amountIn, args.tolerance);
-        }
+        const bounds = this.swapBounds(
+            swapType,
+            amountIn,
+            amountOut,
+            args.tolerance,
+        );
 
         const [priceDeviationPercent, fullPairs] = await Promise.all([
             this.getTokenPriceDeviationPercent(
@@ -215,8 +225,11 @@ export class AutoRouterService {
             ).toString(),
             tokenInPriceUSD: tokenIn.price,
             tokenOutPriceUSD: tokenOut.price,
-            amountIn: amountIn,
+            // Fixed-output routes have always returned the maximum input
+            amountIn: bounds.amountInMax,
             amountOut: amountOut,
+            amountOutMin: bounds.amountOutMin,
+            amountInMax: bounds.amountInMax,
             intermediaryAmounts: [amountIn, amountOut],
             tokenRoute: [tokenInID, tokenOutID],
             pairs: fullPairs,
@@ -273,17 +286,23 @@ export class AutoRouterService {
             }
         }
 
+        const [amountIn, amountOut] = this.isFixedInput(swapType)
+            ? [args.amountIn, swapRoute.bestResult]
+            : [swapRoute.bestResult, args.amountOut];
+
         const [tokenInExchangeRate, tokenOutExchangeRate] =
             this.calculateExchangeRate(
                 tokenIn.decimals,
                 tokenOut.decimals,
-                this.isFixedInput(swapType)
-                    ? args.amountIn
-                    : swapRoute.bestResult,
-                this.isFixedInput(swapType)
-                    ? swapRoute.bestResult
-                    : args.amountOut,
+                amountIn,
+                amountOut,
             );
+        const bounds = this.swapBounds(
+            swapType,
+            amountIn,
+            amountOut,
+            args.tolerance,
+        );
 
         const pairAddresses = this.getPairsRoute(
             swapRoute.addressRoute,
@@ -317,6 +336,7 @@ export class AutoRouterService {
                     tokenIn,
                     tokenOut,
                     pairs,
+                    args.tolerance,
                 ),
                 this.getXoxnoQuote(
                     args.tokenInID,
@@ -358,10 +378,11 @@ export class AutoRouterService {
             ).toString(),
             tokenInPriceUSD: tokenIn.price,
             tokenOutPriceUSD: tokenOut.price,
-            amountIn:
-                args.amountIn ||
-                this.addTolerance(swapRoute.bestResult, args.tolerance),
-            amountOut: args.amountOut || swapRoute.bestResult,
+            // Fixed-output routes have always returned the maximum input
+            amountIn: bounds.amountInMax,
+            amountOut: amountOut,
+            amountOutMin: bounds.amountOutMin,
+            amountInMax: bounds.amountInMax,
             intermediaryAmounts: swapRoute.intermediaryAmounts,
             tokenRoute: swapRoute.tokenRoute,
             pairs: fullPairs,
@@ -409,11 +430,24 @@ export class AutoRouterService {
         return false;
     }
 
-    addTolerance(amountIn: string, tolerance: number): string {
-        return new BigNumber(amountIn)
-            .plus(new BigNumber(amountIn).multipliedBy(tolerance))
-            .integerValue()
-            .toFixed();
+    // The bounds the route transactions encode; one side is exact
+    private swapBounds(
+        swapType: SWAP_TYPE,
+        amountIn: string,
+        amountOut: string,
+        tolerance: number,
+    ): Pick<AutoRouteModel, 'amountOutMin' | 'amountInMax'> {
+        if (this.isFixedInput(swapType)) {
+            return {
+                amountOutMin: swapMinOut(amountOut, tolerance).toFixed(),
+                amountInMax: amountIn,
+            };
+        }
+
+        return {
+            amountOutMin: amountOut,
+            amountInMax: swapMaxIn(amountIn, tolerance).toFixed(),
+        };
     }
 
     private async getAllActivePairs(): Promise<PairModel[]> {
@@ -881,6 +915,7 @@ export class AutoRouterService {
         tokenIn: EsdtToken,
         tokenOut: EsdtToken,
         pairs: PairModel[],
+        tolerance: number,
     ): Promise<SmartSwapModel | undefined> {
         const shouldPerformSmartSwap = await this.shouldPerformSmartSwap(
             parallelRouteSwap,
@@ -917,8 +952,14 @@ export class AutoRouterService {
                 this.pairsState.getPairs([...new Set(pairAddresses)]),
             ]);
 
-        const smartSwapAmountOut = new BigNumber(parallelRouteSwap.totalResult);
-        const feeAmount = smartSwapAmountOut.multipliedBy(feePercentage);
+        // The amounts the composable smart swap transaction checks
+        const feeAmount = smartSwapFeeAmount(
+            parallelRouteSwap.totalResult,
+            feePercentage,
+        );
+        const netAmountOut = new BigNumber(parallelRouteSwap.totalResult).minus(
+            feeAmount,
+        );
         const pairMap = new Map<string, PairModel>();
 
         fullPairs.forEach((pair) => {
@@ -929,10 +970,8 @@ export class AutoRouterService {
         });
 
         return new SmartSwapModel({
-            amountOut: smartSwapAmountOut
-                .minus(feeAmount)
-                .integerValue()
-                .toFixed(),
+            amountOut: netAmountOut.toFixed(),
+            amountOutMin: swapMinOut(netAmountOut, tolerance).toFixed(),
             source: SmartSwapSource.INTERNAL,
             tokenInExchangeRate: tokenInExchangeRate,
             tokenOutExchangeRate: tokenOutExchangeRate,
@@ -988,7 +1027,7 @@ export class AutoRouterService {
                 });
             }),
             feePercentage,
-            feeAmount: feeAmount.integerValue().toFixed(),
+            feeAmount: feeAmount.toFixed(),
             feeToken: tokenOut,
         });
     }
@@ -1076,6 +1115,7 @@ export class AutoRouterService {
 
         return new SmartSwapModel({
             amountOut: quote.amountOut,
+            amountOutMin: quote.amountOutMin,
             source: SmartSwapSource.XOXNO,
             feePercentage: quote.feePercentage,
             feeAmount: quote.feeAmount,

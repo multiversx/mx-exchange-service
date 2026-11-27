@@ -80,3 +80,13 @@ export function computeRouteIntermediaryAmounts(
 
     return amounts;
 }
+
+// Composable tasks take floor(amountOut * fee) from a smart swap output
+export function smartSwapFeeAmount(
+    amountOut: BigNumber.Value,
+    feePercentage: number,
+): BigNumber {
+    return new BigNumber(amountOut)
+        .multipliedBy(feePercentage)
+        .integerValue(BigNumber.ROUND_DOWN);
+}

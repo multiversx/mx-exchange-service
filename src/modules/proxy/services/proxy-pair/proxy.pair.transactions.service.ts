@@ -24,6 +24,7 @@ import { ErrorLoggerAsync } from '@multiversx/sdk-nestjs-common';
 import { ProxyAbiServiceV2 } from 'src/modules/proxy/v2/services/proxy.v2.abi.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { UserInputError } from '@nestjs/apollo';
+import { liquidityMin } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class ProxyPairTransactionsService {
@@ -87,15 +88,14 @@ export class ProxyPairTransactionsService {
             proxyAddress,
         );
 
-        const amount0 = new BigNumber(liquidityTokens[0].amount);
-        const amount1 = new BigNumber(liquidityTokens[1].amount);
-
-        const amount0Min = amount0
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-        const amount1Min = amount1
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(
+            liquidityTokens[0].amount,
+            args.tolerance,
+        );
+        const amount1Min = liquidityMin(
+            liquidityTokens[1].amount,
+            args.tolerance,
+        );
 
         const gasLimit =
             liquidityTokens.length > 2
@@ -145,16 +145,14 @@ export class ProxyPairTransactionsService {
                     args.liquidity,
                 ),
             ]);
-        const amount0Min = new BigNumber(
+        const amount0Min = liquidityMin(
             liquidityPosition.firstTokenAmount.toString(),
-        )
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(
+            args.tolerance,
+        );
+        const amount1Min = liquidityMin(
             liquidityPosition.secondTokenAmount.toString(),
-        )
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
+            args.tolerance,
+        );
 
         const removeLiquidityTransaction =
             await this.mxProxy.getProxyDexSmartContractTransaction(

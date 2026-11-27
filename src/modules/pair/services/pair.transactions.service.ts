@@ -30,6 +30,7 @@ import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { PairComputeService } from './pair.compute.service';
 import { TransactionOptions } from 'src/modules/common/transaction.options';
 import { ForbiddenError, UserInputError } from '@nestjs/apollo';
+import { liquidityMin, swapMinOut } from 'src/utils/slippage.utils';
 
 @Injectable()
 export class PairTransactionService {
@@ -188,15 +189,11 @@ export class PairTransactionService {
             args.tokens,
         );
 
-        const amount0 = new BigNumber(firstTokenInput.amount);
-        const amount1 = new BigNumber(secondTokenInput.amount);
-
-        const amount0Min = amount0
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-        const amount1Min = amount1
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(firstTokenInput.amount, args.tolerance);
+        const amount1Min = liquidityMin(
+            secondTokenInput.amount,
+            args.tolerance,
+        );
 
         return this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
@@ -243,12 +240,14 @@ export class PairTransactionService {
                 ),
             ]);
 
-        const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-        const amount1Min = new BigNumber(liquidityPosition.secondTokenAmount)
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
+        const amount0Min = liquidityMin(
+            liquidityPosition.firstTokenAmount,
+            args.tolerance,
+        );
+        const amount1Min = liquidityMin(
+            liquidityPosition.secondTokenAmount,
+            args.tolerance,
+        );
 
         const transaction = await this.mxProxy.getPairSmartContractTransaction(
             args.pairAddress,
@@ -313,11 +312,7 @@ export class PairTransactionService {
         ]);
 
         const amountIn = new BigNumber(args.amountIn);
-        const amountOut = new BigNumber(args.amountOut);
-        const amountOutMin = new BigNumber(1)
-            .dividedBy(new BigNumber(1).plus(args.tolerance))
-            .multipliedBy(amountOut)
-            .integerValue();
+        const amountOutMin = swapMinOut(args.amountOut, args.tolerance);
 
         if (args.tokenInID === mxConfig.EGLDIdentifier) {
             return this.composableTasksTransaction.wrapEgldAndSwapTransaction(

@@ -77,6 +77,8 @@ describe('SmartRouterService', () => {
         tokenOutPriceUSD: '0.1',
         amountIn: '10000000000000000000',
         amountOut: '987158034397061298850',
+        amountOutMin: '977384192472337919653',
+        amountInMax: '10000000000000000000',
         intermediaryAmounts: ['10000000000000000000', '987158034397061298850'],
         tokenRoute: ['WEGLD-123456', 'TOK5-123456'],
         pairs: [availablePairs['WEGLD-TOK5']],
@@ -141,6 +143,8 @@ describe('SmartRouterService', () => {
         tokenOutPriceUSD: '0.1',
         amountIn: '40000000000000000000',
         amountOut: '3835057891295149440320',
+        amountOutMin: '3797087021084306376554',
+        amountInMax: '40000000000000000000',
         intermediaryAmounts: ['40000000000000000000', '3835057891295149440320'],
         tokenRoute: ['WEGLD-123456', 'TOK5-123456'],
         pairs: [availablePairs['WEGLD-TOK5']],
@@ -192,7 +196,8 @@ describe('SmartRouterService', () => {
             totalResult: '3884256943682064342173',
         },
         smartSwap: new SmartSwapModel({
-            amountOut: '3864835658963654020462',
+            amountOut: '3864835658963654020463',
+            amountOutMin: '3826569959369954475705',
             routes: [
                 new SmartSwapRoute({
                     fees: ['0.072325244771647452519'],
@@ -408,7 +413,7 @@ describe('SmartRouterService', () => {
                 senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: 30500000,
-                data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwOTM0ZmJlZTMwYTY3M2I4YWU5YkBAQDAyQDAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDA5MzRmYmVlMzBhNjczYjhhZTli',
+                data: 'Y29tcG9zZVRhc2tzQDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwOTM0ZmJlZTMwYTY3M2I4YWVhNUBAQDAyQDAwMDAwMDE0NzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NDAwMDAwMDBiNTQ0ZjRiMzUyZDMxMzIzMzM0MzUzNjAwMDAwMDA5MzRmYmVlMzBhNjczYjhhZWE1',
                 chainID: 'T',
                 version: 2,
                 options: undefined,
@@ -440,7 +445,7 @@ describe('SmartRouterService', () => {
                 gasPrice: 1000000000,
                 gasLimit: 113000000,
                 data: BinaryUtils.base64Encode(
-                    'composeTasks@0000000b544f4b352d313233343536000000000000000000000009cf6851fbf1ca346f10@@@05@000000010300000009014e924ba433bdd1cd00000001010000002000000000000000000000000000000000000000000000000000000000000000150000001473776170546f6b656e734669786564496e7075740000000b544f4b352d313233343536000000097df816e9dd4a06dd6000000008dc82360a7a18519400000001020000002000000000000000000000000000000000000000000000000000000000000000190000001473776170546f6b656e734669786564496e7075740000000b555344542d313233343536000000040933c0c90000002000000000000000000000000000000000000000000000000000000000000000180000001473776170546f6b656e734669786564496e7075740000000b544f4b352d3132333435360000000952e55f5c9ccfc7a29b00000007080a6379c9dc9f00000001020000002000000000000000000000000000000000000000000000000000000000000000130000001473776170546f6b656e734669786564496e7075740000000b555344432d3132333435360000000257420000002000000000000000000000000000000000000000000000000000000000000000170000001473776170546f6b656e734669786564496e7075740000000b544f4b352d313233343536000000080309bcaf74319942',
+                    'composeTasks@0000000b544f4b352d313233343536000000000000000000000009cf70537002ab12beb9@@@05@000000010300000009014e924ba433bdd1cd00000001010000002000000000000000000000000000000000000000000000000000000000000000150000001473776170546f6b656e734669786564496e7075740000000b544f4b352d313233343536000000097dfb508c147c1ce23600000008dc82360a7a18519400000001020000002000000000000000000000000000000000000000000000000000000000000000190000001473776170546f6b656e734669786564496e7075740000000b555344542d31323334353600000001010000002000000000000000000000000000000000000000000000000000000000000000180000001473776170546f6b656e734669786564496e7075740000000b544f4b352d31323334353600000009527cd818cda993c48a00000007080a6379c9dc9f00000001020000002000000000000000000000000000000000000000000000000000000000000000130000001473776170546f6b656e734669786564496e7075740000000b555344432d31323334353600000001010000002000000000000000000000000000000000000000000000000000000000000000170000001473776170546f6b656e734669786564496e7075740000000b544f4b352d313233343536000000080305e7fdccff21ef',
                 ),
                 chainID: 'T',
                 version: 2,
@@ -462,6 +467,47 @@ describe('SmartRouterService', () => {
         await expect(
             autoRouterService.getTransactions(senderAddress, autoRouteModel),
         ).rejects.toThrow('Spread too big!');
+    });
+
+    describe('route bounds match the composable minimum', () => {
+        // getComposeTasksTransaction(sender, payment, expectedOut, tasks)
+        async function signedMinimum(route: AutoRouteModel): Promise<string> {
+            const composeTasks =
+                autoRouterService['autoRouterTransactionService'][
+                    'composeTasksTransactionService'
+                ];
+            const spy = jest.spyOn(composeTasks, 'getComposeTasksTransaction');
+            await autoRouterService.getTransactions(senderAddress, route);
+            const minimum = spy.mock.calls[0][2].amount;
+            spy.mockRestore();
+            return minimum;
+        }
+
+        it('internal smart swap encodes smartSwap.amountOutMin', async () => {
+            const route = await autoRouterService.swap({
+                amountIn: '40000000000000000000',
+                tokenInID: 'WEGLD-123456',
+                tokenOutID: 'TOK5-123456',
+                tolerance: 0.01,
+            });
+
+            expect(route.smartSwap?.source).toEqual('internal');
+            expect(await signedMinimum(route)).toEqual(
+                route.smartSwap.amountOutMin,
+            );
+        });
+
+        it('EGLD single pair encodes amountOutMin', async () => {
+            const route = await autoRouterService.swap({
+                amountIn: '10000000000000000000',
+                tokenInID: 'EGLD',
+                tokenOutID: 'TOK5-123456',
+                tolerance: 0.01,
+            });
+
+            expect(route.smartSwap).toBeUndefined();
+            expect(await signedMinimum(route)).toEqual(route.amountOutMin);
+        });
     });
 });
 

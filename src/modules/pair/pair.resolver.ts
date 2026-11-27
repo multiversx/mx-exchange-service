@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { PairService } from './services/pair.service';
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
@@ -150,7 +151,7 @@ export class PairResolver {
                 amount,
             )
         )
-            .integerValue()
+            .integerValue(BigNumber.ROUND_DOWN)
             .toFixed();
     }
 

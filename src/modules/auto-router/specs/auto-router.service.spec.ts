@@ -40,6 +40,7 @@ import { TokensStateServiceProvider } from 'src/modules/state/mocks/tokens.state
 import { XoxnoAggregatorServiceProvider } from '../mocks/xoxno-aggregator.service.mock';
 import BigNumber from 'bignumber.js';
 import { TransactionModel } from 'src/models/transaction.model';
+import { swapMaxIn } from 'src/utils/slippage.utils';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -129,6 +130,8 @@ describe('AutoRouterService', () => {
                 tokenOutPriceUSD: '10',
                 amountIn: '1000000',
                 amountOut: '99690060900928177',
+                amountOutMin: '98703030594978393',
+                amountInMax: '1000000',
                 intermediaryAmounts: ['1000000', '99690060900928177'],
                 tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
@@ -165,6 +168,8 @@ describe('AutoRouterService', () => {
                 tokenOutPriceUSD: '10',
                 amountIn: '2000000',
                 amountOut: '199360247566635212',
+                amountOutMin: '197386383729341794',
+                amountInMax: '2000000',
                 intermediaryAmounts: ['2000000', '199360247566635212'],
                 tokenRoute: ['USDC-123456', 'WEGLD-123456'],
                 pairs: [
@@ -201,6 +206,8 @@ describe('AutoRouterService', () => {
                 tokenInPriceUSD: '1',
                 tokenOutPriceUSD: '0.01',
                 amountIn: '10181267',
+                amountInMax: '10181267',
+                amountOutMin: '1000000000000000000000',
                 amountOut: '1000000000000000000000',
                 intermediaryAmounts: [
                     '10080463',
@@ -320,7 +327,7 @@ describe('AutoRouterService', () => {
                 senderUsername: undefined,
                 gasPrice: 1000000000,
                 gasLimit: 53000000,
-                data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDZmYjEwYmMzNTYxNjUzMEA2MzZmNmQ3MDZmNzM2NTU0NjE3MzZiNzNAMDAwMDAwMDQ0NTQ3NGM0NDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODA2ZGU5N2UwOWJkMTgwMDBAMDNAMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEzMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGM1NzQ1NDc0YzQ0MmQzMTMyMzMzNDM1MzYwMDAwMDAwNTkwN2Y1ZjAxOWQwMDAwMDAyMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTIwMDAwMDAxNDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzQwMDAwMDAwYTRkNDU1ODJkMzEzMjMzMzQzNTM2MDAwMDAwMDgwNmU3Nzk5ZDM3YzFjMDAwQDAxQA==',
+                data: 'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMyMzMzNDM1MzZAMDZmYjEwYmMzNTYxNjUzMEA2MzZmNmQ3MDZmNzM2NTU0NjE3MzZiNzNAMDAwMDAwMDQ0NTQ3NGM0NDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwODA2ZGVjNGU2ZTBjZWE3NDlAMDNAMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEzMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGM1NzQ1NDc0YzQ0MmQzMTMyMzMzNDM1MzYwMDAwMDAwMTAxMDAwMDAwMjAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDEyMDAwMDAwMTQ3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0MDAwMDAwMGE0ZDQ1NTgyZDMxMzIzMzM0MzUzNjAwMDAwMDA4MDZkZWM0ZTZlMGNlYTc0OUAwMUA=',
                 chainID: 'T',
                 version: 2,
                 options: undefined,
@@ -435,6 +442,144 @@ describe('AutoRouterService', () => {
             }),
         ).rejects.toThrow('No route found');
     });
+
+    describe('direct pair with multi swap disabled', () => {
+        const disableMultiSwap = () =>
+            jest
+                .spyOn(
+                    service['remoteConfigGetterService'],
+                    'getMultiSwapStatus',
+                )
+                .mockResolvedValueOnce(false);
+        const fixedOutputArgs = (amountOut: string) => ({
+            amountOut,
+            tokenInID: 'WEGLD-123456',
+            tokenOutID: 'MEX-123456',
+            tolerance: 0.01,
+        });
+
+        it('quotes a fixed-output swap like the multi swap route', async () => {
+            const args = fixedOutputArgs('1000000000000000000000');
+            const viaMultiSwap = await service.swap({ ...args });
+            disableMultiSwap();
+            const viaSingleSwap = await service.swap({ ...args });
+
+            // Only the returned amountIn carries the tolerance
+            expect(viaSingleSwap).toEqual(viaMultiSwap);
+            expect(viaSingleSwap.amountIn).toEqual(
+                swapMaxIn(viaSingleSwap.intermediaryAmounts[0], 0.01).toFixed(),
+            );
+        });
+
+        it('rejects an output equal to the reserve', async () => {
+            disableMultiSwap();
+            await expect(
+                service.swap(fixedOutputArgs('1000000000000000000000000')),
+            ).rejects.toThrow('Invalid amounts');
+        });
+    });
+
+    describe('route bounds match the signed transaction', () => {
+        // Data is function@arg@arg..., with amounts in hex
+        const dataArgs = (transaction: TransactionModel) =>
+            Buffer.from(transaction.data, 'base64').toString().split('@');
+        const decimal = (hex: string) => BigInt(`0x${hex}`).toString();
+        const text = (hex: string) => Buffer.from(hex, 'hex').toString();
+
+        async function quoteAndSign(
+            args: Parameters<AutoRouterService['swap']>[0],
+            multiSwap = true,
+        ) {
+            if (!multiSwap) {
+                jest.spyOn(
+                    service['remoteConfigGetterService'],
+                    'getMultiSwapStatus',
+                ).mockResolvedValueOnce(false);
+            }
+            const route = await service.swap(args);
+            expect(route.smartSwap).toBeUndefined();
+            const [transaction] = await service.getTransactions(
+                senderAddress,
+                route,
+            );
+            return { route, data: dataArgs(transaction) };
+        }
+
+        it('single pair fixed input encodes amountOutMin', async () => {
+            const { route, data } = await quoteAndSign(
+                {
+                    amountIn: '1000000000000000000',
+                    tokenInID: 'WEGLD-123456',
+                    tokenOutID: 'MEX-123456',
+                    tolerance: 0.01,
+                },
+                false,
+            );
+
+            expect(text(data[3])).toEqual('swapTokensFixedInput');
+            expect(decimal(data[2])).toEqual(route.amountInMax);
+            expect(decimal(data[data.length - 1])).toEqual(route.amountOutMin);
+        });
+
+        it('single pair fixed output pays amountInMax', async () => {
+            const { route, data } = await quoteAndSign(
+                {
+                    amountOut: '1000000000000000000000',
+                    tokenInID: 'WEGLD-123456',
+                    tokenOutID: 'MEX-123456',
+                    tolerance: 0.01,
+                },
+                false,
+            );
+
+            expect(text(data[3])).toEqual('swapTokensFixedOutput');
+            expect(decimal(data[2])).toEqual(route.amountInMax);
+            expect(decimal(data[data.length - 1])).toEqual(route.amountOutMin);
+        });
+
+        it('multi-hop fixed input encodes amountOutMin', async () => {
+            const { route, data } = await quoteAndSign({
+                amountIn: '10000000',
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'MEX-123456',
+                tolerance: 0.01,
+            });
+
+            expect(text(data[3])).toEqual('multiPairSwap');
+            expect(decimal(data[2])).toEqual(route.amountInMax);
+            expect(decimal(data[data.length - 1])).toEqual(route.amountOutMin);
+        });
+
+        it('multi-hop fixed output pays amountInMax', async () => {
+            const { route, data } = await quoteAndSign({
+                amountOut: '1000000000000000000000',
+                tokenInID: 'USDC-123456',
+                tokenOutID: 'MEX-123456',
+                tolerance: 0.01,
+            });
+
+            expect(text(data[3])).toEqual('multiPairSwap');
+            expect(decimal(data[2])).toEqual(route.amountInMax);
+            expect(decimal(data[data.length - 1])).toEqual(route.amountOutMin);
+        });
+    });
+
+    it.each([-0.01, 1])(
+        'should reject a tolerance of %d before quoting',
+        async (tolerance) => {
+            await expect(
+                service.swap({
+                    amountIn: '1000000000000000000',
+                    tokenInID: 'WEGLD-123456',
+                    tokenOutID: 'MEX-123456',
+                    tolerance,
+                }),
+            ).rejects.toMatchObject({
+                message: 'Tolerance must be at least 0 and less than 1',
+                extensions: { code: 'BAD_USER_INPUT' },
+            });
+        },
+    );
 
     it('should get a fixed output multi swap tx + unwrap tx', async () => {
         const transactions = await service.getTransactions(
@@ -623,6 +768,8 @@ describe('AutoRouterService', () => {
             expect(swap.smartSwap).toBeDefined();
             expect(swap.smartSwap?.source).toBe('xoxno');
             expect(swap.smartSwap?.amountOut).toBe('300000000000000000');
+            // XOXNO builds the transaction with its own minimum
+            expect(swap.smartSwap?.amountOutMin).toBe('297000000000000000');
             expect(swap.smartSwap?.routes).toHaveLength(1);
             expect(swap.smartSwap?.routes[0].pairs[0].dex).toBe('XExchange');
         });
