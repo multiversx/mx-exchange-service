@@ -120,15 +120,22 @@ export function optimalLiquidityAmounts(
     ];
 }
 
+export type ZapAmounts = {
+    swapAmountIn: BigNumber;
+    swapAmountOut: BigNumber;
+    // Added as liquidity, ordered [first token, second token]
+    liquidityAmounts: [BigNumber, BigNumber];
+};
+
 // Position creator zap: swap half on the pair, add the rest as liquidity
-export function zapLiquidityAmounts(
+export function zapAmounts(
     amount: string,
     tokenInIsFirst: boolean,
     reserves0: string,
     reserves1: string,
     totalFeePercent: number,
     specialFeePercent: number,
-): [BigNumber, BigNumber] {
+): ZapAmounts {
     const swapped = new BigNumber(amount).idiv(2);
     const kept = new BigNumber(amount).minus(swapped);
     const [reserveIn, reserveOut] = tokenInIsFirst
@@ -149,9 +156,23 @@ export function zapLiquidityAmounts(
         specialFeePercent,
     );
 
-    return tokenInIsFirst
-        ? optimalLiquidityAmounts(kept, received, newReserveIn, newReserveOut)
-        : optimalLiquidityAmounts(received, kept, newReserveOut, newReserveIn);
+    return {
+        swapAmountIn: swapped,
+        swapAmountOut: received,
+        liquidityAmounts: tokenInIsFirst
+            ? optimalLiquidityAmounts(
+                  kept,
+                  received,
+                  newReserveIn,
+                  newReserveOut,
+              )
+            : optimalLiquidityAmounts(
+                  received,
+                  kept,
+                  newReserveOut,
+                  newReserveIn,
+              ),
+    };
 }
 
 export function isSpreadTooBig(

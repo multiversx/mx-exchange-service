@@ -74,6 +74,9 @@ export class SwapRouteModel {
     @Field()
     tolerance: number;
 
+    // Zap only, not in the schema: [first, second] added as liquidity
+    liquidityAmounts?: string[];
+
     constructor(init?: Partial<SwapRouteModel>) {
         Object.assign(this, init);
     }

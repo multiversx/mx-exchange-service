@@ -2,7 +2,7 @@ import {
     getAmountIn,
     getAmountOut,
     getTokenForGivenPosition,
-    zapLiquidityAmounts,
+    zapAmounts,
 } from '../pair.utils';
 
 // Pair contract math (mx-exchange-sc amm.rs, liquidity_pool.rs)
@@ -35,16 +35,17 @@ function scZap(
     r1: bigint,
     fee: bigint,
     special: bigint,
-): [bigint, bigint] {
+): bigint[] {
     const swapped = amount / 2n;
     const kept = amount - swapped;
     const [ri, ro] = inIsFirst ? [r0, r1] : [r1, r0];
     const received = scAmountOut(swapped, ri, ro, fee);
     const ri2 = ri + swapped - (swapped * special) / MAX;
     const ro2 = ro - received;
-    return inIsFirst
+    const liquidity = inIsFirst
         ? scOptimalAmounts(kept, received, ri2, ro2)
         : scOptimalAmounts(received, kept, ro2, ri2);
+    return [swapped, received, ...liquidity];
 }
 
 // Uniswap V2 library, fee 997/1000
@@ -149,7 +150,7 @@ describe('pair utils', () => {
         }
     });
 
-    describe('zapLiquidityAmounts', () => {
+    describe('zapAmounts', () => {
         // Payment as a share of the zapped token reserve, in basis points
         const sharesBp = [1n, 10n, 50n, 100n, 300n, 1000n, 3000n];
         const feeModes = [
@@ -173,7 +174,7 @@ describe('pair utils', () => {
                         for (const bp of sharesBp) {
                             const payment =
                                 (reserveIn * bp) / 10000n + (amount % 1000n);
-                            const result = zapLiquidityAmounts(
+                            const result = zapAmounts(
                                 payment.toString(),
                                 inIsFirst,
                                 r0.toString(),
@@ -181,7 +182,13 @@ describe('pair utils', () => {
                                 Number(fee) / 100000,
                                 Number(special) / 100000,
                             );
-                            expect(result.map((a) => a.toFixed())).toEqual(
+                            expect(
+                                [
+                                    result.swapAmountIn,
+                                    result.swapAmountOut,
+                                    ...result.liquidityAmounts,
+                                ].map((a) => a.toFixed()),
+                            ).toEqual(
                                 scZap(
                                     payment,
                                     inIsFirst,

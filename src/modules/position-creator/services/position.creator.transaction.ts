@@ -895,20 +895,13 @@ export class PositionCreatorTransactionService {
         return [transaction];
     }
 
-    // The zap route holds the amounts addLiquidity will use
+    // From the amounts addLiquidity uses, not the swap result
     private getMinimumAmountsForLiquidity(
         swapRoute: SwapRouteModel,
     ): BigNumber[] {
-        const pair = swapRoute.pairs[0];
-        const [amount0, amount1] =
-            swapRoute.tokenInID === pair.firstToken.identifier
-                ? [swapRoute.amountIn, swapRoute.amountOut]
-                : [swapRoute.amountOut, swapRoute.amountIn];
-
-        return [
-            liquidityMin(amount0, swapRoute.tolerance),
-            liquidityMin(amount1, swapRoute.tolerance),
-        ];
+        return swapRoute.liquidityAmounts.map((amount) =>
+            liquidityMin(amount, swapRoute.tolerance),
+        );
     }
 
     private checkTokensPayments(

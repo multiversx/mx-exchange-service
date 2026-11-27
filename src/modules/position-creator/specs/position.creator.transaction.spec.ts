@@ -28,6 +28,8 @@ import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/moc
 import { Address } from '@multiversx/sdk-core';
 import { EsdtTokenPayment } from '@multiversx/sdk-exchange';
 import { encodeTransactionData } from 'src/helpers/helpers';
+import BigNumber from 'bignumber.js';
+import { getAmountOut } from 'src/modules/pair/pair.utils';
 import { StakingProxyAbiService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { ComposableTasksTransactionService } from 'src/modules/composable-tasks/services/composable.tasks.transaction';
 import { ProxyFarmAbiServiceProvider } from 'src/modules/proxy/mocks/proxy.abi.service.mock';
@@ -188,6 +190,27 @@ describe('PositionCreatorTransaction', () => {
                     guardianSignature: undefined,
                 },
             ]);
+
+            // The preview shows the zap swap, not the liquidity amounts
+            const zap = swapRoutes[1];
+            const pair = zap.pairs[0];
+            const inIsFirst = zap.tokenInID === pair.firstToken.identifier;
+            const swapIn = new BigNumber(swapRoutes[0].amountOut).idiv(2);
+            const swapOut = getAmountOut(
+                swapIn.toFixed(),
+                inIsFirst ? pair.info.reserves0 : pair.info.reserves1,
+                inIsFirst ? pair.info.reserves1 : pair.info.reserves0,
+                pair.totalFeePercent,
+            );
+            expect(zap.intermediaryAmounts).toEqual([
+                swapIn.toFixed(),
+                swapOut.toFixed(),
+            ]);
+            expect([zap.amountIn, zap.amountOut]).toEqual(
+                zap.intermediaryAmounts,
+            );
+            const addedOut = zap.liquidityAmounts[inIsFirst ? 1 : 0];
+            expect(swapOut.isGreaterThan(addedOut)).toBe(true);
         });
 
         it('should apply a first leg through the target pair', async () => {

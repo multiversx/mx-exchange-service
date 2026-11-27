@@ -8,10 +8,7 @@ import {
     SwapRouteModel,
 } from 'src/modules/auto-router/models/auto-route.model';
 import { AutoRouterService } from 'src/modules/auto-router/services/auto-router.service';
-import {
-    reservesAfterSwap,
-    zapLiquidityAmounts,
-} from 'src/modules/pair/pair.utils';
+import { reservesAfterSwap, zapAmounts } from 'src/modules/pair/pair.utils';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { RouterAbiService } from 'src/modules/router/services/router.abi.service';
 import { StakingPositionSingleTokenModel } from '../models/position.creator.model';
@@ -108,27 +105,27 @@ export class PositionCreatorComputeService {
 
         profiler.stop('swap route', true);
 
-        // Amounts the contract adds after swapping half on this pair
+        // The contract swaps half on this pair, then adds liquidity
         const specialFeePercent = pair.feeState
             ? (pair.specialFeePercent ?? 0)
             : 0;
-        const tokenInIsFirst = tokenIn.identifier === firstToken.identifier;
         const [reserves0, reserves1] = this.reservesBeforeZap(
             pair,
             specialFeePercent,
             swapRoutes[0],
         );
-        const [firstAmount, secondAmount] = zapLiquidityAmounts(
+        const {
+            swapAmountIn: amount0,
+            swapAmountOut: amount1,
+            liquidityAmounts,
+        } = zapAmounts(
             amountOut.toFixed(),
-            tokenInIsFirst,
+            tokenIn.identifier === firstToken.identifier,
             reserves0,
             reserves1,
             pair.totalFeePercent,
             specialFeePercent,
         );
-        const [amount0, amount1] = tokenInIsFirst
-            ? [firstAmount, secondAmount]
-            : [secondAmount, firstAmount];
 
         const tokenInExchangeRate = new BigNumber(10)
             .pow(tokenIn.decimals)
@@ -180,6 +177,9 @@ export class PositionCreatorComputeService {
                         : secondTokenPriceUSD,
                 maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
                 tokensPriceDeviationPercent: priceDeviationPercent,
+                liquidityAmounts: liquidityAmounts.map((amount) =>
+                    amount.toFixed(),
+                ),
             }),
         );
 
